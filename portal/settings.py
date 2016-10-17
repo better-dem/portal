@@ -21,14 +21,15 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "%0mhm6y!qz-9vdet=1+muka%zh=cqhiu^d0b&b&cb_a2g-y%s("
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ["DJANGO_DEBUG_STATE"]=="True"
 
 # Application definition
 
 INSTALLED_APPS = [
+    'core.apps.CoreConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -133,3 +134,21 @@ STATICFILES_DIRS = [
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+### Settings for django registration
+ACCOUNT_ACTIVATION_DAYS=2
+REGISTRATION_OPEN=True
+REGISTRATION_SALT="fd43*7uHJjh(*Jmnbyt5$Th"
+
+
+### Email information loaded from environment variables
+EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_USE_TLS=True
+EMAIL_PORT=587
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_HOST_USER=os.environ["GMAIL_ACCOUNT_NAME"]
+EMAIL_HOST_PASSWORD=os.environ["GMAIL_ACCOUNT_PASSWORD"]
+SERVER_EMAIL=os.environ["GMAIL_ACCOUNT_NAME"]
+DEFAULT_FROM_EMAIL="Better Dem Portal"
+
