@@ -1,0 +1,13 @@
+{% extends "core/base.html" %}
+{% block content %}
+<h2>Profile for {{ user.name }}</h2>
+
+{% for item in items %}
+<div class="panel panel-default">
+    <div class="panel-heading">{{ item.label }}</div>
+    <div class="panel-body">
+	{{ item.description }}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

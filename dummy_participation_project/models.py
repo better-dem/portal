@@ -1,17 +1,15 @@
 from __future__ import unicode_literals
-
 from django.db import models
 
-import core.models as cm
-from core.models import ParticipationProject, ParticipationItem
+from core import models as cm
+from core import ParticipationApp as cp
 
 # register DummyItem with core app
-cm.participation_item_subclass_tests.append(lambda x: x.dummyitem)
+cp.register(cp.ParticipationApp(lambda x: x.dummyitem))
 
 
 class DummyProject(cm.ParticipationProject):
     pass
-
 
 class DummyItem(cm.ParticipationItem):
     def get_description(self):

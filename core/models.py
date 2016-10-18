@@ -3,15 +3,13 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 
-# functions to return the appropriate subclass of a participation item 
-# or raise an exception
-# assumes only one level of inheritance
-# NOTE: every class which inherits from ParticipationItem needs to register a test
-# for example: core.models.participation_item_subclass_tests.append(lambda x: x.dummyitem)
 
-participation_item_subclass_tests = []
-
-
+# registered participation apps
+# ParticipationApp class and the registration function
+# can be found in ./ParticipationApp.py
+# apps need to be registered in order for them to be 
+# displayed and managed correctly by the portal core app
+registered_apps = []
 
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 100)
@@ -22,7 +20,7 @@ class ParticipationItem(models.Model):
 
     def get_inherited_instance(self):
         ans = self
-        for t in participation_item_subclass_tests:
+        for t in [app.item_subclass_test for app in registered_apps]:
             try:
                 ans = t(self)
             except:
