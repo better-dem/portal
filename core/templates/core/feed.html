@@ -1,0 +1,13 @@
+{% extends "core/base.html" %}
+{% block content %}
+<h2>Participation Feed</h2>
+
+{% for match in matches %}
+<div class="panel panel-default">
+    <div class="panel-heading">{{ match.label }}</div>
+    <div class="panel-body">
+	{{ match.description }}
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
