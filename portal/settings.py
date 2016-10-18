@@ -30,6 +30,7 @@ DEBUG = os.environ["DJANGO_DEBUG_STATE"]=="True"
 
 INSTALLED_APPS = [
     'core.apps.CoreConfig',
+    'dummy_participation_project.apps.DummyParticipationProjectConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

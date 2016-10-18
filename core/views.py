@@ -13,5 +13,5 @@ def feed(request):
     
     recent_matches = FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:10]
 
-    matches = [{"label": m.name, "description": "description of" + str(m.name)} for m in recent_matches]
-    return render(request, 'core/feed.html', {'matches':matches})
+    items = [{"label": m.participation_item.name, "description": m.participation_item.get_inherited_instance().get_description()} for m in recent_matches]
+    return render(request, 'core/feed.html', {'items':items})
