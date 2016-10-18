@@ -2,11 +2,18 @@
 {% block content %}
 <h2>Profile for {{ user.name }}</h2>
 
-{% for item in items %}
+{% for app in profile_apps %}
 <div class="panel panel-default">
-    <div class="panel-heading">{{ item.label }}</div>
+    <div class="panel-heading">{{ app.label }}</div>
     <div class="panel-body">
-	{{ item.description }}
+	<p>
+	    <a href="{{ app.new_project_link }}">New Project</a>
+	</p>
+	{% for project in app.existing_projects %}
+	<p>
+	    <a href="{{ project.administer_project_link }}">Administer {{ project.name }}</a>
+	</p>
+	{% endfor %}
     </div>
 </div>
 {% endfor %}
