@@ -14,7 +14,7 @@ def show_profile(request):
         profile_app = dict()
         profile_app["label"] = app.app_name
         profile_app["existing_projects"] = []
-        perm = Permission.objects.get(name=app.provider_permission_name())[0]
+        perm = Permission.objects.get(name=app.provider_permission_name())
         if not perm in user.get_all_permissions():
             profile_app["label"] = profile_app["label"] + " -- No Permissions"
         else:

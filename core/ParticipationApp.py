@@ -7,6 +7,7 @@ a ParticipationApp object should be created to register that app with the core a
 """
 
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 import models
 import sys
 
@@ -24,10 +25,13 @@ def register(app):
         return 
     else:
         try:
-            perm = Permission.objects.get(name=app.provider_permission_name())[0]
+            perm = Permission.objects.get(name=app.provider_permission_name())
         except Permission.DoesNotExist:
+            project_content_type = ContentType.objects.get(app_label="core", model="participationproject")
             perm = Permission()
             perm.name = app.provider_permission_name()
+            perm.content_type = project_content_type
+            perm.codename = "permission_"+app.provider_permission_name()
             perm.save()
 
 
