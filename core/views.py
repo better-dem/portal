@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Permission, AnonymousUser
 from django.shortcuts import render
 from django.http import HttpResponse
 import core.models as cm
@@ -6,8 +7,6 @@ import sys
 def show_profile(request):
     user = request.user
     profile = user.userprofile
-
-    sys.stdout.write(dir(user))
 
     profile_apps = []
     for app in cm.registered_apps:
@@ -18,19 +17,18 @@ def show_profile(request):
         if not perm in user.get_all_permissions():
             profile_app["label"] = profile_app["label"] + " -- No Permissions"
         else:
+            profile_app["label"] = profile_app["label"]
+            profile_app["new_project_link"] = "/apps/"+app.app_name+"/new_project/-1/-1"
             existing_projects = app.project_class_manager.objects.filter(owner_profile=profile)
             for ep in existing_projects:
                 proj = dict()
                 proj["name"] = ep.name
-                proj["administer_project_link"] = "/apps/"+app.app_name+"/administer_project/"+ep.id+"/-1"
+                proj["administer_project_link"] = "/apps/"+app.app_name+"/administer_project/"+str(ep.id)+"/-1"
                 profile_app["existing_projects"].append(proj)
                 
         profile_apps.append(profile_app)
 
     return render(request, 'core/profile.html', {'profile_apps': profile_apps})
-    
-    return HttpResponse("user email: "+str(user.email))
-
 
 def app_view_relay(request, app_name, action_name, project_id, item_id):
     if not app_name in [app.app_name for app in cm.registered_apps]:
@@ -49,12 +47,15 @@ def app_view_relay(request, app_name, action_name, project_id, item_id):
             raise Exception("invalid action:" + str(action_name))
 
 def feed(request):
+    items = None
     user = request.user
-    profile = user.userprofile
-    
-    recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:10]
+    if isinstance(user, AnonymousUser):
+        items = []
+    else:
+        profile = user.userprofile
+        recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:10]
+        items = [{"label": m.participation_item.name, "description": m.participation_item.get_inherited_instance().get_description()} for m in recent_matches]
 
-    items = [{"label": m.participation_item.name, "description": m.participation_item.get_inherited_instance().get_description()} for m in recent_matches]
     return render(request, 'core/feed.html', {'items':items})
 
 
