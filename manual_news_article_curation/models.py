@@ -6,15 +6,13 @@ from core import ParticipationApp as cp
 from . import views as views_module
 
 class ManualNewsCurationProject(cm.ParticipationProject):
-    pass
-
-class NewsArticleItem(cm.ParticipationItem):
     url = models.URLField(blank=False)
     img_url = models.URLField(blank=False)
     first_paragraph = models.TextField(blank=False)
 
+class NewsArticleItem(cm.ParticipationItem):
     def get_description(self):
-        return self.first_paragraph[:300]+"..."
+        return self.participation_project.manualnewscurationproject.first_paragraph[:300]+"..."
 
 # register NewsArticleItem with core app
 cp.register(cp.ParticipationApp("ManualNewsCurationApp", ManualNewsCurationProject, lambda x: x.newsarticleitem, views_module))

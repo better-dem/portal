@@ -37,8 +37,6 @@ def app_view_relay(request, app_name, action_name, project_id, item_id):
         app = [a for a in cm.registered_apps if a.app_name == app_name][0]
         if action_name == "new_project":
             return app.views_module.new_project(request) 
-        elif action_name == "show_project_results":
-            return app.views_module.show_project_results(request, project_id) 
         elif action_name == "administer_project":
             return app.views_module.administer_project(request, project_id) 
         elif action_name == "participate":

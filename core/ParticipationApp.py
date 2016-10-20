@@ -55,7 +55,6 @@ class ParticipationApp:
         the views module for this app.
         Must include:
          - new_project(request)
-         - show_project_results(request, project_id)
          - administer_project(request, project_id)
          - participate(request, item_id)
         """
