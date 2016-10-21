@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+import sys
+from dummy_participation_project.models import DummyProject, DummyItem
 
 def new_project(request):
     return HttpResponse(request, "dummy app's new project view -- not yet implemented")

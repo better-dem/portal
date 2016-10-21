@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% block content%}
+
+<h2>Items</h2>
+    Number of items corresponsding to this project: {{ items|length }}.
+    {% for item in items %}    
+    <p>
+	{% if item.num_matches %}
+	Number of times this item has been recommended to users: {{ item.num_matches }}.
+	{% endif %}
+	
+	How this item is displayed to users:
+	{% include "core/feed_item.html" with item=item %}
+    </p>
+    
+    {% endfor %}
+
+{% endblock %}
