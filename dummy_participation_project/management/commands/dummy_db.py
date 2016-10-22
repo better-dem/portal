@@ -15,23 +15,4 @@ class Command(BaseCommand):
         p1.owner_profile = UserProfile.objects.all()[0]
         p1.save()
 
-        i1 = DummyItem()
-        i1.name = "I1-Awesome"
-        i1.participation_project = p1
-        i1.save()
-
-        i2 = DummyItem()
-        i2.name = "IU2-Moderate"
-        i2.participation_project = p1
-        i2.save()
-
-
-        for user in UserProfile.objects.all():
-            for item in DummyItem.objects.all():
-                m = FeedMatch()
-                m.participation_item = item
-                m.user_profile = user
-                m.save()
-
-        self.stdout.write("number of feedmatches:" + str(FeedMatch.objects.all().count()))
         

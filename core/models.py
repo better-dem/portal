@@ -28,9 +28,6 @@ def get_item_subclass_test(app):
     subclass_name = m.__name__.lower().replace("_","")
     return lambda x: getattr(x, subclass_name)
 
-def djangify_string(s):
-    return s
-
 def get_provider_permission(app):
     project_model = get_app_project_models(app)[0]
     model_name = project_model.__name__.lower().replace("_","")
@@ -43,6 +40,10 @@ def get_provider_permission(app):
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 100)
     owner_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
+
+    def update_items(self):
+        raise Exception("Please overwrite the update_items() method for your participation app")
+
 
 class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)

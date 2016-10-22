@@ -8,6 +8,15 @@ class ManualNewsCurationProject(cm.ParticipationProject):
     img_url = models.URLField(blank=False)
     first_paragraph = models.TextField(blank=False)
 
+    def update_items(self):
+        if NewsArticleItem.objects.filter(participation_project=self).count() == 0:
+            item = NewsArticleItem()
+            item.name = self.name
+            item.participation_project = self
+            item.save()
+            return 1
+        return 0
+
 class NewsArticleItem(cm.ParticipationItem):
     def get_description(self):
         return self.participation_project.manualnewscurationproject.first_paragraph[:300]+"..."

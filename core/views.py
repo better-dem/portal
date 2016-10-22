@@ -66,7 +66,9 @@ def feed(request):
         items = []
     else:
         profile = user.userprofile
-        recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:10]
+        recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
+        sys.stdout.write("num matches:" + str(len(recent_matches)) + "\n")
+        sys.stdout.flush()
         items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
 
     return render(request, 'core/feed.html', {'items':items})
