@@ -18,16 +18,7 @@ def show_profile(request):
         profile_app = dict()
         profile_app["label"] = app.label
         profile_app["existing_projects"] = []
-
         perm = cm.get_provider_permission(app)
-        sys.stderr.write(str(user.username)+"\n")
-        sys.stderr.flush()
-        sys.stderr.write(str(user.get_all_permissions())+"\n")        
-        sys.stderr.flush()
-        sys.stderr.write(str(user.has_perm(perm))+"\n")        
-        sys.stderr.flush()
-        sys.stderr.write(str(perm.codename)+"\n")        
-        sys.stderr.flush()
         
         if not app.label+"."+perm.codename in user.get_all_permissions():
             profile_app["label"] = profile_app["label"] + " -- No Permissions"
@@ -46,14 +37,25 @@ def show_profile(request):
     return render(request, 'core/profile.html', {'profile_apps': profile_apps})
 
 def app_view_relay(request, app_name, action_name, project_id, item_id):
+    user = request.user
+    profile = user.userprofile
     if not app_name in [app.label for app in cm.get_registered_participation_apps()]:
         raise Exception("app not registered or does not exist:" + str(app_name))
     else:
         app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
+        perm = cm.get_provider_permission(app)
+        has_perm = app.label+"."+perm.codename in user.get_all_permissions()
+        
         if action_name == "new_project":
-            return app.views_module.new_project(request) 
+            if has_perm:
+                return app.views_module.new_project(request) 
+            else:
+                return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "create a new project"})
         elif action_name == "administer_project":
-            return app.views_module.administer_project(request, project_id) 
+            if has_perm:
+                return app.views_module.administer_project(request, project_id)
+            else:
+                return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "administer a project"})
         elif action_name == "participate":
             return app.views_module.participate(request, item_id) 
         else:
