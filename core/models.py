@@ -4,16 +4,21 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
+import sys
 
 ### Start functions for accessing particpation app API
 def get_registered_participation_apps():
-    import sys
     all_apps = apps.get_app_configs()
     participation_apps = [a for a in all_apps if not a.name=="core" and len(get_app_project_models(a))==1]
     return participation_apps
 
 def get_app_project_models(app):
     return [m for m in app.get_models() if issubclass(m, ParticipationProject)]
+
+def get_app_by_name(name):
+    all_apps = apps.get_app_configs()
+    participation_apps = [a for a in all_apps if not a.name=="core" and a.name==name and len(get_app_project_models(a))==1]
+    return participation_apps[0]
     
 def get_item_subclass_test(app):
     item_models = [m for m in app.get_models() if issubclass(m, ParticipationItem)]
@@ -23,24 +28,16 @@ def get_item_subclass_test(app):
     subclass_name = m.__name__.lower().replace("_","")
     return lambda x: getattr(x, subclass_name)
 
+def djangify_string(s):
+    return s
+
 def get_provider_permission(app):
-    # create a Permission object if there isn't one yet
     project_model = get_app_project_models(app)[0]
-    content_type = ContentType.objects.get(app_label="core", model=project_model.__name__.lower().replace("_",""))
-    try:
-        perm = Permission.objects.get(content_type=content_type)
-        return perm
-    except Permission.DoesNotExist:
-        perm = Permission()
-        perm.name = "provider_permission_"+app.label
-        perm.content_type = content_type
-        perm.codename =  "permission_"+app.label
-        perm.save()
-        return perm
-
-def get_provider_permission_name(app):
-    return "provider_permission_"+app.label
-
+    model_name = project_model.__name__.lower().replace("_","")
+    app_name = app.name.lower()
+    content_type = ContentType.objects.get(app_label=app_name, model=model_name)
+    perm = Permission.objects.get(content_type=content_type, codename__startswith="add_")
+    return perm
 
 ### Start core models
 class ParticipationProject(models.Model):

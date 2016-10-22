@@ -3,8 +3,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 import core.models as cm
 import sys
+import pkgutil
+
+from django.contrib.contenttypes.models import ContentType
 
 def show_profile(request):
+    cts = ContentType.objects.all()
+
     user = request.user
     profile = user.userprofile
 
@@ -13,13 +18,23 @@ def show_profile(request):
         profile_app = dict()
         profile_app["label"] = app.label
         profile_app["existing_projects"] = []
+
         perm = cm.get_provider_permission(app)
-        if not perm in user.get_all_permissions():
+        sys.stderr.write(str(user.username)+"\n")
+        sys.stderr.flush()
+        sys.stderr.write(str(user.get_all_permissions())+"\n")        
+        sys.stderr.flush()
+        sys.stderr.write(str(user.has_perm(perm))+"\n")        
+        sys.stderr.flush()
+        sys.stderr.write(str(perm.codename)+"\n")        
+        sys.stderr.flush()
+        
+        if not app.label+"."+perm.codename in user.get_all_permissions():
             profile_app["label"] = profile_app["label"] + " -- No Permissions"
         else:
             profile_app["label"] = profile_app["label"]
             profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1/-1"
-            existing_projects = app.project_class_manager.objects.filter(owner_profile=profile)
+            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile)
             for ep in existing_projects:
                 proj = dict()
                 proj["name"] = ep.name

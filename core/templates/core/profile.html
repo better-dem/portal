@@ -6,9 +6,11 @@
 <div class="panel panel-default">
     <div class="panel-heading">{{ app.label }}</div>
     <div class="panel-body">
+	{% if app.new_project_link %}
 	<p>
 	    <a href="{{ app.new_project_link }}">New Project</a>
 	</p>
+	{% endif %}
 	{% for project in app.existing_projects %}
 	<p>
 	    <a href="{{ project.administer_project_link }}">Administer {{ project.name }}</a>
