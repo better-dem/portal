@@ -33,5 +33,6 @@ def administer_project(request, project_id):
 
 def participate(request, item_id):
     item = NewsArticleItem.objects.get(pk=item_id)
-    return redirect(item.url)
+    project = item.participation_project.manualnewscurationproject
+    return redirect(project.url)
 

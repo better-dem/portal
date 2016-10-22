@@ -15,13 +15,22 @@ def get_registered_participation_apps():
 def get_app_project_models(app):
     return [m for m in app.get_models() if issubclass(m, ParticipationProject)]
 
+def get_app_item_models(app):
+    return [m for m in app.get_models() if issubclass(m, ParticipationItem)]
+
 def get_app_by_name(name):
     all_apps = apps.get_app_configs()
     participation_apps = [a for a in all_apps if not a.name=="core" and a.name==name and len(get_app_project_models(a))==1]
     return participation_apps[0]
+
+def get_app_for_model(model):
+    apps = get_registered_participation_apps()
+    for a in apps:
+        if model in a.get_models():
+            return a
     
 def get_item_subclass_test(app):
-    item_models = [m for m in app.get_models() if issubclass(m, ParticipationItem)]
+    item_models = get_app_item_models(app)
     if len(item_models) == 0:
         raise Exception("app"+app.name+" has no Participation Item models")
     m = item_models[0]

@@ -67,14 +67,14 @@ def feed(request):
     else:
         profile = user.userprofile
         recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
-        sys.stdout.write("num matches:" + str(len(recent_matches)) + "\n")
-        sys.stdout.flush()
         items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
 
     return render(request, 'core/feed.html', {'items':items})
 
 def get_item_details(item, count_matches=False):
-    ans = {"label": item.name, "description": item.get_inherited_instance().get_description()}
+    app = cm.get_app_for_model(item.get_inherited_instance().__class__)
+    project_id = item.participation_project.pk
+    ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(project_id)+"/"+str(item.pk)}
     if count_matches:
         ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
     return ans
