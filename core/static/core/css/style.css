@@ -1,3 +1,15 @@
-h1 a {
-    color: #FCA205;
+/* h1 a { *
+/*     color: #FCA205; */
+/* } */
+
+/* .navbar-brand { */
+/*     font-size: 30px; */
+/* } */
+
+.page-header h1 a {
+    color: black;
+}
+
+.page-header a {
+    padding-right: 10px;
 }
