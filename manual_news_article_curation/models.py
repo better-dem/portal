@@ -3,6 +3,10 @@ from django.db import models
 
 from core import models as cm
 
+org_logos = dict()
+org_logos["ballotpedia.org"] = "https://ballotpedia.org/wiki/skins/Ballotpedia/images/bp-logo.svg"
+org_logos["nytimes.com"] = "https://a1.nyt.com/assets/homepage/20161012-091952/images/foundation/logos/nyt-logo-379x64.png"
+
 class ManualNewsCurationProject(cm.ParticipationProject):
     url = models.URLField(blank=False)
     img_url = models.URLField(blank=False)
@@ -22,4 +26,8 @@ class NewsArticleItem(cm.ParticipationItem):
         return self.participation_project.manualnewscurationproject.first_paragraph[:300]+"..."
 
     def set_display_image(self):
+        for org in org_logos:
+            if org in self.participation_project.url:
+                self.display_image_url = org_logos[org]
+                return
         self.display_image_url = 'manual_news_article_curation/img/default.png'
