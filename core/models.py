@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-from django.db import models, transaction
+from django.contrib.gis.db import models
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -90,6 +91,13 @@ class FeedMatch(models.Model):
     user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
     has_been_visited = models.BooleanField(default=False)
+
+class Tag(models.Model):
+    tag_name = models.CharField(max_length = 300)
+
+class GeoTag(Tag):
+    polygon = models.PolygonField(geography = True)
+
 
 ### Signal handling
 
