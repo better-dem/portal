@@ -58,6 +58,7 @@ class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
     display_image_url = models.URLField(blank=True)
+    visits = models.IntegerField(default=0)
 
     def get_inherited_instance(self):
         ans = self
@@ -88,7 +89,7 @@ class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
     user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
-
+    has_been_visited = models.BooleanField(default=False)
 
 ### Signal handling
 

@@ -8,11 +8,18 @@
 	{% if item.num_matches %}
 	Number of times this item has been recommended to users: {{ item.num_matches }}.
 	{% endif %}
+    </p>
+
+    <p>
+	{% if item.num_visits %}
+	Number of times this item has been visited: {{ item.num_visits }}.
+	{% endif %}
+    </p>
 	
+    <p>
 	How this item is displayed to users:
 	{% include "core/feed_item.html" with item=item %}
-    </p>
-    
+    </p>    
     {% endfor %}
 
 {% endblock %}

@@ -6,6 +6,7 @@ from core import models as cm
 org_logos = dict()
 org_logos["ballotpedia.org"] = "https://ballotpedia.org/wiki/skins/Ballotpedia/images/bp-logo.svg"
 org_logos["nytimes.com"] = "https://a1.nyt.com/assets/homepage/20161012-091952/images/foundation/logos/nyt-logo-379x64.png"
+org_logos["challenge.gov"] = "https://www.challenge.gov/wp-content/themes/challenge-gov-theme/images/challenge_full_logo.png"
 
 class ManualNewsCurationProject(cm.ParticipationProject):
     url = models.URLField(blank=False)
