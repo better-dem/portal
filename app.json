@@ -3,6 +3,13 @@
   "scripts": {
   },
   "env": {
+      "DJANGO_SECRET_KEY": {
+	  "generator": "secret"
+      },
+      "DJANGO_DEBUG_STATE": {
+	  "value": "True"
+      }
+      ""
   },
   "formation": {
   },
