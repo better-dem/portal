@@ -21,3 +21,5 @@ class NewsArticleItem(cm.ParticipationItem):
     def get_description(self):
         return self.participation_project.manualnewscurationproject.first_paragraph[:300]+"..."
 
+    def set_display_image(self):
+        self.display_image_url = 'manual_news_article_curation/img/default.png'

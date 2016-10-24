@@ -57,6 +57,7 @@ class ParticipationProject(models.Model):
 class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
+    display_image_url = models.URLField(blank=True)
 
     def get_inherited_instance(self):
         ans = self
@@ -72,20 +73,37 @@ class ParticipationItem(models.Model):
     def get_description(self):
         return self.name + " participation item"
 
-
+    def set_display_image(self):
+        """
+        Overwrite this function with app-specific method 
+        for setting an item's display image.
+        It can take a long time, since it will be run by workers, not by web server
+        """
+        return None
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
-
-post_save.connect(create_user_profile, sender=User)
-
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
     user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
 
 
+### Signal handling
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+post_save.connect(create_user_profile, sender=User)
+
+
+def set_image(sender, instance, created, **kwargs):
+    if created:
+        instance.set_display_image()
+        instance.save()
+    sys.stderr.flush()
+
+def register_participation_item_subclass(cls):
+    post_save.connect(set_image, sender=cls)

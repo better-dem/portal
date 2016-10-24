@@ -1,6 +1,15 @@
+{% load staticfiles %}
 <div class="panel panel-default">
     <div class="panel-heading"><a href="{{ item.link }}">{{ item.label }}</a></div>
     <div class="panel-body">
+	{% if item.display_image_url %}
+	{% if ':' in item.display_image_url %}
+	<img src="{{ item.display_image_url }}" class="img-thumbnail" width="180" height="180">
+	{% else %}
+	<img src="{% static item.display_image_url %}" class="img-thumbnail" width="90" height="90">
+	
+	{% endif %}
+	{% endif %}
 	{{ item.description }}
     </div>
 </div>

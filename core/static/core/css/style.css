@@ -13,3 +13,9 @@
 .page-header a {
     padding-right: 10px;
 }
+
+.panel-body img {
+    float: left;
+    margin-right: 15px;
+    /* margin-bottom: 5px; */
+}
