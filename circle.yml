@@ -3,5 +3,7 @@ test:
         - "python manage.py migrate"
         - "python manage.py collectstatic --no-input"
 database:
+  pre: 
+    - createdb portal
   post:
     - psql -c "CREATE EXTENSION postgis;" -d circle_test
