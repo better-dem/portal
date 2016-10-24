@@ -8,10 +8,10 @@
       },
       "DJANGO_DEBUG_STATE": {
 	  "value": "True"
-      }
+      },
       "GMAIL_ACCOUNT_NAME": {
 	  "value": "bob"
-      }
+      },
       "GMAIL_ACCOUNT_PASSWORD": {
 	  "value": "bob"
       }
