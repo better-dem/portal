@@ -8,6 +8,10 @@ import pkgutil
 
 from django.contrib.contenttypes.models import ContentType
 
+def test_geo(request):
+    from django.contrib.gis import gdal
+    return HttpResponse(str(gdal.HAS_GDAL))
+
 def show_profile(request):
     cts = ContentType.objects.all()
 
