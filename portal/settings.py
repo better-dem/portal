@@ -84,15 +84,8 @@ WSGI_APPLICATION = 'portal.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'portal_gis_db',
-        'USER': 'portal',
-        'PASSWORD': "portal",
-        'HOST': 'localhost',
+        'NAME': 'portal',
     }
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    # }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
