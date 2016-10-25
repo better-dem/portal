@@ -96,8 +96,9 @@ class Tag(models.Model):
     tag_name = models.CharField(max_length = 300)
 
 class GeoTag(Tag):
-    polygon = models.PolygonField(geography = True)
-
+    polygon = models.PolygonField(geography = True, blank=True, null=True)
+    polygon_area = models.FloatField(blank = True, default=-1)
+    point = models.PointField(geography = True, blank=True, null=True)
 
 ### Signal handling
 

@@ -9,22 +9,31 @@ DJANGO_DEBUG_STATE=
 GMAIL_ACCOUNT_NAME=
 GMAIL_ACCOUNT_PASSWORD=
 
-## Setting up GIS database to reun locally
+## Setting up GIS database to run locally
 
 Install postgresql, postgis, and spatialite:
 
 sudo apt-get install postgresql-9.3 postgresql-9.3-postgis-2.1 spatialite-bin postgresql-server-dev-9.3 python-psycopg2
 
-
-Create a postgresql user with your username:
-
-> sudo su postgres
-> createuser --interactive -P
-Enter name of role to add: portal
-Enter password for new role: (portal)
-Enter it again: (portal)
-Shall the new role be a superuser? (y/n) y
-
 Create portal database:
-> createdb portal_gis_db
+> createdb portal
 
+## Setting up GIS database for CircleCI
+
+automated. See circle.yml
+
+## Setting up GIS database for Heroku
+
+lots is automated, see portal/settings.py, core/models.py
+
+> heroku pg:psql --app [app name]
+>>> CREATE EXTENSION postgis;
+>>> [ctrl-D]
+
+## Setting up geo tags
+
+Requires us-cities which can be bought from uscitieslist.org
+
+Example command to set up geo tags for cities:
+
+heroku local:run python manage.py pull_and_add_osm_data -u http://download.geofabrik.de/north-america/us/delaware-latest.osm.bz2

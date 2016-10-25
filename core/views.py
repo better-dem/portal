@@ -8,6 +8,10 @@ import pkgutil
 
 from django.contrib.contenttypes.models import ContentType
 
+def tags(request):
+    first_ten = cm.Tags.objects.all()[:10]
+    return HttpResponse([i.tag_name for i in first_ten].join(", "))
+
 def test_geo(request):
     from django.contrib.gis import gdal
     return HttpResponse(str(gdal.HAS_GDAL))
