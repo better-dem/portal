@@ -12,7 +12,7 @@ def tags(request):
     tasks.marco.delay()
     all_tags = cm.Tag.objects.all()
     first_ten = all_tags[:10]
-    return HttpResponse(str(all_tags.distinct().count())+"\n"+", ".join([i.name for i in first_ten]))
+    return HttpResponse("Number of tags: "+str(all_tags.distinct().count())+"\n"+"\n".join([i.get_name() for i in first_ten]))
 
 def test_geo(request):
     from django.contrib.gis import gdal
