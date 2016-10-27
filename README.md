@@ -8,6 +8,10 @@ DJANGO_SECRET_KEY=
 DJANGO_DEBUG_STATE=
 GMAIL_ACCOUNT_NAME=
 GMAIL_ACCOUNT_PASSWORD=
+REDIS_URL=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_STORAGE_BUCKET_NAME=
 
 ## Setting up GIS database to run locally
 
@@ -34,6 +38,7 @@ lots is automated, see portal/settings.py, core/models.py
 
 Requires us-cities which can be bought from uscitieslist.org
 
-Example command to set up geo tags for cities:
-
-heroku local:run python manage.py pull_and_add_osm_data -u http://download.geofabrik.de/north-america/us/delaware-latest.osm.bz2
+ - login with a user authorized to manage the core app
+ - use: uscitieslist_csv_v0 for format id
+ - upload your cities list csv file
+ - work will be done in the background, check progress by visiting /tags view
