@@ -7,3 +7,6 @@ database:
     - createdb portal
   post:
     - psql -c "CREATE EXTENSION postgis;" -d circle_test
+machine:
+  services:
+    - redis
