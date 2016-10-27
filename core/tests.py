@@ -6,7 +6,7 @@ class SurveyAppUnitTests(TestCase):
         pass
         
     def test_gis_models_and_functionality(self):
-        m = GeoTag(tag_name = "californiaish", polygon = "POLYGON(( 41.998 -124.211, 41.972 -120.022, 38.987 -120.036, 32.854 -114.718, 32.373 -123.881, 41.998 -124.211 ))")
+        m = GeoTag(name = "californiaish", polygon = "POLYGON(( 41.998 -124.211, 41.972 -120.022, 38.987 -120.036, 32.854 -114.718, 32.373 -123.881, 41.998 -124.211 ))")
         m.save()
 
         num_tags_covering_contra_costa = GeoTag.objects.filter(polygon__covers="POINT( 37.764 -121.837 )").count()

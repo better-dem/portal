@@ -1,3 +1,4 @@
 web: gunicorn portal.wsgi
-worker: python worker.py
+worker: celery worker -A portal
+worker2: python worker.py
 release: python manage.py migrate

@@ -8,6 +8,10 @@ from django.apps import apps
 import sys
 
 ### Start functions for accessing particpation app API
+def get_core_app():
+    all_apps = apps.get_app_configs()
+    return [a for a in all_apps if a.name=="core" and len(get_app_project_models(a))==1][0]
+
 def get_registered_participation_apps():
     all_apps = apps.get_app_configs()
     participation_apps = [a for a in all_apps if not a.name=="core" and len(get_app_project_models(a))==1]
@@ -21,7 +25,7 @@ def get_app_item_models(app):
 
 def get_app_by_name(name):
     all_apps = apps.get_app_configs()
-    participation_apps = [a for a in all_apps if not a.name=="core" and a.name==name and len(get_app_project_models(a))==1]
+    participation_apps = [a for a in all_apps if a.name==name and len(get_app_project_models(a))==1]
     return participation_apps[0]
 
 def get_app_for_model(model):
@@ -93,7 +97,9 @@ class FeedMatch(models.Model):
     has_been_visited = models.BooleanField(default=False)
 
 class Tag(models.Model):
-    tag_name = models.CharField(max_length = 300)
+    name = models.CharField(max_length = 300)
+    # ex: state + country name if the tag is a city
+    detail = models.CharField(max_length = 300, blank=True, null=True)
 
 class GeoTag(Tag):
     polygon = models.PolygonField(geography = True, blank=True, null=True)
