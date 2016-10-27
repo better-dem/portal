@@ -7,6 +7,7 @@ import core.models as cm
 import core.tasks as tasks
 from core.forms import UploadGeoTagset
 import sys
+from django.core.files.storage import default_storage
 
 def tags(request):
     tasks.marco.delay()
@@ -19,10 +20,6 @@ def test_geo(request):
     return HttpResponse(str(gdal.HAS_GDAL))
 
 def upload_geo_tagset(request):
-    """
-    This is currently slow and blocking, since I haven't set up queing jobs.
-    TODO: run the update in background, get status? via ajax?
-    """
     user = request.user
     profile = user.userprofile
 
@@ -35,7 +32,7 @@ def upload_geo_tagset(request):
         form = UploadGeoTagset(request.POST, request.FILES)
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
-                handle_geotag_upload_uscitieslist_csv_v0(request.FILES["data_file"])
+                tasks.insert_csv1.delay(form.cleaned_data["data_file"])
                 return HttpResponse("Ok, I'm processing this csv file. Thanks")
             else:
                 return HttpResponse("Sorry, this format is not known")
@@ -125,12 +122,3 @@ def get_item_details(item, get_activity=False):
         ans["num_visits"] = item.visits
     return ans
 
-
-
-### Begin methods for handling file uploads
-
-def handle_geotag_upload_uscitieslist_csv_v0(f):
-    with open("tmp.csv", 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    tasks.insert_csv1.delay()

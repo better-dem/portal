@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    # use the storages app
+    'storages',
+    's3direct'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -142,11 +145,27 @@ STATICFILES_DIRS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
+# S3 static file storage with django-storages
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
+AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
+AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+# s3direct options
+S3DIRECT_REGION = 'us-west-1'
+S3DIRECT_DESTINATIONS = {
+    # destination specifically for uploading large administrative files
+    'csv_upload': {
+        'key': lambda original_filename: 'uploads/misc/tmp.csv',
+        'auth': lambda u: u.is_authenticated() 
+    }
+}
+
 ### Settings for django registration
 ACCOUNT_ACTIVATION_DAYS=2
 REGISTRATION_OPEN=True
 REGISTRATION_SALT="fd43*7uHJjh(*Jmnbyt5$Th"
-
 
 ### Email information loaded from environment variables
 EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"

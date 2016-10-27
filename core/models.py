@@ -102,9 +102,9 @@ class Tag(models.Model):
     detail = models.CharField(max_length = 300, blank=True, null=True)
 
     def get_name(self):
-        if not t.detail is None:
-            return t.name + "," + t.detail
-        return t.name
+        if not self.detail is None:
+            return self.name + "," + self.detail
+        return self.name
 
 class GeoTag(Tag):
     polygon = models.PolygonField(geography = True, blank=True, null=True)
