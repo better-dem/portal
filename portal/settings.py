@@ -145,13 +145,6 @@ STATICFILES_DIRS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-# S3 static file storage with django-storages
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
-AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
-STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-
 # s3direct options
 S3DIRECT_REGION = 'us-west-1'
 S3DIRECT_DESTINATIONS = {
@@ -161,6 +154,14 @@ S3DIRECT_DESTINATIONS = {
         'auth': lambda u: u.is_authenticated() 
     }
 }
+
+# S3 static file storage with django-storages
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
+AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
+AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+AWS_S3_HOST="s3-us-west-1.amazonaws.com"
 
 ### Settings for django registration
 ACCOUNT_ACTIVATION_DAYS=2
