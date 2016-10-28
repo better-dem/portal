@@ -11,7 +11,7 @@ def marco():
     sys.stdout.flush()
 
 @shared_task
-def insert_csv1(filename):
+def insert_csv1(small_test):
     filename = "/uploads/misc/tmp.csv"
     sys.stdout.write("Processing csv for file: "+str(filename)+"\n")
     i = 0
@@ -20,6 +20,8 @@ def insert_csv1(filename):
         reader = csv.reader(f, delimiter=",", quotechar='"')
         first_row = True
         for row in reader:
+            if small_test and i > 100:
+                break
             if i % 1000 == 0:
                 sys.stdout.write("Processing row "+str(i)+"\n")
 
