@@ -15,6 +15,9 @@ AWS_STORAGE_BUCKET_NAME=
 
 ## Setting up AWS static file storage and direct uploads
 
+ - Create a bucket
+ - add aws environment variables for a user that has full access to that bucket
+ - edit CORS configuration in bucket preferences to allow cross-site sharing with the app's url
 
 ## Setting up Redis
 
