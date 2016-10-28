@@ -30,9 +30,19 @@ automated. See circle.yml
 
 lots is automated, see portal/settings.py, core/models.py
 
+### GDAL:
+
+I use the heroku-geo-buildpack buildpack
+Its URL is: https://github.com/cyberdelia/heroku-geo-buildpack.git
+I manually set these buildacks from heroku, which seems to ignore app.json?
+ - At least for the review apps
+
+### Postgres:
+
 > heroku pg:psql --app [app name]
 >>> CREATE EXTENSION postgis;
 >>> [ctrl-D]
+
 
 ## Setting up geo tags
 
