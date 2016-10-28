@@ -1,6 +1,6 @@
 {% extends "core/base.html" %}
 {% block content%}
-<form action="{{ action_path }}" method="post">
+<form action="{{ action_path }}" {% if enctype_data %}enctype="multipart/form-data"{% endif %} method="post">
     {% csrf_token %}
     {{ form.media }}
     {% for field in form %}

@@ -1,12 +1,47 @@
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission, AnonymousUser
 from django.db.models import F
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 import core.models as cm
+import core.tasks as tasks
+from core.forms import UploadGeoTagset
 import sys
-import pkgutil
+from django.core.files.storage import default_storage
 
-from django.contrib.contenttypes.models import ContentType
+def tags(request):
+    tasks.marco.delay()
+    all_tags = cm.Tag.objects.all()
+    first_ten = all_tags[:10]
+    return HttpResponse("Number of tags: "+str(all_tags.distinct().count())+"\n"+"\n".join([i.get_name() for i in first_ten]))
+
+def test_geo(request):
+    from django.contrib.gis import gdal
+    return HttpResponse(str(gdal.HAS_GDAL))
+
+def upload_geo_tagset(request):
+    user = request.user
+    profile = user.userprofile
+
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in user.get_all_permissions():
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = UploadGeoTagset(request.POST, request.FILES)
+        if form.is_valid():
+            if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
+                tasks.insert_csv1.delay(form.cleaned_data["small_test"])
+                return HttpResponse("Ok, I'm processing this csv file. Thanks")
+            else:
+                return HttpResponse("Sorry, this format is not known")
+        else:
+            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
+    else:
+        form = UploadGeoTagset()
+        return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
+    
 
 def show_profile(request):
     cts = ContentType.objects.all()
@@ -86,3 +121,4 @@ def get_item_details(item, get_activity=False):
         ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
         ans["num_visits"] = item.visits
     return ans
+

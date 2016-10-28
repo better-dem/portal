@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     # http://whitenoise.evans.io/en/stable/django.html#using-whitenoise-in-development
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    # use the storages app
+    'storages',
+    's3direct'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -83,8 +86,8 @@ WSGI_APPLICATION = 'portal.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'portal',
     }
 }
 
@@ -112,9 +115,13 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Update database configuration with $DATABASE_URL.
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)
+## Update database configuration with $DATABASE_URL.
+# db_from_env = dj_database_url.config(conn_max_age=500)
+# DATABASES['default'].update(db_from_env)
+
+# trying to use GIS database. Sortof following instructions from https://devcenter.heroku.com/articles/postgis
+DATABASES['default'].update(dj_database_url.config())
+DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -138,11 +145,28 @@ STATICFILES_DIRS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
+# s3direct options
+S3DIRECT_REGION = 'us-west-1'
+S3DIRECT_DESTINATIONS = {
+    # destination specifically for uploading large administrative files
+    'csv_upload': {
+        'key': lambda original_filename: 'uploads/misc/tmp.csv',
+        'auth': lambda u: u.is_authenticated() 
+    }
+}
+
+# S3 static file storage with django-storages
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
+AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
+AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+AWS_S3_HOST="s3-us-west-1.amazonaws.com"
+
 ### Settings for django registration
 ACCOUNT_ACTIVATION_DAYS=2
 REGISTRATION_OPEN=True
 REGISTRATION_SALT="fd43*7uHJjh(*Jmnbyt5$Th"
-
 
 ### Email information loaded from environment variables
 EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
@@ -154,3 +178,8 @@ EMAIL_HOST_PASSWORD=os.environ["GMAIL_ACCOUNT_PASSWORD"]
 SERVER_EMAIL=os.environ["GMAIL_ACCOUNT_NAME"]
 DEFAULT_FROM_EMAIL="Better Dem Portal"
 
+### celery config vars
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+BROKER_URL = os.environ["REDIS_URL"]
