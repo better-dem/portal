@@ -32,7 +32,7 @@ def upload_geo_tagset(request):
         form = UploadGeoTagset(request.POST, request.FILES)
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
-                tasks.insert_csv1.delay(form.cleaned_data["data_file"])
+                tasks.insert_csv1.delay(form.cleaned_data["small_test"])
                 return HttpResponse("Ok, I'm processing this csv file. Thanks")
             else:
                 return HttpResponse("Sorry, this format is not known")

@@ -13,7 +13,23 @@ AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_STORAGE_BUCKET_NAME=
 
-## Setting up GIS database to run locally
+## Setting up AWS static file storage and direct uploads
+
+
+## Setting up Redis
+
+### Locally
+Install redis-server, the server has to run for background jobs to work.
+
+
+### On heroku
+Redis is one of the officially supported addons, add it on.
+
+
+
+## Setting up GIS 
+
+### GIS database to run locally
 
 Install postgresql, postgis, and spatialite:
 
@@ -22,11 +38,11 @@ sudo apt-get install postgresql-9.3 postgresql-9.3-postgis-2.1 spatialite-bin po
 Create portal database:
 > createdb portal
 
-## Setting up GIS database for CircleCI
+### Setting up GIS database for CircleCI
 
 automated. See circle.yml
 
-## Setting up GIS database for Heroku
+### Setting up GIS database for Heroku
 
 lots is automated, see portal/settings.py, core/models.py
 
@@ -44,7 +60,7 @@ I manually set these buildacks from heroku, which seems to ignore app.json?
 >>> [ctrl-D]
 
 
-## Setting up geo tags
+### Uploading up geo tags
 
 Requires us-cities which can be bought from uscitieslist.org
 
