@@ -8,7 +8,8 @@ https://docs.djangoproject.com/en/1.9/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
-
+from __future__ import absolute_import
+import celery.schedules
 import os
 import dj_database_url
 
@@ -178,8 +179,20 @@ EMAIL_HOST_PASSWORD=os.environ["GMAIL_ACCOUNT_PASSWORD"]
 SERVER_EMAIL=os.environ["GMAIL_ACCOUNT_NAME"]
 DEFAULT_FROM_EMAIL="Better Dem Portal"
 
-### celery config vars
+### celery config
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 BROKER_URL = os.environ["REDIS_URL"]
+
+# from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
+CELERYBEAT_SCHEDULE = {
+    'item-update': {
+        'task': 'core.tasks.item_update',
+        'schedule': celery.schedules.schedule(run_every=2)
+    },
+    'feed-update': {
+        'task': 'core.tasks.feed_update',
+        'schedule': celery.schedules.schedule(run_every=2)
+    },
+}

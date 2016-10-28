@@ -64,6 +64,7 @@ class ParticipationItem(models.Model):
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
     display_image_url = models.URLField(blank=True)
     visits = models.IntegerField(default=0)
+    tags = models.ManyToManyField('Tag')
 
     def get_inherited_instance(self):
         ans = self
@@ -75,6 +76,9 @@ class ParticipationItem(models.Model):
             else:
                 return ans
         raise Exception("unknown subclass type")
+
+    def get_relavent_tags(self):
+        raise Exception("get_relevant_tags() method needs to be implemented by all ParticipationItem subclasses.")
 
     def get_description(self):
         return self.name + " participation item"
@@ -89,6 +93,7 @@ class ParticipationItem(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
+    tags = models.ManyToManyField('Tag')
     
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)

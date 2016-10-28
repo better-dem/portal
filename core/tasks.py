@@ -4,6 +4,7 @@ import csv
 import sys
 from celery import shared_task
 from django.core.files.storage import default_storage
+import itertools
 
 @shared_task
 def marco():
@@ -47,4 +48,33 @@ def insert_csv1(small_test):
     sys.stdout.write("Done updating GeoTags\n")
     sys.stdout.write("Number of rows processed: "+str(i)+"\n")
     sys.stdout.write("Number of changes: "+str(num_changes)+"\n")
+    sys.stdout.flush()
+
+@shared_task
+def item_update():
+    apps = cm.get_registered_participation_apps()
+    num_items_created = 0
+    for app in apps:
+        project_model = cm.get_app_project_models(app)[0]
+        projects = project_model.objects.all()
+        for p in projects:
+            num_items_created += p.update_items()
+            
+    sys.stdout.write("number of items created: "+str(num_items_created))
+    sys.stdout.flush()
+
+@shared_task
+def feed_update():
+    items = cm.ParticipationItem.objects.all()
+    users = cm.User.objects.filter(is_active=True)
+    num_matches_created = 0
+    for (i, u) in itertools.product(items, users):
+        if cm.FeedMatch.objects.filter(participation_item=i, user_profile=u.userprofile).count()==0:
+            match = cm.FeedMatch()
+            match.user_profile = u.userprofile
+            match.participation_item = i
+            match.save()
+            num_matches_created += 1
+
+    sys.stdout.write("number of matches created: "+str(num_matches_created))
     sys.stdout.flush()
