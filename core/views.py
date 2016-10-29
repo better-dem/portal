@@ -15,10 +15,31 @@ def tags(request):
     ans = ""
     ans += "Number of tags: "+str(all_tags.distinct().count())+"<br>"
     ans += "<br>".join([i.get_name() for i in first_ten])+"<br>"
+
+    cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY)
+    ans += "<br>"
+    ans += "Number of cities:"+str(cities.count())+"<br>"
+    ans += "<br>".join([i.get_name() for i in cities[:10]])+"<br>"
+
     states = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.STATE_OR_PROVINCE)
     ans += "<br>"
     ans += "Number of states:"+str(states.count())+"<br>"
     ans += "<br>".join([i.get_name() for i in states[:10]])+"<br>"
+
+    countries = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.COUNTRY)
+    ans += "<br>"
+    ans += "Number of countries:"+str(countries.count())+"<br>"
+    ans += "<br>".join([i.get_name() for i in countries[:10]])+"<br>"
+
+    other = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.OTHER)
+    ans += "<br>"
+    ans += "Number of other types of geo-tag:"+str(other.count())+"<br>"
+    ans += "<br>".join([i.get_name() for i in other[:10]])+"<br>"
+
+    unk = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.UNKNOWN)
+    ans += "<br>"
+    ans += "Number of unknown geo-tags:"+str(unk.count())+"<br>"
+    ans += "<br>".join([i.get_name() for i in unk[:10]])+"<br>"
     return HttpResponse(ans)
 
 def test_geo(request):
