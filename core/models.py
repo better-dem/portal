@@ -77,8 +77,8 @@ class ParticipationItem(models.Model):
                 return ans
         raise Exception("unknown subclass type")
 
-    def get_relavent_tags(self):
-        raise Exception("get_relevant_tags() method needs to be implemented by all ParticipationItem subclasses.")
+    def set_relavent_tags(self):
+        raise Exception("set_relevant_tags() method needs to be implemented by all ParticipationItem subclasses.")
 
     def get_description(self):
         return self.name + " participation item"
@@ -116,6 +116,16 @@ class GeoTag(Tag):
     polygon_area = models.FloatField(blank = True, default=-1)
     point = models.PointField(geography = True, blank=True, null=True)
 
+    COUNTRY="CO"
+    STATE_OR_PROVINCE="SP"
+    CITY="CI"
+    OTHER="OT"
+    UNKNOWN="UN"
+
+    FEATURE_TYPE_CHOICES = ((COUNTRY, "Country"),(STATE_OR_PROVINCE, "State or Province"),(CITY, "City or town"),(OTHER, "Other"),(UNKNOWN, "Unknown"))
+
+    feature_type = models.CharField(max_length=2, choices=FEATURE_TYPE_CHOICES, default=UNKNOWN)
+
 ### Signal handling
 
 def create_user_profile(sender, instance, created, **kwargs):
@@ -125,11 +135,13 @@ def create_user_profile(sender, instance, created, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 
 
-def set_image(sender, instance, created, **kwargs):
+def process_new_item(sender, instance, created, **kwargs):
     if created:
+        # process display image
         instance.set_display_image()
         instance.save()
-    sys.stderr.flush()
+        # tag the item
+        instance.set_relevant_tags()
 
 def register_participation_item_subclass(cls):
-    post_save.connect(set_image, sender=cls)
+    post_save.connect(process_new_item, sender=cls)

@@ -150,8 +150,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 S3DIRECT_REGION = 'us-west-1'
 S3DIRECT_DESTINATIONS = {
     # destination specifically for uploading large administrative files
-    'csv_upload': {
-        'key': lambda original_filename: 'uploads/misc/tmp.csv',
+    'data_upload': {
+        'key': lambda original_filename: 'uploads/misc/tmp',
         'auth': lambda u: u.is_authenticated() 
     }
 }

@@ -18,4 +18,6 @@ class DummyItem(cm.ParticipationItem):
     def get_description(self):
         return self.name + "DUMMY participation item"
 
+    def set_relevant_tags(self):
+        self.tags.add(cm.GeoTag.get(name="United States of America"))
 

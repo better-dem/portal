@@ -10,16 +10,20 @@ import sys
 from django.core.files.storage import default_storage
 
 def tags(request):
-    tasks.marco.delay()
     all_tags = cm.Tag.objects.all()
     first_ten = all_tags[:10]
-    return HttpResponse("Number of tags: "+str(all_tags.distinct().count())+"\n"+"\n".join([i.get_name() for i in first_ten]))
+    ans = ""
+    ans += "Number of tags: "+str(all_tags.distinct().count())+"<br>"+"<br>".join([i.get_name() for i in first_ten])+"<br>"
+    states = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.STATE_OR_PROVINCE)
+
+    ans += "Number of states:"+str(states.count())+"<br>"
+    return HttpResponse(ans)
 
 def test_geo(request):
     from django.contrib.gis import gdal
     return HttpResponse(str(gdal.HAS_GDAL))
 
-def upload_geo_tagset(request):
+def upload_dataset(request):
     user = request.user
     profile = user.userprofile
 
@@ -32,7 +36,10 @@ def upload_geo_tagset(request):
         form = UploadGeoTagset(request.POST, request.FILES)
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
-                tasks.insert_csv1.delay(form.cleaned_data["small_test"])
+                tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"])
+                return HttpResponse("Ok, I'm processing this csv file. Thanks")
+            elif form.cleaned_data["format_id"] == "usa_and_states_v0":
+                tasks.insert_usa_and_states.delay(form.cleaned_data["small_test"])
                 return HttpResponse("Ok, I'm processing this csv file. Thanks")
             else:
                 return HttpResponse("Sorry, this format is not known")
