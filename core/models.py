@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 from django.contrib.gis.db import models
 from django.db import transaction
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
@@ -61,6 +61,7 @@ class ParticipationProject(models.Model):
 
 class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)
+    creation_time = models.DateTimeField(auto_now_add=True)
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
     display_image_url = models.URLField(blank=True)
     visits = models.IntegerField(default=0)
@@ -130,10 +131,12 @@ class GeoTag(Tag):
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
+        new_profile = UserProfile()
+        new_profile.user = instance
+        new_profile.save()
+        new_profile.tags.add(GeoTag.objects.get(name="United States of America"))
 
 post_save.connect(create_user_profile, sender=User)
-
 
 def process_new_item(sender, instance, created, **kwargs):
     if created:
@@ -145,3 +148,4 @@ def process_new_item(sender, instance, created, **kwargs):
 
 def register_participation_item_subclass(cls):
     post_save.connect(process_new_item, sender=cls)
+

@@ -191,8 +191,8 @@ CELERYBEAT_SCHEDULE = {
         'task': 'core.tasks.item_update',
         'schedule': celery.schedules.schedule(run_every=2)
     },
-    'feed-update': {
-        'task': 'core.tasks.feed_update',
-        'schedule': celery.schedules.schedule(run_every=2)
-    },
+    # 'feed-update': {
+    #     'task': 'core.tasks.feed_update',
+    #     'schedule': celery.schedules.schedule(run_every=2)
+    # },
 }

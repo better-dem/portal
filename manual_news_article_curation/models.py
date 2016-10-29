@@ -19,8 +19,8 @@ class ManualNewsCurationProject(cm.ParticipationProject):
             item.name = self.name
             item.participation_project = self
             item.save()
-            return 1
-        return 0
+            return set([item.id])
+        return set()
 
 class NewsArticleItem(cm.ParticipationItem):
     def get_description(self):
@@ -35,4 +35,4 @@ class NewsArticleItem(cm.ParticipationItem):
 
     def set_relevant_tags(self):
         # i should do some NLP or something...
-        self.tags.add(cm.GeoTag.get(name="United States of America"))
+        self.tags.add(cm.GeoTag.objects.get(name="United States of America"))

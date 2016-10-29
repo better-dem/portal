@@ -2,6 +2,11 @@
 {% block content %}
 <h2>Profile for {{ user.username }}</h2>
 
+<p>
+    <a href="/update_tags">Edit your tags</a>
+</p>
+
+
 {% for app in profile_apps %}
 <div class="panel panel-default">
     <div class="panel-heading">{{ app.label }}</div>
