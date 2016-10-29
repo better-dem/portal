@@ -11,13 +11,13 @@ class DummyProject(cm.ParticipationProject):
             item.name = self.name
             item.participation_project = self
             item.save()
-            return 1
-        return 0
+            return set([item.id])
+        return set()
 
 class DummyItem(cm.ParticipationItem):
     def get_description(self):
         return self.name + "DUMMY participation item"
 
     def set_relevant_tags(self):
-        self.tags.add(cm.GeoTag.get(name="United States of America"))
+        self.tags.add(cm.GeoTag.objects.get(name="United States of America"))
 

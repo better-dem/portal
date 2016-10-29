@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 import core.models as cm
 import core.tasks as tasks
-from core.forms import UploadGeoTagset
+from core.forms import UploadGeoTagset, AddTagForm
 import sys
 from django.core.files.storage import default_storage
 
@@ -74,8 +74,6 @@ def upload_dataset(request):
     
 
 def show_profile(request):
-    cts = ContentType.objects.all()
-
     user = request.user
     profile = user.userprofile
 
@@ -101,6 +99,28 @@ def show_profile(request):
         profile_apps.append(profile_app)
 
     return render(request, 'core/profile.html', {'profile_apps': profile_apps})
+
+def update_profile_tags(request):
+    user = request.user
+    profile = user.userprofile
+
+    if request.method == 'POST':
+        form = AddTagForm(request.POST)
+        if form.is_valid():
+            try:
+                tag = cm.Tag.objects.get(name=form.cleaned_data["place_name"])
+            except:
+                return HttpResponse("Sorry, there isn't exactly one tag with this name")
+            else:
+                profile.tags.add(tag)
+                tasks.feed_update_by_user_profile.delay(profile.id)
+                return HttpResponse("Ok, I added "+tag.get_name()+" to your profile")
+        else:
+            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
+    else:
+        form = AddTagForm()
+        return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
+    
 
 def app_view_relay(request, app_name, action_name, project_id, item_id):
     user = request.user
@@ -138,6 +158,7 @@ def feed(request):
         profile = user.userprofile
         recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
         items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
+        tasks.feed_update_by_user_profile.delay(profile.id)
 
     return render(request, 'core/feed.html', {'items':items})
 

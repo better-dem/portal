@@ -100,20 +100,52 @@ def item_update():
         project_model = cm.get_app_project_models(app)[0]
         projects = project_model.objects.all()
         for p in projects:
-            num_items_created += p.update_items()
+            item_ids = p.update_items()
+            for item_id in item_ids:
+                i = cm.ParticipationItem.objects.get(pk=item_id)
+                for t in i.tags.all():
+                    feed_update_by_tag.delay(t.id)
+            num_items_created += len(item_ids)
             
     sys.stdout.write("number of items created: "+str(num_items_created))
     sys.stdout.flush()
 
 @shared_task
-def feed_update():
-    items = cm.ParticipationItem.objects.all()
-    users = cm.User.objects.filter(is_active=True)
+def feed_update_by_user_profile(profile_id):
+    """
+    Update feed relative to some user
+    """
+    sys.stdout.write("updating feed for user: "+str(profile_id)+"\n")
+    sys.stdout.flush()
+    profile = cm.UserProfile.objects.get(pk=profile_id)
+    for tag in profile.tags.all():
+        feed_update_by_tag.delay(tag.id, limit_user_profile=profile_id)
+
+
+@shared_task
+def feed_update_by_tag(tag_id, limit_user_profile=None):
+    """
+    Update feed relative to some tag
+    """
+    limit_logstr = ""
+    if not limit_user_profile is None:
+        limit_logstr = "limit to user: "+str(limit_user_profile)
+    sys.stdout.write("updating feed by tag: "+str(tag_id)+limit_logstr+" \n")
+    sys.stdout.flush()
+    t = cm.Tag.objects.get(pk=tag_id)
+    recent_items = t.participationitem_set.order_by('-creation_time')[:100]
+    user_profiles = None
+    if limit_user_profile is None:
+        user_profiles = t.userprofile_set.all()
+    else:
+        user_profiles = [cm.UserProfile.objects.get(pk=limit_user_profile)]
+
     num_matches_created = 0
-    for (i, u) in itertools.product(items, users):
-        if cm.FeedMatch.objects.filter(participation_item=i, user_profile=u.userprofile).count()==0:
+
+    for (i, p) in itertools.product(recent_items, user_profiles):
+        if cm.FeedMatch.objects.filter(participation_item=i, user_profile=p).count()==0:
             match = cm.FeedMatch()
-            match.user_profile = u.userprofile
+            match.user_profile = p
             match.participation_item = i
             match.save()
             num_matches_created += 1
