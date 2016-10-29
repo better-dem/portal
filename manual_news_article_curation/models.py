@@ -32,3 +32,7 @@ class NewsArticleItem(cm.ParticipationItem):
                 self.display_image_url = org_logos[org]
                 return
         self.display_image_url = 'manual_news_article_curation/img/default.png'
+
+    def set_relevant_tags(self):
+        # i should do some NLP or something...
+        self.tags.add(cm.GeoTag.get(name="United States of America"))

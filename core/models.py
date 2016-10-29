@@ -64,6 +64,7 @@ class ParticipationItem(models.Model):
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
     display_image_url = models.URLField(blank=True)
     visits = models.IntegerField(default=0)
+    tags = models.ManyToManyField('Tag')
 
     def get_inherited_instance(self):
         ans = self
@@ -75,6 +76,9 @@ class ParticipationItem(models.Model):
             else:
                 return ans
         raise Exception("unknown subclass type")
+
+    def set_relavent_tags(self):
+        raise Exception("set_relevant_tags() method needs to be implemented by all ParticipationItem subclasses.")
 
     def get_description(self):
         return self.name + " participation item"
@@ -89,6 +93,7 @@ class ParticipationItem(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
+    tags = models.ManyToManyField('Tag')
     
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
@@ -103,13 +108,23 @@ class Tag(models.Model):
 
     def get_name(self):
         if not self.detail is None:
-            return self.name + "," + self.detail
+            return self.name + ", " + self.detail
         return self.name
 
 class GeoTag(Tag):
     polygon = models.PolygonField(geography = True, blank=True, null=True)
     polygon_area = models.FloatField(blank = True, default=-1)
     point = models.PointField(geography = True, blank=True, null=True)
+
+    COUNTRY="CO"
+    STATE_OR_PROVINCE="SP"
+    CITY="CI"
+    OTHER="OT"
+    UNKNOWN="UN"
+
+    FEATURE_TYPE_CHOICES = ((COUNTRY, "Country"),(STATE_OR_PROVINCE, "State or Province"),(CITY, "City or town"),(OTHER, "Other"),(UNKNOWN, "Unknown"))
+
+    feature_type = models.CharField(max_length=2, choices=FEATURE_TYPE_CHOICES, default=UNKNOWN)
 
 ### Signal handling
 
@@ -120,11 +135,13 @@ def create_user_profile(sender, instance, created, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 
 
-def set_image(sender, instance, created, **kwargs):
+def process_new_item(sender, instance, created, **kwargs):
     if created:
+        # process display image
         instance.set_display_image()
         instance.save()
-    sys.stderr.flush()
+        # tag the item
+        instance.set_relevant_tags()
 
 def register_participation_item_subclass(cls):
-    post_save.connect(set_image, sender=cls)
+    post_save.connect(process_new_item, sender=cls)
