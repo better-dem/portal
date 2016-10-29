@@ -108,7 +108,7 @@ class Tag(models.Model):
 
     def get_name(self):
         if not self.detail is None:
-            return self.name + "," + self.detail
+            return self.name + ", " + self.detail
         return self.name
 
 class GeoTag(Tag):

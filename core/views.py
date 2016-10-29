@@ -13,10 +13,12 @@ def tags(request):
     all_tags = cm.Tag.objects.all()
     first_ten = all_tags[:10]
     ans = ""
-    ans += "Number of tags: "+str(all_tags.distinct().count())+"<br>"+"<br>".join([i.get_name() for i in first_ten])+"<br>"
+    ans += "Number of tags: "+str(all_tags.distinct().count())+"<br>"
+    ans += "<br>".join([i.get_name() for i in first_ten])+"<br>"
     states = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.STATE_OR_PROVINCE)
-
+    ans += "<br>"
     ans += "Number of states:"+str(states.count())+"<br>"
+    ans += "<br>".join([i.get_name() for i in states[:10]])+"<br>"
     return HttpResponse(ans)
 
 def test_geo(request):
