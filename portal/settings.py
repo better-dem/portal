@@ -1,13 +1,3 @@
-"""
-Django settings for portal project on Heroku. Fore more info, see:
-https://github.com/heroku/heroku-django-template
-
-For more information on this file, see
-https://docs.djangoproject.com/en/1.9/topics/settings/
-
-For the full list of settings and their values, see
-https://docs.djangoproject.com/en/1.9/ref/settings/
-"""
 from __future__ import absolute_import
 import celery.schedules
 import os
@@ -33,6 +23,8 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'dummy_participation_project.apps.DummyParticipationProjectConfig',
     'manual_news_article_curation.apps.ManualNewsArticleCurationConfig',
+    'land_use_planning.apps.LandUsePlanningConfig',
+    'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

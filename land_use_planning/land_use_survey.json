@@ -1,0 +1,221 @@
+[
+{
+    "model": "survey.feedbackgoal",
+    "pk": 1,
+    "fields": {
+        "name": "Demographics",
+        "description": "Obtain demographics: Selecting this option will cause relevant survey questions to be displayed"
+    }
+},
+{
+    "model": "survey.feedbackgoal",
+    "pk": 2,
+    "fields": {
+        "name": "Housing Lifestyle",
+        "description": "Obtain housing lifestyle information: Selecting this option will cause relevant survey questions to be displayed"
+    }
+},
+{
+    "model": "survey.feedbackgoal",
+    "pk": 3,
+    "fields": {
+        "name": "Transportation Lifestyle",
+        "description": "Obtain transportation lifestyle information: Selecting this option will cause relevant survey questions to be displayed"
+    }
+},
+{
+    "model": "survey.feedbackgoal",
+    "pk": 4,
+    "fields": {
+        "name": "Aesthetics",
+        "description": "Obtain aesthetic preferences: Selecting this option will cause relevant survey questions to be displayed"
+    }
+},
+{
+    "model": "survey.feedbackgoal",
+    "pk": 5,
+    "fields": {
+        "name": "Transportation",
+        "description": "Obtain transportation preferences: Selecting this option will cause relevant survey questions to be displayed"
+    }
+},
+{
+    "model": "survey.feedbackgoal",
+    "pk": 6,
+    "fields": {
+        "name": "Environment",
+        "description": "Obtain environmental priorities: Selecting this option will cause relevant survey questions to be displayed"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 1,
+    "fields": {
+        "feedback_goal": 1,
+        "question_text": "Please enter your age range"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 1,
+    "fields": {
+        "option1": "< 18",
+        "option2": "18-25",
+        "option3": "25-35",
+        "option4": "35-50",
+        "option5": "> 50"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 2,
+    "fields": {
+        "feedback_goal": 1,
+        "question_text": "Please enter your gender"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 2,
+    "fields": {
+        "option1": "male",
+        "option2": "female",
+        "option3": "",
+        "option4": "",
+        "option5": ""
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 3,
+    "fields": {
+        "feedback_goal": 1,
+        "question_text": "How often do you participate in government affairs (this includes voting, and filling out this survey)?"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 3,
+    "fields": {
+        "option1": "never",
+        "option2": "every four years",
+        "option3": "every year",
+        "option4": "every month",
+        "option5": "most days"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 4,
+    "fields": {
+        "feedback_goal": 2,
+        "question_text": "Describe your housing situation"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 4,
+    "fields": {
+        "option1": "own a home",
+        "option2": "own a condo",
+        "option3": "renting a house",
+        "option4": "renting apartment or dormitory",
+        "option5": "homeless"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 5,
+    "fields": {
+        "feedback_goal": 2,
+        "question_text": "How many people do you live with?"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 5,
+    "fields": {
+        "option1": "0",
+        "option2": "1",
+        "option3": "2-4",
+        "option4": "5-6",
+        "option5": "> 6"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 6,
+    "fields": {
+        "feedback_goal": 3,
+        "question_text": "What is your primary mode of transportation?"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 6,
+    "fields": {
+        "option1": "car (owned or rented)",
+        "option2": "car (rideshare service such as Uber or Lyft)",
+        "option3": "bicycle",
+        "option4": "walking",
+        "option5": "public transportation"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 7,
+    "fields": {
+        "feedback_goal": 4,
+        "question_text": "What sort of new housing do you most want to see built?"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 7,
+    "fields": {
+        "option1": "high-density (dense apartment buildings)",
+        "option2": "medium-density (spacious apartment buildings)",
+        "option3": "low density (houses)",
+        "option4": "",
+        "option5": ""
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 8,
+    "fields": {
+        "feedback_goal": 5,
+        "question_text": "What sort of transportation improvements do you most want to see built?"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 8,
+    "fields": {
+        "option1": "more frequent buses",
+        "option2": "more / safer bike lanes and paths",
+        "option3": "more light rail stops",
+        "option4": "fewer potholes",
+        "option5": "more carpool lanes"
+    }
+},
+{
+    "model": "survey.question",
+    "pk": 9,
+    "fields": {
+        "feedback_goal": 6,
+        "question_text": "Which of these environmental issues is more of a problem to you in your daily life?"
+    }
+},
+{
+    "model": "survey.tmcq",
+    "pk": 9,
+    "fields": {
+        "option1": "smog and air pollution",
+        "option2": "litter",
+        "option3": "lack of grass and open space",
+        "option4": "ongoing construction",
+        "option5": ""
+    }
+}
+]

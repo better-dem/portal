@@ -1,0 +1,21 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>Google Maps Polygon Coordinates Tool</title>
+    <link rel="stylesheet" href="{% static "css/poly_style.css" %}">  
+  </head>
+
+
+  <body>
+    <div class="map_widget" id="poly-map"></div>
+    <!-- <script src='https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false'></script>-->
+    <script type="text/javascript" src="{% static "js/demo_poly_draw.js" %}"></script>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key={{ api_key }}&callback=initMap">
+    </script>
+  </body>
+</html>
+  

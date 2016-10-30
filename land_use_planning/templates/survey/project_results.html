@@ -1,0 +1,21 @@
+{% extends "survey/base.html" %}
+{% block content %}
+<h2>Survey Results</h2>
+<p>
+    Number of responses: {{ num_responses }}
+</p>
+
+{% for question_summary in question_summaries %}
+<p>
+    <h3>{{ question_summary.label }}</h3>
+    <table class="table">
+	<thead><th>Response</th><th>Count</th></thead>
+	<tbody>
+	    {% for answer in question_summary.answers %}
+	    <tr><td>{{ answer.0 }}</td><td>{{ answer.1 }}</td></tr>	    
+	    {% endfor %}
+	</tbody>
+    </table>
+</p>
+{% endfor %}
+{% endblock %}

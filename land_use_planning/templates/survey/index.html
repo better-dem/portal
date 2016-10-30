@@ -1,0 +1,71 @@
+{% extends "survey/base.html" %}
+{% block content%}
+
+<h3>Welcome</h3>
+<p>
+    We are currently hosting {{ num_projects }} projects and have received {{ num_responses }} responses.
+</p>
+
+
+<div class="panel-group" id="accordion">
+    <div class="panel panel-default">
+	<div class="panel-heading">
+            <h4 class="panel-title">
+		<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Citizens</a>
+            </h4>
+	</div>
+	<div id="collapse1" class="panel-collapse collapse">
+            <div class="panel-body">
+
+		<p>
+		    Give your feedback to a planning project:<br>
+		    Project ID: <input type="text" id="project_id" onkeydown = "if (event.keyCode == 13) document.getElementById('give_feedback_button').click()"><br>
+		</p>
+		<p>
+		    <input type="button" id="give_feedback_button" class="btn btn-info" value="Give Feedback" onclick="window.location.href='/project_response/'+document.getElementById('project_id').value">
+		</p>
+		
+	    </div>
+	</div>
+    </div>
+
+    <div class="panel panel-default">
+	<div class="panel-heading">
+            <h4 class="panel-title">
+		<a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Administrators</a>
+            </h4>
+	</div>
+	<div id="collapse2" class="panel-collapse collapse">
+            <div class="panel-body">
+
+		<p>
+		    Create a new Land Use Planning Outreach Project:<br>
+		    <a href="/create_project" class="btn btn-info" role="button">New Project</a>
+		</p>
+    
+		<p>
+		    Administer an Existing Project:<br>
+		    Project ID: <input type="text" id="admin_project_id" onkeydown = "if (event.keyCode == 13) document.getElementById('administer_project_button').click()"><br>
+		</p>
+		<p>
+		    <input type="button" id="administer_project_button" class="btn btn-info" value="Administer Project" onclick="window.location.href='/show_project/'+document.getElementById('admin_project_id').value">
+		</p>
+
+	    </div>
+	</div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+    
+
+
+
+	
+{% endblock %}

@@ -2,68 +2,75 @@
 
 Created using the [Heroku django starter template](https://github.com/heroku/heroku-django-template/)
 
-## Environment Variables
+## Contributing to this Project
+
+### Creating New Participation Apps
+
+## Running The App
+
+### Environment Variables
 
 DJANGO_SECRET_KEY=
 DJANGO_DEBUG_STATE=
 GMAIL_ACCOUNT_NAME=
 GMAIL_ACCOUNT_PASSWORD=
+GOOGLE_MAPS_API_KEY=
 REDIS_URL=
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_STORAGE_BUCKET_NAME=
 
-## Setting up AWS static file storage and direct uploads
+### Setting up AWS static file storage and direct uploads
 
  - Create a bucket
  - add aws environment variables for a user that has full access to that bucket
  - edit CORS configuration in bucket preferences to allow cross-site sharing with the app's url
 
-## Setting up Redis
+### Setting up Redis
 
-### Locally
+#### Locally
 Install redis-server, the server has to run for background jobs to work.
 
 
-### On heroku
+#### On heroku
 Redis is one of the officially supported addons, add it on.
 
 
 
-## Setting up GIS 
+### Setting up GIS 
 
-### GIS database to run locally
+#### GIS database to run locally
 
 Install postgresql, postgis, and spatialite:
 
-sudo apt-get install postgresql-9.3 postgresql-9.3-postgis-2.1 spatialite-bin postgresql-server-dev-9.3 python-psycopg2
+> sudo apt-get install postgresql-9.3 postgresql-9.3-postgis-2.1 spatialite-bin postgresql-server-dev-9.3 python-psycopg2
 
 Create portal database:
 > createdb portal
 
-### Setting up GIS database for CircleCI
+#### Setting up GIS database for CircleCI
 
 automated. See circle.yml
 
-### Setting up GIS database for Heroku
+#### Setting up GIS database for Heroku
 
 lots is automated, see portal/settings.py, core/models.py
 
-### GDAL:
+#### GDAL:
 
 I use the heroku-geo-buildpack buildpack
 Its URL is: https://github.com/cyberdelia/heroku-geo-buildpack.git
 I manually set these buildacks from heroku, which seems to ignore app.json?
  - At least for the review apps
 
-### Postgres:
+#### Postgres:
 
 > heroku pg:psql --app [app name]
 >>> CREATE EXTENSION postgis;
 >>> [ctrl-D]
 
 
-### Uploading up geo tags
+#### Uploading up geo tags
 
 Requires us-cities which can be bought from uscitieslist.org
 
