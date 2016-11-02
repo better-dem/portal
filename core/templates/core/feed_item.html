@@ -12,4 +12,6 @@
 	{% endif %}
 	{{ item.description }}
     </div>
+    <div class="panel-footer">{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span>
+{% endfor %}</div>
 </div>

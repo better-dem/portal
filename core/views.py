@@ -165,7 +165,7 @@ def feed(request):
 def get_item_details(item, get_activity=False):
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
-    ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(project_id)+"/"+str(item.pk)}
+    ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(project_id)+"/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]]}
     if not item.display_image_url == "":
         ans["display_image_url"] = item.display_image_url
     if get_activity:
