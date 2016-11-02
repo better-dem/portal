@@ -2,6 +2,9 @@ from __future__ import unicode_literals
 from django.contrib.gis.db import models
 from core import models as cm
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.measure import D
+from django.contrib.gis.db.models.functions import Distance
+import sys
 
 class LandUseProject(cm.ParticipationProject):
     feedback_goals = models.ManyToManyField('FeedbackGoal')
@@ -23,6 +26,17 @@ class LandUseProject(cm.ParticipationProject):
             return set([item.id])
         return set()
 
+    def polygon_for_google(self):
+        # swap lat/lon indices (Google does lat,lon, which nobody else does)
+        # remove the last item, postGIS requires a closed ring, google doesn't
+        coords = [c for c in self.polygon[0]]
+        # eliminate the last point, which closes the ring
+        coords = coords[:-1]
+        # swap indices, turn into an array, not tuple
+        coords = [[c[1], c[0]] for c in coords]
+        return coords
+        
+
 class LandUseParticipationItem(cm.ParticipationItem):
     def get_description(self):
         ans = "Land use planning project"
@@ -35,8 +49,21 @@ class LandUseParticipationItem(cm.ParticipationItem):
 
     def set_relevant_tags(self):
         pnt = GEOSGeometry(self.participation_project.polygon).centroid
-        nearest_cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY).distance(pnt).order_by('distance')[:1]
-        self.tags.update(nearest_cities[:1])
+        search_radius_m = 50000  # meters?
+        # nearest_cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY).distance(pnt).order_by('distance')[:1]
+
+        sys.stderr.write("looking for all points...\n")
+        sys.stderr.flush()
+        all_points = cm.GeoTag.objects.exclude(point__isnull=True).filter(point__distance_lte=(pnt, D(m=search_radius_m)))
+        sys.stderr.write("Number of points..."+str(all_points.count())+"\n")
+        sys.stderr.write("looking for nearby cities...\n")
+        sys.stderr.flush()
+        nearest_cities = cm.GeoTag.objects.filter(point__distance_lte=(pnt, D(m=search_radius_m))).annotate(distance=Distance('point', pnt)).order_by('distance')
+        sys.stderr.write("found nearby cities\n")
+        sys.stderr.write("cities: "+str([x.get_name() for x in nearest_cities])+"\n")
+        sys.stderr.flush()
+        self.tags.add(*nearest_cities[:1])
+
 
 class ItemResponse(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)

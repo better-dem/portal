@@ -17,7 +17,9 @@ def new_project(request):
         if form.is_valid():
             project = LandUseProject()
             project.name = form.cleaned_data["project_name"]
-            poly_data = [(x[0], x[1]) for x in form.cleaned_data["polygon_field"]]
+            # !!! Warning, Google lists geo data lat,lon.
+            # everyone else, including better dem portal, does lon, lat
+            poly_data = [(x[1], x[0]) for x in form.cleaned_data["polygon_field"]]
             poly_data.append(poly_data[0]) # polygon must be instantiated with a closed ring
             sys.stderr.write(str(poly_data)+"\n")
             sys.stderr.flush()

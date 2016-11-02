@@ -17,7 +17,7 @@ class CreateProjectForm(forms.Form):
 class ItemResponseForm(forms.Form):
     def __init__(self, project, *args, **kwargs):
         super(ItemResponseForm, self).__init__(*args, **kwargs)
-        self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=project.polygon_coords)
+        self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=project.polygon_for_google())
 
         ans = project.name+ ":"
         for question in project.get_questions():
