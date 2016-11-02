@@ -188,18 +188,18 @@ class EditablePolygonField(forms.Field):
 
 
 
-
-
-
-
-
-
 class AjaxStringLookupWidget(forms.Widget):
     """
     Widget for a string lookup with suggestions
     """
     class Media:
+
+        # css = {
+        #     'all' : ("//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",)
+        # }
+
         js = ("https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
+              "js/jquery.autocomplete.min.js",
               "js/setup_ajax.js",
               "js/ajax_string_lookup.js",)
         
@@ -207,21 +207,20 @@ class AjaxStringLookupWidget(forms.Widget):
         div_id = 'ajax_text_field_' + kwargs['attrs']['id']
         input_name = name
         input_id = kwargs['attrs']['id']
+        sys.stderr.write("input id:"+str(input_id)+"\n")
+        sys.stderr.flush()
         if value is None:
             value = 'null'
 
-        render_html = "<input type='text' name='"+input_name+"' id='"+input_id+"' value='' />"
-        render_html += '<script type="text/javascript">'
-        render_html += "var data_"+input_name+"=[];"
-        render_html += "var set_data_"+input_name+" = function(new_val) {data_"+input_name+"=new_val;}"
-        render_html += '$("#'+input_id+'").change(function () {$.post("/autocomplete/", $("#'+input_id+'").val(), set_data_'+input_name+')}, 500);'
-        render_html += '$("#'+input_id+'").autocomplete(data_'+input_name+');'
-        render_html += "</script>"
+        render_html = "<input type='text' name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
+        render_html += '<script type="text/javascript">\n'
+        render_html += "attach_ajax_string_listener(\""+str(input_id)+"\")\n"
+        render_html += "</script>\n"
 
         return render_html
 
     def __init__(self, *args, **kwargs):
-        super(EditablePolygonWidget, self).__init__(*args, **kwargs)
+        super(AjaxStringLookupWidget, self).__init__(*args, **kwargs)
 
 
 
@@ -268,9 +267,10 @@ class AjaxStringLookupField(forms.Field):
 
 class SimpleTestWidgetForm(forms.Form):
     widget_a = forms.CharField(max_length=100)
-    widget_b = forms.CharField(max_length=100)
-    editable_polygon_field = EditablePolygonField(label="Test Polygon Field")
-    # editable_polygon_field_2 = EditablePolygonField(label="Test Polygon Field 2")
-    polygon_field = ShowPolygonField(label="Test Polygon Field", initial="[[1.0,2.0],[4.0,5.0],[7.0,1.0]]")
-    # polygon_field2 = ShowPolygonField(label="Test Polygon Field", initial="[[11.0,2.0],[41.0,5.0],[-7.0,1.0]]")
+    widget_b = AjaxStringLookupField()
+    # widget_b = forms.CharField(max_length=100)
+    # editable_polygon_field = EditablePolygonField(label="Test Polygon Field")
+    # # editable_polygon_field_2 = EditablePolygonField(label="Test Polygon Field 2")
+    # polygon_field = ShowPolygonField(label="Test Polygon Field", initial="[[1.0,2.0],[4.0,5.0],[7.0,1.0]]")
+    # # polygon_field2 = ShowPolygonField(label="Test Polygon Field", initial="[[11.0,2.0],[41.0,5.0],[-7.0,1.0]]")
 
