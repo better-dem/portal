@@ -1,54 +1,54 @@
 [
 {
-    "model": "survey.feedbackgoal",
+    "model": "land_use_planning.feedbackgoal",
     "pk": 1,
     "fields": {
         "name": "Demographics",
-        "description": "Obtain demographics: Selecting this option will cause relevant survey questions to be displayed"
+        "description": "Obtain demographics: Selecting this option will cause relevant land_use_planning questions to be displayed"
     }
 },
 {
-    "model": "survey.feedbackgoal",
+    "model": "land_use_planning.feedbackgoal",
     "pk": 2,
     "fields": {
         "name": "Housing Lifestyle",
-        "description": "Obtain housing lifestyle information: Selecting this option will cause relevant survey questions to be displayed"
+        "description": "Obtain housing lifestyle information: Selecting this option will cause relevant land_use_planning questions to be displayed"
     }
 },
 {
-    "model": "survey.feedbackgoal",
+    "model": "land_use_planning.feedbackgoal",
     "pk": 3,
     "fields": {
         "name": "Transportation Lifestyle",
-        "description": "Obtain transportation lifestyle information: Selecting this option will cause relevant survey questions to be displayed"
+        "description": "Obtain transportation lifestyle information: Selecting this option will cause relevant land_use_planning questions to be displayed"
     }
 },
 {
-    "model": "survey.feedbackgoal",
+    "model": "land_use_planning.feedbackgoal",
     "pk": 4,
     "fields": {
         "name": "Aesthetics",
-        "description": "Obtain aesthetic preferences: Selecting this option will cause relevant survey questions to be displayed"
+        "description": "Obtain aesthetic preferences: Selecting this option will cause relevant land_use_planning questions to be displayed"
     }
 },
 {
-    "model": "survey.feedbackgoal",
+    "model": "land_use_planning.feedbackgoal",
     "pk": 5,
     "fields": {
         "name": "Transportation",
-        "description": "Obtain transportation preferences: Selecting this option will cause relevant survey questions to be displayed"
+        "description": "Obtain transportation preferences: Selecting this option will cause relevant land_use_planning questions to be displayed"
     }
 },
 {
-    "model": "survey.feedbackgoal",
+    "model": "land_use_planning.feedbackgoal",
     "pk": 6,
     "fields": {
         "name": "Environment",
-        "description": "Obtain environmental priorities: Selecting this option will cause relevant survey questions to be displayed"
+        "description": "Obtain environmental priorities: Selecting this option will cause relevant land_use_planning questions to be displayed"
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 1,
     "fields": {
         "feedback_goal": 1,
@@ -56,7 +56,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 1,
     "fields": {
         "option1": "< 18",
@@ -67,7 +67,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 2,
     "fields": {
         "feedback_goal": 1,
@@ -75,7 +75,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 2,
     "fields": {
         "option1": "male",
@@ -86,15 +86,15 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 3,
     "fields": {
         "feedback_goal": 1,
-        "question_text": "How often do you participate in government affairs (this includes voting, and filling out this survey)?"
+        "question_text": "How often do you participate in government affairs (this includes voting, and filling out this land_use_planning)?"
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 3,
     "fields": {
         "option1": "never",
@@ -105,7 +105,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 4,
     "fields": {
         "feedback_goal": 2,
@@ -113,7 +113,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 4,
     "fields": {
         "option1": "own a home",
@@ -124,7 +124,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 5,
     "fields": {
         "feedback_goal": 2,
@@ -132,7 +132,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 5,
     "fields": {
         "option1": "0",
@@ -143,7 +143,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 6,
     "fields": {
         "feedback_goal": 3,
@@ -151,7 +151,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 6,
     "fields": {
         "option1": "car (owned or rented)",
@@ -162,7 +162,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 7,
     "fields": {
         "feedback_goal": 4,
@@ -170,7 +170,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 7,
     "fields": {
         "option1": "high-density (dense apartment buildings)",
@@ -181,7 +181,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 8,
     "fields": {
         "feedback_goal": 5,
@@ -189,7 +189,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 8,
     "fields": {
         "option1": "more frequent buses",
@@ -200,7 +200,7 @@
     }
 },
 {
-    "model": "survey.question",
+    "model": "land_use_planning.question",
     "pk": 9,
     "fields": {
         "feedback_goal": 6,
@@ -208,7 +208,7 @@
     }
 },
 {
-    "model": "survey.tmcq",
+    "model": "land_use_planning.tmcq",
     "pk": 9,
     "fields": {
         "option1": "smog and air pollution",

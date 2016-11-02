@@ -35,7 +35,7 @@ class LandUseParticipationItem(cm.ParticipationItem):
 
     def set_relevant_tags(self):
         pnt = GEOSGeometry(self.participation_project.polygon).centroid
-        nearest_cities = cm.GeoTag.objects.filter(feature_type==cm.GeoTag.CITY).distance(pnt).order_by('distance')[:1]
+        nearest_cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY).distance(pnt).order_by('distance')[:1]
         self.tags.update(nearest_cities[:1])
 
 class ItemResponse(models.Model):

@@ -1,11 +1,12 @@
-{% extends "survey/base.html" %}
-{% block content %}
+{% extends "core/generic_project_stats.html" %}
+{% block item_detail %}
+
 <h2>Survey Results</h2>
 <p>
-    Number of responses: {{ num_responses }}
+    Number of responses: {{ item.num_responses }}
 </p>
 
-{% for question_summary in question_summaries %}
+{% for question_summary in item.question_summaries %}
 <p>
     <h3>{{ question_summary.label }}</h3>
     <table class="table">
@@ -18,4 +19,5 @@
     </table>
 </p>
 {% endfor %}
+
 {% endblock %}

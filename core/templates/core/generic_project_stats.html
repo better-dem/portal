@@ -1,5 +1,5 @@
 {% extends "core/base.html" %}
-{% block content%}
+{% block content %}
 
 <h2>Items</h2>
     Number of items corresponsding to this project: {{ items|length }}.
@@ -20,6 +20,9 @@
 	How this item is displayed to users:
 	{% include "core/feed_item.html" with item=item %}
     </p>    
+
+    {% block item_detail %}{% endblock %}
+
     {% endfor %}
 
 {% endblock %}
