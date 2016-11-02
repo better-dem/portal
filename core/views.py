@@ -77,6 +77,8 @@ def show_profile(request):
     user = request.user
     profile = user.userprofile
 
+    tags = [t.name for t in profile.tags.all()[:100]]
+
     profile_apps = []
     for app in cm.get_registered_participation_apps():
         profile_app = dict()
@@ -98,7 +100,7 @@ def show_profile(request):
                 
         profile_apps.append(profile_app)
 
-    return render(request, 'core/profile.html', {'profile_apps': profile_apps})
+    return render(request, 'core/profile.html', {'profile_apps': profile_apps, 'tags': tags})
 
 def update_profile_tags(request):
     user = request.user
