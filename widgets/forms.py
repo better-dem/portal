@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import traceback
+from django.http import HttpResponse
 
 api_key = os.environ["GOOGLE_MAPS_API_KEY"]
 
@@ -188,15 +189,16 @@ class EditablePolygonField(forms.Field):
 
 
 
+
+
 class AjaxStringLookupWidget(forms.Widget):
     """
     Widget for a string lookup with suggestions
     """
     class Media:
-
-        # css = {
-        #     'all' : ("//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",)
-        # }
+        css = {
+            'all' : ("css/autocomplete.css",)
+        }
 
         js = ("https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
               "js/jquery.autocomplete.min.js",
@@ -212,16 +214,17 @@ class AjaxStringLookupWidget(forms.Widget):
         if value is None:
             value = 'null'
 
+
         render_html = "<input type='text' name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
         render_html += '<script type="text/javascript">\n'
-        render_html += "attach_ajax_string_listener(\""+str(input_id)+"\")\n"
+        render_html += "attach_ajax_string_listener(\""+self.ajax_url+"\", \""+str(input_id)+"\")\n"
         render_html += "</script>\n"
 
         return render_html
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, ajax_url, *args, **kwargs):
+        self.ajax_url = ajax_url
         super(AjaxStringLookupWidget, self).__init__(*args, **kwargs)
-
 
 
 
@@ -229,14 +232,17 @@ class AjaxStringLookupWidget(forms.Widget):
 
 class AjaxStringLookupField(forms.Field):
     def __init__(self,
+        ajax_url,
         required= True,
-        widget=AjaxStringLookupWidget,
         label=None,
         initial=None,
         help_text="",
         validators=[],
         *args,
         **kwargs):
+        self.ajax_url = ajax_url
+        # widget needs to be initialized every time, so it can't be done in the signature
+        widget = AjaxStringLookupWidget(self.ajax_url)
         super(AjaxStringLookupField, self).__init__(required=required,
             widget=widget,
             label=label,
@@ -261,13 +267,64 @@ class AjaxStringLookupField(forms.Field):
 
     def widget_attrs(self, widget):
         attrs = super(AjaxStringLookupField, self).widget_attrs(widget)
+        attrs["ajax_url"] = self.ajax_url
         return attrs
+
+
+class AjaxAutocomplete:
+    def __init__(self, matching_object_query, suggestion_function, ajax_url):
+        # function taking the query string as input and returning a query set
+        self.matching_object_query = matching_object_query
+        # function taking an item and returning the string suggestion to be displayed to the user
+        self.suggestion_function = suggestion_function
+        self.ajax_url = ajax_url
+
+    def get_url_pattern(self):
+        return "^"+self.ajax_url+"$"
+
+    def ajax_autocomplete_view(self, request):
+        if request.is_ajax():
+            sys.stderr.write("Received autocomplete request:"+str(request.body)+"\n")
+            sys.stderr.flush()
+            v = request.body
+            k, v = request.body.split('=')
+            sys.stderr.write("k: "+k+", v: "+v+"\n")
+            sys.stderr.flush()
+            if k.strip() == "query":
+                query_string = v.strip().replace('+',' ').lower()
+                # query for objects that begin with str_beginning
+                suggestion_set = self.matching_object_query(query_string)
+                suggestions = [suggestion_function(x) for x in suggestion_set]
+
+                ans = json.dumps({"query": query_string, "suggestions": suggestions})
+                sys.stderr.write("ans:"+str(ans)+"\n")
+                sys.stderr.flush()
+                return HttpResponse(ans, content_type="application/json")
+            else:
+                return HttpResponse("I can't handle that type of input:"+str(k))
+        else:
+            return HttpResponse("this should be an ajax post")
+
+    def get_new_form_field(self):
+        return AjaxStringLookupField(self.ajax_url.lstrip("/"))
+
+
+
+# create aac in advance
+# form is imported (indirectly) by urls, 
+states = {'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Deleware', 'Florida', 'Georgia'}
+matching_object_query = lambda query: [i for i in states if i.lower().startswith(query)]
+suggestion_function = lambda item: "How about:"+item
+ajax_url = "autocomplete/"
+state_aac = AjaxAutocomplete(matching_object_query, suggestion_function, ajax_url)
 
 
 
 class SimpleTestWidgetForm(forms.Form):
     widget_a = forms.CharField(max_length=100)
-    widget_b = AjaxStringLookupField()
+    widget_b = state_aac.get_new_form_field()
+
+
     # widget_b = forms.CharField(max_length=100)
     # editable_polygon_field = EditablePolygonField(label="Test Polygon Field")
     # # editable_polygon_field_2 = EditablePolygonField(label="Test Polygon Field 2")
