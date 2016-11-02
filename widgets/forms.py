@@ -188,8 +188,7 @@ class EditablePolygonField(forms.Field):
         return attrs
 
 
-
-
+#### Ajax string lookup utitlities
 
 class AjaxStringLookupWidget(forms.Widget):
     """
@@ -252,19 +251,6 @@ class AjaxStringLookupField(forms.Field):
             *args,
             **kwargs)
 
-    def to_python(self, value):
-        # Convert to expected python value (list of lists of latlngs)
-        value = super(AjaxStringLookupField, self).to_python(value)
-        try:
-            json_array = json.loads(value)
-        except:
-            raise ValidationError("Unable to parse input: '{}'".format(value),
-                code="invalid")
-        return json_array
-
-    def validate(self, value):
-        super(AjaxStringLookupField, self).validate(value)
-
     def widget_attrs(self, widget):
         attrs = super(AjaxStringLookupField, self).widget_attrs(widget)
         attrs["ajax_url"] = self.ajax_url
@@ -294,7 +280,7 @@ class AjaxAutocomplete:
                 query_string = v.strip().replace('+',' ').lower()
                 # query for objects that begin with str_beginning
                 suggestion_set = self.matching_object_query(query_string)
-                suggestions = [suggestion_function(x) for x in suggestion_set]
+                suggestions = [self.suggestion_function(x) for x in suggestion_set]
 
                 ans = json.dumps({"query": query_string, "suggestions": suggestions})
                 sys.stderr.write("ans:"+str(ans)+"\n")
@@ -311,7 +297,7 @@ class AjaxAutocomplete:
 
 
 # create aac in advance
-# form is imported (indirectly) by urls, 
+# form is imported by urls, 
 states = {'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Deleware', 'Florida', 'Georgia'}
 matching_object_query = lambda query: [i for i in states if i.lower().startswith(query)]
 suggestion_function = lambda item: "How about:"+item

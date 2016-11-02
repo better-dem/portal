@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 import core.models as cm
 import core.tasks as tasks
-from core.forms import UploadGeoTagset, AddTagForm
+from core.forms import UploadGeoTagset, AddTagForm, get_matching_tags
 import sys
 from django.core.files.storage import default_storage
 
@@ -107,14 +107,14 @@ def update_profile_tags(request):
     if request.method == 'POST':
         form = AddTagForm(request.POST)
         if form.is_valid():
-            try:
-                tag = cm.Tag.objects.get(name=form.cleaned_data["place_name"])
-            except:
-                return HttpResponse("Sorry, there isn't exactly one tag with this name")
-            else:
-                profile.tags.add(tag)
-                tasks.feed_update_by_user_profile.delay(profile.id)
-                return HttpResponse("Ok, I added "+tag.get_name()+" to your profile")
+            possible_matching_tags = get_matching_tags(form.cleaned_data["place_name"])
+            if not len(possible_matching_tags) == 1: 
+                return HttpResponse("Sorry, there isn't exactly one tag with this name. (There are "+str(len(possible_matching_tags))+")")
+                
+            tag = possible_matching_tags[0]
+            profile.tags.add(tag)
+            tasks.feed_update_by_user_profile.delay(profile.id)
+            return HttpResponse("Ok, I added "+tag.get_name()+" to your profile")
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     else:
