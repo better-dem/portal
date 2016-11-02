@@ -121,6 +121,10 @@ def update_profile_tags(request):
         form = AddTagForm()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     
+def tag_recommendation_ajax(request):
+    user = request.user
+    profile = user.userprofile
+    pass
 
 def app_view_relay(request, app_name, action_name, project_id, item_id):
     user = request.user

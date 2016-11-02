@@ -4,7 +4,22 @@ from .forms import SimpleTestWidgetForm
 import os
 import sys
 
-# Create your views here.
+def ajax_autocomplete(request):
+    if request.is_ajax() and request.method == 'POST':
+        sys.stderr.write("Received autocomplete request:"+str(request.body)+"\n")
+        sys.stderr.flush()
+        k, v = request.body.split('=')
+        if k.strip() == "str_beginning":
+            str_beginning = v.strip().replace('+',' ').lower()
+            # query for objects that begin with str_beginning
+            ans = json.dumps([])
+            return HttpResponse(ans, content_type="application/json")
+        else:
+            return Http404("I can't handle that type of input:"+str(k))
+    else:
+        return Http404("this should be an ajax post")
+
+### The following views are only for testing purposes
 def demo_map(request):
     return render(request,
                   'widgets/demo_map.html',

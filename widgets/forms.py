@@ -186,6 +186,86 @@ class EditablePolygonField(forms.Field):
         attrs = super(EditablePolygonField, self).widget_attrs(widget)
         return attrs
 
+
+
+
+
+
+
+
+
+class AjaxStringLookupWidget(forms.Widget):
+    """
+    Widget for a string lookup with suggestions
+    """
+    class Media:
+        js = ("https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
+              "js/setup_ajax.js",
+              "js/ajax_string_lookup.js",)
+        
+    def render(self, name, value, *args, **kwargs):
+        div_id = 'ajax_text_field_' + kwargs['attrs']['id']
+        input_name = name
+        input_id = kwargs['attrs']['id']
+        if value is None:
+            value = 'null'
+
+        render_html = "<input type='text' name='"+input_name+"' id='"+input_id+"' value='' />"
+        render_html += '<script type="text/javascript">'
+        render_html += "var data_"+input_name+"=[];"
+        render_html += "var set_data_"+input_name+" = function(new_val) {data_"+input_name+"=new_val;}"
+        render_html += '$("#'+input_id+'").change(function () {$.post("/autocomplete/", $("#'+input_id+'").val(), set_data_'+input_name+')}, 500);'
+        render_html += '$("#'+input_id+'").autocomplete(data_'+input_name+');'
+        render_html += "</script>"
+
+        return render_html
+
+    def __init__(self, *args, **kwargs):
+        super(EditablePolygonWidget, self).__init__(*args, **kwargs)
+
+
+
+
+
+
+class AjaxStringLookupField(forms.Field):
+    def __init__(self,
+        required= True,
+        widget=AjaxStringLookupWidget,
+        label=None,
+        initial=None,
+        help_text="",
+        validators=[],
+        *args,
+        **kwargs):
+        super(AjaxStringLookupField, self).__init__(required=required,
+            widget=widget,
+            label=label,
+            initial=initial,
+            help_text=help_text,
+            validators=validators,
+            *args,
+            **kwargs)
+
+    def to_python(self, value):
+        # Convert to expected python value (list of lists of latlngs)
+        value = super(AjaxStringLookupField, self).to_python(value)
+        try:
+            json_array = json.loads(value)
+        except:
+            raise ValidationError("Unable to parse input: '{}'".format(value),
+                code="invalid")
+        return json_array
+
+    def validate(self, value):
+        super(AjaxStringLookupField, self).validate(value)
+
+    def widget_attrs(self, widget):
+        attrs = super(AjaxStringLookupField, self).widget_attrs(widget)
+        return attrs
+
+
+
 class SimpleTestWidgetForm(forms.Form):
     widget_a = forms.CharField(max_length=100)
     widget_b = forms.CharField(max_length=100)
