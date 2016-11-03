@@ -60,10 +60,10 @@ def upload_dataset(request):
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
                 tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"])
-                return HttpResponse("Ok, I'm processing this csv file. Thanks")
+                return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
             elif form.cleaned_data["format_id"] == "usa_and_states_v0":
                 tasks.insert_usa_and_states.delay(form.cleaned_data["small_test"])
-                return HttpResponse("Ok, I'm processing this csv file. Thanks")
+                return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
             else:
                 return HttpResponse("Sorry, this format is not known")
         else:
@@ -82,7 +82,7 @@ def show_profile(request):
     profile_apps = []
     for app in cm.get_registered_participation_apps():
         profile_app = dict()
-        profile_app["label"] = app.label
+        profile_app["label"] = app.label.replace("_", " ").title()
         profile_app["existing_projects"] = []
         perm = cm.get_provider_permission(app)
         
@@ -114,7 +114,7 @@ def update_profile_tags(request):
                 return HttpResponse("Sorry, there isn't exactly one tag with this name. (There are "+str(len(possible_matching_tags))+")")
             profile.tags.add(match)
             tasks.feed_update_by_user_profile.delay(profile.id)
-            return HttpResponse("Ok, I added "+match.get_name()+" to your profile")
+            return render(request, "core/thanks.html", {"action_description": "adding "+match.get_name()+" to your profile"})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     else:
