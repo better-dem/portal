@@ -129,9 +129,7 @@ def feed_update_by_tag(tag_id, limit_user_profile=None):
     """
     limit_logstr = ""
     if not limit_user_profile is None:
-        limit_logstr = "limit to user: "+str(limit_user_profile)
-    sys.stdout.write("updating feed by tag: "+str(tag_id)+limit_logstr+" \n")
-    sys.stdout.flush()
+        limit_logstr = ", limit to user: "+str(limit_user_profile)
     t = cm.Tag.objects.get(pk=tag_id)
     recent_items = t.participationitem_set.order_by('-creation_time')[:100]
     user_profiles = None
@@ -139,6 +137,9 @@ def feed_update_by_tag(tag_id, limit_user_profile=None):
         user_profiles = t.userprofile_set.all()
     else:
         user_profiles = [cm.UserProfile.objects.get(pk=limit_user_profile)]
+
+    sys.stdout.write("updating feed by tag: "+str(t.name)+limit_logstr+", number of user profiles:"+str(len(user_profiles))+", number of participation items: "+str(len(recent_items))+" \n")
+    sys.stdout.flush()
 
     num_matches_created = 0
 
