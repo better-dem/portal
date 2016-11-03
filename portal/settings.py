@@ -38,7 +38,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -120,19 +119,15 @@ ALLOWED_HOSTS = ['*']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
-STATIC_URL = '/static/'
+### I re-define this later to point to the s3 bucket
+### so that asset definition paths will point to the CDN
+### # STATIC_URL = '/static/' 
 
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = [
     os.path.join(PROJECT_ROOT, 'static'),
 ]
-
-# Simplified static file serving.
-# https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 
 # s3direct options
 S3DIRECT_REGION = 'us-west-1'
@@ -151,6 +146,7 @@ AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
 AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 AWS_S3_HOST="s3-us-west-1.amazonaws.com"
+STATIC_URL = "https://"+AWS_STORAGE_BUCKET_NAME+"."+AWS_S3_HOST+"/"
 
 ### Settings for django registration
 ACCOUNT_ACTIVATION_DAYS=2
