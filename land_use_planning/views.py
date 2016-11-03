@@ -91,16 +91,21 @@ def administer_project(request, project_id):
     return render(request, 'land_use_planning/project_results.html', {"items": item_details})
 
 
-def participate(request, project_id):
-    project = LandUseProject.objects.get(pk=project_id)
+def participate(request, item_id):
+    u = request.user
+    p = u.userprofile
+
+    item = LandUseParticipationItem.objects.get(pk=item_id)
+    project = item.participation_project.landuseproject
     title = project.name
 
     if request.method == 'POST':
         form = ItemResponseForm(project, request.POST )        
         if form.is_valid():
-            pr = ItemResponse()
-            pr.project = project
-            pr.save()
+            item_response = ItemResponse()
+            item_response.user_profile = p
+            item_response.participation_item = item
+            item_response.save()
             
             # TODO: instead, use LandUseProject.get_questions()
             for key in form.cleaned_data:
@@ -113,7 +118,7 @@ def participate(request, project_id):
                         raise Exception("Invalid question type. Only TMCQ supported")
                     else:
                         qr = TMCQResponse()
-                        qr.project_response = pr
+                        qr.item_response = item_response
                         qr.question = question
                         qr.option_index = int(form.cleaned_data[key])
                         qr.save()

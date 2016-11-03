@@ -1,6 +1,7 @@
 from django import forms
 from land_use_planning.models import FeedbackGoal, TMCQ, Question
 from widgets.forms import EditablePolygonField, ShowPolygonField
+import json
 
 class CreateProjectForm(forms.Form):
     project_name = forms.CharField(max_length=100)
@@ -17,7 +18,7 @@ class CreateProjectForm(forms.Form):
 class ItemResponseForm(forms.Form):
     def __init__(self, project, *args, **kwargs):
         super(ItemResponseForm, self).__init__(*args, **kwargs)
-        self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=project.polygon_for_google())
+        self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=json.dumps(project.polygon_for_google()))
 
         ans = project.name+ ":"
         for question in project.get_questions():
