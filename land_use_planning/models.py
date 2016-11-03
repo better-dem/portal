@@ -41,7 +41,7 @@ class LandUseParticipationItem(cm.ParticipationItem):
     def get_description(self):
         ans = "Land use planning project"
         if self.tags.all().count() > 0:
-            ans += "for "+self.tags.all()[0].get_name()
+            ans += " for "+self.tags.all()[0].get_name()
         return ans
 
     def set_display_image(self):

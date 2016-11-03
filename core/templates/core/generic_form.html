@@ -8,13 +8,14 @@
         {% if field.errors %}
         <div class="alert alert-warning">{{ field.errors }}</div>
         {% endif %}
-        {{ field.label_tag }} <br>
-	{{ field }}
+        <h4>{{ field.label_tag }}</h4>
         {% if field.help_text %}
-        <div class="alert alert-info">{{ field.help_text|safe }}</div>
+        <h5>{{ field.help_text|safe }}</h5>
         {% endif %}
+	{{ field }}
     </p>
     {% endfor %}
     <input type="submit" value="Submit" />
 </form>
+<br>
 {% endblock %}

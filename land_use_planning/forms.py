@@ -12,8 +12,9 @@ class CreateProjectForm(forms.Form):
         goals = FeedbackGoal.objects.all()
         for goal in goals:
             var_name = goal.name + "_pref"
-            label = goal.description 
-            self.fields[var_name] = forms.BooleanField(label = label, required=False)
+            label = goal.name.replace("_", " ").title()
+            help_text = goal.description
+            self.fields[var_name] = forms.BooleanField(label = label, help_text=help_text, required=False)
 
 class ItemResponseForm(forms.Form):
     def __init__(self, project, *args, **kwargs):
@@ -21,10 +22,12 @@ class ItemResponseForm(forms.Form):
         self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=json.dumps(project.polygon_for_google()))
 
         ans = project.name+ ":"
+        i = 1
         for question in project.get_questions():
             try:
                 tmcq = question.tmcq
-                label = question.question_text
+                label = str(i)
+                help_text = question.question_text
                 var_name = "field_prf_" + str(question.id)
                 choices = []
 
@@ -39,6 +42,7 @@ class ItemResponseForm(forms.Form):
                 if not tmcq.option5 == "":
                     choices.append(("5", tmcq.option5))
 
-                self.fields[var_name] = forms.ChoiceField(label = label, required=False, choices = choices )
+                self.fields[var_name] = forms.ChoiceField(label = label, help_text=help_text, required=False, choices = choices )
+                i += 1
             except:
                 raise Exception("Invalid question type. Only TMCQ supported")
