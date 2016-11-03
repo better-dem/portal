@@ -12,7 +12,7 @@ class UploadGeoTagset(forms.Form):
 # create aac in advance
 # form is imported by urls, 
 def pre_process_query(q):
-    q = q.replace("%2c", ",")
+    q = q.replace("%2c", ",").lower()
     name = None
     detail = None
     if "," in q:
@@ -28,6 +28,24 @@ def get_matching_tags(q):
         return Tag.objects.filter(name__istartswith=name).filter(detail__istartswith=detail)
     else:
         return Tag.objects.filter(name__istartswith=name)
+
+def get_best_final_matching_tag(q):
+    possible_matches = get_matching_tags(q)
+    if len(possible_matches) == 1:
+        return possible_matches[0]
+    if len(possible_matches) == 0:
+        return None
+    name, detail = pre_process_query(q)
+    exact_name_matches = [m for m in possible_matches if m.name.strip().lower()==name]
+    exact_detail_matches = [m for m in possible_matches if m.detail.strip().lower()==detail]
+    perfect_matches = [m for m in exact_detail_matches if m in exact_name_matches]
+    if len(perfect_matches) > 0:
+        return perfect_matches[0]
+    if len(exact_name_matches) > 0:
+        return exact_name_matches[0]
+    if len(exact_detail_matches) > 0:
+        return exact_detail_matches[0]
+    return possible_matches[0]
 
 matching_object_query = get_matching_tags
 suggestion_function = lambda item: item.get_name()

@@ -50,17 +50,8 @@ class LandUseParticipationItem(cm.ParticipationItem):
     def set_relevant_tags(self):
         pnt = GEOSGeometry(self.participation_project.polygon).centroid
         search_radius_m = 50000  # meters?
-        # nearest_cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY).distance(pnt).order_by('distance')[:1]
-
-        sys.stderr.write("looking for all points...\n")
-        sys.stderr.flush()
-        all_points = cm.GeoTag.objects.exclude(point__isnull=True).filter(point__distance_lte=(pnt, D(m=search_radius_m)))
-        sys.stderr.write("Number of points..."+str(all_points.count())+"\n")
-        sys.stderr.write("looking for nearby cities...\n")
-        sys.stderr.flush()
-        nearest_cities = cm.GeoTag.objects.filter(point__distance_lte=(pnt, D(m=search_radius_m))).annotate(distance=Distance('point', pnt)).order_by('distance')
-        sys.stderr.write("found nearby cities\n")
-        sys.stderr.write("cities: "+str([x.get_name() for x in nearest_cities])+"\n")
+        nearest_cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY).filter(point__distance_lte=(pnt, D(m=search_radius_m))).annotate(distance=Distance('point', pnt)).order_by('distance')[:5]
+        sys.stderr.write("cities nearest to this project: "+str([x.get_name() for x in nearest_cities])+"\n")
         sys.stderr.flush()
         self.tags.add(*nearest_cities[:1])
 

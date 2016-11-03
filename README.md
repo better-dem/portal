@@ -2,9 +2,57 @@
 
 Created using the [Heroku django starter template](https://github.com/heroku/heroku-django-template/)
 
-## Contributing to this Project
+## Project Structure
 
-### Creating New Participation Apps
+Some of the most important basics are shown here:
+
+```
+├── app.json
+├── circle.yml
+├── core
+├── dummy_participation_project
+├── land_use_planning
+├── manage.py
+├── manual_news_article_curation
+├── portal
+│   ├── celery.py
+│   ├── settings.py
+│   └── urls.py
+├── Procfile
+├── requirements.txt
+├── runtime.txt
+└── widgets
+```
+
+At a high level, this is a standard django project structure.
+"Portal" is the project name, so the portal sub-directory contains the standard settings.py and root urls conf files.
+
+### Core app
+The core app contains view templates which all participation apps should make use of, and defines the base models all participation apps need to inherit from.
+
+### Participation Apps
+Portal defines an interface whereby new apps can be incorporated into the same interface, allowing a uniform presentation for different types of participation activities.
+
+Existing participation apps in the current project are: dummy_participation_project, land_use_planning, and manual_news_article_curation.
+Each 'participation app' is a django app (created using heroku local:run manage.py startapp <appname>).
+
+The main requirements of a participation app are:
+* Install the app in the django project (settings.py), makemigrations, migrate the database
+* Create a project model which inherits (directly) from core.ParticipationProject
+..* Importantly, override this model's methods. See existing participation apps for examples
+* Create a participation item model which inherits (directly) from core.ParticipationItem
+..* Importantly, override this model's methods. See existing participation apps for examples
+* Implement the required views in views.py: new_project, administer_project, and participate
+* register the app with core in apps.py (ooverride the apps.XXXXConfig.ready() method)
+
+### Continuous deployment files
+app.json, circle.yml, requirements.txt, runtime.txt, and Procfile all control various aspects of how environements are set up for this project when it is pushed to CircleCI and Heroku
+
+### Celery
+This app delegates background tasks using celery and redis.
+This is required to make the app remain responsive, as described [here](https://devcenter.heroku.com/articles/background-jobs-queueing).
+Any app can create background tasks by following the core app's example.
+
 
 ## Running The App
 
@@ -70,11 +118,17 @@ I manually set these buildacks from heroku, which seems to ignore app.json?
 >>> [ctrl-D]
 
 
-#### Uploading up geo tags
+### Setting up the initial data
+ - see Procfile's release steps, these include loading data fixtures for any participation apps that have them
+ - create a user (by visiting the site)
+ - add core app priviledges for that user:
+> heroku local:run python manage.py authorize_user -u <username> --participationapp core
 
-Requires us-cities which can be bought from uscitieslist.org
+The rest is done from the /upload_dataset page
 
- - login with a user authorized to manage the core app
- - use: uscitieslist_csv_v0 for format id
- - upload your cities list csv file
- - work will be done in the background, check progress by visiting /tags view
+ - upload usa_states: format: usa_and_states_v0
+ - upload us cities (Requires us-cities which can be bought from uscitieslist.org): format: uscitieslist_csv_v0
+
+Confirm state is reasonable by going to /tags
+
+

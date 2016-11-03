@@ -134,7 +134,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         new_profile = UserProfile()
         new_profile.user = instance
         new_profile.save()
-        new_profile.tags.add(GeoTag.objects.get(name="United States of America"))
+        new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
 
 post_save.connect(create_user_profile, sender=User)
 

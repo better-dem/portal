@@ -208,12 +208,8 @@ class AjaxStringLookupWidget(forms.Widget):
         div_id = 'ajax_text_field_' + kwargs['attrs']['id']
         input_name = name
         input_id = kwargs['attrs']['id']
-        sys.stderr.write("input id:"+str(input_id)+"\n")
-        sys.stderr.flush()
         if value is None:
             value = 'null'
-
-
         render_html = "<input type='text' name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
         render_html += '<script type="text/javascript">\n'
         render_html += "attach_ajax_string_listener(\""+self.ajax_url+"\", \""+str(input_id)+"\")\n"
@@ -270,21 +266,13 @@ class AjaxAutocomplete:
 
     def ajax_autocomplete_view(self, request):
         if request.is_ajax():
-            sys.stderr.write("Received autocomplete request:"+str(request.body)+"\n")
-            sys.stderr.flush()
             v = request.body
             k, v = request.body.split('=')
-            sys.stderr.write("k: "+k+", v: "+v+"\n")
-            sys.stderr.flush()
             if k.strip() == "query":
                 query_string = v.strip().replace('+',' ').lower()
-                # query for objects that begin with str_beginning
                 suggestion_set = self.matching_object_query(query_string)
                 suggestions = [self.suggestion_function(x) for x in suggestion_set]
-
                 ans = json.dumps({"query": query_string, "suggestions": suggestions})
-                sys.stderr.write("ans:"+str(ans)+"\n")
-                sys.stderr.flush()
                 return HttpResponse(ans, content_type="application/json")
             else:
                 return HttpResponse("I can't handle that type of input:"+str(k))

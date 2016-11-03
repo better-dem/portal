@@ -21,8 +21,6 @@ def new_project(request):
             # everyone else, including better dem portal, does lon, lat
             poly_data = [(x[1], x[0]) for x in form.cleaned_data["polygon_field"]]
             poly_data.append(poly_data[0]) # polygon must be instantiated with a closed ring
-            sys.stderr.write(str(poly_data)+"\n")
-            sys.stderr.flush()
             project.polygon = Polygon(LinearRing(tuple(poly_data)))
             project.owner_profile = p
             project.save()
