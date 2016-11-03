@@ -1,6 +1,6 @@
 {% load staticfiles %}
 <div class="panel panel-default">
-    <div class="panel-heading"><a href="{{ item.link }}" class="btn btn-primary">{{ item.label }}</a></div>
+    <div class="panel-heading"><a href="{{ item.link }}">{{ item.label }}</a></div>
     <div class="panel-body">
 	{% if item.display_image_url %}
 	{% if ':' in item.display_image_url %}
