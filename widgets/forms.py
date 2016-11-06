@@ -262,7 +262,7 @@ class AjaxAutocomplete:
         self.ajax_url = ajax_url
 
     def get_url_pattern(self):
-        return "^"+self.ajax_url+"$"
+        return "^"+self.ajax_url.lstrip("/")+"$"
 
     def ajax_autocomplete_view(self, request):
         if request.is_ajax():
@@ -280,7 +280,7 @@ class AjaxAutocomplete:
             return HttpResponse("this should be an ajax post")
 
     def get_new_form_field(self):
-        return AjaxStringLookupField(self.ajax_url.lstrip("/"))
+        return AjaxStringLookupField(self.ajax_url)
 
 
 

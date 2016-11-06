@@ -5,16 +5,16 @@ import json
 
 class CreateProjectForm(forms.Form):
     place_name = cf.tag_aac.get_new_form_field()    
-    fiscal_year_end_date = forms.DateField()
+    fiscal_year_end_date = forms.DateField(widget=forms.SelectDateWidget)
     total_expected_revenue = forms.IntegerField(help_text="(Approximate value (2 significant figures), USD)")
     total_expected_expenditure = forms.IntegerField(help_text="(Approximate value (2 significant figures), USD)")
-    mayor_name = fields.CharField(max_length=100)
-    council_members = fields.TextField(help_text="comma separated names of council memebers") 
-    budget_url = fields.URLField()
+    mayor_name = forms.CharField(max_length=100)
+    council_members = forms.CharField(widget=forms.widgets.Textarea, help_text="comma separated names of council memebers") 
+    budget_url = forms.URLField()
 
-class ItemResponseForm(forms.Form):
+class QuizResponseForm(forms.Form):
     def __init__(self, project, *args, **kwargs):
-        super(ItemResponseForm, self).__init__(*args, **kwargs)
+        super(QuizResponseForm, self).__init__(*args, **kwargs)
         self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=json.dumps(project.polygon_for_google()))
 
         ans = project.name+ ":"

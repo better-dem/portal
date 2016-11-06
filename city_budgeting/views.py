@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from city_budgeting.models import CityBudgetingProject, ItemResponse, Question, QuestionResponse, TMCQResponse, CityBudgetQuiz
-from .forms import CreateProjectForm, ItemResponseForm
+from city_budgeting.models import CityBudgetingProject, QuizResponse, Question, QuestionResponse, TMCQResponse, CityBudgetQuiz
+from .forms import CreateProjectForm, QuizResponseForm
 from django.db.models import Count
 import os
 import sys
 from core.views import get_item_details
+import core.forms as cf
 
 def new_project(request):
     u = request.user
@@ -15,16 +16,18 @@ def new_project(request):
         form = CreateProjectForm(request.POST)
         if form.is_valid():
             project = CityBudgetingProject()
-            project.name = form.cleaned_data["project_name"]
-            # !!! Warning, Google lists geo data lat,lon.
-            # everyone else, including better dem portal, does lon, lat
-            poly_data = [(x[1], x[0]) for x in form.cleaned_data["polygon_field"]]
-            poly_data.append(poly_data[0]) # polygon must be instantiated with a closed ring
-            project.polygon = Polygon(LinearRing(tuple(poly_data)))
+            project.city = cf.get_best_final_matching_tag(form.cleaned_data["place_name"]).geotag
+            project.fiscal_year_end_date = form.cleaned_data["fiscal_year_end_date"]
+            project.name = "City Budget Outreach Project for "+project.city.get_name()
+            project.total_expected_revenue = form.cleaned_data["total_expected_revenue"]
+            project.total_expected_expenditure = form.cleaned_data["total_expected_expenditure"]
+            project.mayor_name = form.cleaned_data["mayor_name"]
+            project.council_members = form.cleaned_data["council_members"]
+            project.budget_url = form.cleaned_data["budget_url"]
             project.owner_profile = p
             project.save()
             
-            return render(request, 'core/thanks.html', {"action_description": "creating a new land use planning project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)+"/-1"})
+            return render(request, 'core/thanks.html', {"action_description": "creating a new city budget project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)+"/-1"})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     else:
@@ -41,7 +44,7 @@ def administer_project(request, project_id):
     for item in items:
         current_item_detail = get_item_details(item, True)
 
-        responses = ItemResponse.objects.filter(participation_item=item)
+        responses = QuizResponse.objects.filter(participation_item=item)
         num_responses = responses.count()
 
         question_summaries = []
@@ -93,9 +96,9 @@ def participate(request, item_id):
     title = project.name
 
     if request.method == 'POST':
-        form = ItemResponseForm(project, request.POST )        
+        form = QuizResponseForm(project, request.POST )        
         if form.is_valid():
-            item_response = ItemResponse()
+            item_response = QuizResponse()
             item_response.user_profile = p
             item_response.participation_item = item
             item_response.save()
@@ -120,7 +123,7 @@ def participate(request, item_id):
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
     else:
-        form = ItemResponseForm(project)
+        form = QuizResponseForm(project)
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
 
 

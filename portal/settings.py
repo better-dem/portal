@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'dummy_participation_project.apps.DummyParticipationProjectConfig',
     'manual_news_article_curation.apps.ManualNewsArticleCurationConfig',
     'land_use_planning.apps.LandUsePlanningConfig',
+    'city_budgeting.apps.CityBudgetingConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',

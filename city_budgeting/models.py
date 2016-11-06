@@ -60,7 +60,7 @@ class CityBudgetingProject(cm.ParticipationProject):
 
             q2 = TMCQ()
             q2.item = item
-            q2.question_text = "How much revenue does the "+self.city.name+" budget expect for the fiscal year ending in "str(self.fiscal_year_end_date.strftime("%B %d, %Y"))+"?"
+            q2.question_text = "How much revenue does the "+self.city.name+" budget expect for the fiscal year ending in "+str(self.fiscal_year_end_date.strftime("%B %d, %Y"))+"?"
 
             for i in range(5):
                 q2.__dict__["option"+str(i+1)] = gen_random_budget(self.total_expected_expenditure)
@@ -86,7 +86,7 @@ class CityBudgetQuiz(cm.ParticipationItem):
         self.tags.add(self.participation_project.city)
 
 
-class ItemResponse(models.Model):
+class QuizResponse(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
     participation_item = models.ForeignKey(CityBudgetQuiz, on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
@@ -106,7 +106,7 @@ class TMCQ(Question):
 
 class QuestionResponse(models.Model):
     item_response = models.ForeignKey(
-            ItemResponse,
+            QuizResponse,
             on_delete = models.CASCADE,
         )
     question = models.ForeignKey(

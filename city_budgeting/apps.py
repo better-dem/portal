@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 from django.apps import AppConfig
+from django.utils.module_loading import module_has_submodule
+from importlib import import_module
 
 class CityBudgetingConfig(AppConfig):
     name = 'city_budgeting'
