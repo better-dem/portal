@@ -3,6 +3,7 @@ from city_budgeting.models import TMCQ, Question, Service
 from core import forms as cf
 import json
 import sys
+from widgets.forms import ShowPointField
 
 class CreateProjectForm(forms.Form):
     place_name = cf.tag_aac.get_new_form_field()    
@@ -24,6 +25,9 @@ class CreateProjectForm(forms.Form):
 class QuizResponseForm(forms.Form):
     def __init__(self, item, *args, **kwargs):
         super(QuizResponseForm, self).__init__(*args, **kwargs)
+        city_tag = item.participation_project.citybudgetingproject.city
+        self.fields["map_field"] = ShowPointField(label="City of "+str(city_tag.get_name()), initial=json.dumps([city_tag.point.y, city_tag.point.x]))
+
         i = 1
         questions = Question.objects.filter(item=item).distinct()
         for question in questions:
@@ -34,16 +38,9 @@ class QuizResponseForm(forms.Form):
                 var_name = "field_prf_" + str(question.id)
                 choices = []
 
-                if not tmcq.option1 == "":
-                    choices.append(("1", tmcq.option1))
-                if not tmcq.option2 == "":
-                    choices.append(("2", tmcq.option2))
-                if not tmcq.option3 == "":
-                    choices.append(("3", tmcq.option3))
-                if not tmcq.option4 == "":
-                    choices.append(("4", tmcq.option4))
-                if not tmcq.option5 == "":
-                    choices.append(("5", tmcq.option5))
+                for j in range(1,6):
+                    if not tmcq.__dict__["option"+str(j)] == "":
+                        choices.append((str(j), tmcq.__dict__["option"+str(j)]))
 
                 self.fields[var_name] = forms.ChoiceField(label = label, help_text=help_text, required=False, choices = choices )
                 i += 1
