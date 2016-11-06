@@ -15,7 +15,6 @@ class CreateProjectForm(forms.Form):
 class QuizResponseForm(forms.Form):
     def __init__(self, project, *args, **kwargs):
         super(QuizResponseForm, self).__init__(*args, **kwargs)
-        self.fields["polygon_field"] = ShowPolygonField(label="Region of interest", initial=json.dumps(project.polygon_for_google()))
 
         ans = project.name+ ":"
         i = 1
