@@ -1,5 +1,5 @@
 from django import forms
-from city_budgeting.models import TMCQ, Question
+from city_budgeting.models import TMCQ, Question, Service
 from core import forms as cf
 import json
 import sys
@@ -12,6 +12,14 @@ class CreateProjectForm(forms.Form):
     mayor_name = forms.CharField(max_length=100)
     council_members = forms.CharField(widget=forms.widgets.Textarea, help_text="comma separated names of council memebers") 
     budget_url = forms.URLField()
+
+    def __init__(self, *args, **kwargs):
+        super(CreateProjectForm, self).__init__(*args, **kwargs)
+        for st in Service.SERVICE_TYPES:
+            self.fields[st[0]+"_source"] = forms.ChoiceField(label = st[1]+" Services", help_text="How are "+st[1]+" services provided?", required=True, choices =  Service.SOURCE_CHOICES)
+            self.fields[st[0]+"_expenditure"] = forms.IntegerField(label = st[1]+" Budget", help_text="What is the projected expenditure for "+st[1]+" services?", required=False)
+
+
 
 class QuizResponseForm(forms.Form):
     def __init__(self, item, *args, **kwargs):

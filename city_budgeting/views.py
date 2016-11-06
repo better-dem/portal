@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from city_budgeting.models import CityBudgetingProject, QuizResponse, Question, QuestionResponse, TMCQResponse, CityBudgetQuiz
+from city_budgeting.models import CityBudgetingProject, QuizResponse, Question, QuestionResponse, TMCQResponse, CityBudgetQuiz, Service
 from .forms import CreateProjectForm, QuizResponseForm
 from django.db.models import Count
 import os
@@ -26,6 +26,15 @@ def new_project(request):
             project.budget_url = form.cleaned_data["budget_url"]
             project.owner_profile = p
             project.save()
+
+            for st in Service.SERVICE_TYPES:
+                s = Service()
+                s.city_budget = project
+                s.service_type = st[0]
+                s.source = form.cleaned_data[st[0]+"_source"]
+                if st[0]+"_expenditure" in form.cleaned_data:
+                    s.expected_expenditure = form.cleaned_data[st[0]+"_expenditure"]
+                s.save()
             
             return render(request, 'core/thanks.html', {"action_description": "creating a new city budget project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)+"/-1"})
         else:
@@ -33,6 +42,7 @@ def new_project(request):
     else:
         form = CreateProjectForm()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
+
 
 def administer_project(request, project_id):
     project = CityBudgetingProject.objects.get(pk=project_id)
@@ -111,7 +121,9 @@ def participate(request, item_id):
                         qr.option_index = int(form.cleaned_data[key])
                         qr.save()
                         
-            return render(request, 'core/thanks.html', {"action_description": "taking "+title})
+            score = str(round(100*score_quiz_response(item_response)))+"%"
+
+            return render(request, 'city_budgeting/thanks.html', {"action_description": "taking "+title, "score": score})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
     else:
@@ -120,3 +132,23 @@ def participate(request, item_id):
 
 
 
+def score_quiz_response(response):
+    """
+    Give a score, 0-1
+    response is a models.QuizResponse object
+    """
+    question_responses = QuestionResponse.objects.filter(item_response=response)
+    num_questions = question_responses.count()
+    num_correct = 0
+    for r in question_responses:
+        try:
+            tmcqr = r.tmcqresponse
+        except:
+            raise Exception("Invalid question type. Only TMCQ supported")
+        else:
+            if tmcqr.option_index == r.question.tmcq.correct_answer_index:
+                num_correct += 1
+    if num_questions == 0:
+        return 0
+    return 1.0*num_correct/num_questions
+    

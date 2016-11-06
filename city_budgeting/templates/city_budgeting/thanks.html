@@ -1,0 +1,22 @@
+{% extends "core/thanks.html" %}
+{% block thanks_detail %}
+<div class="jumbotron">
+<h1>You scored {{ score }}</h1>    
+<div class="fb-share-button pull-right" 
+     data-href="http://www.betterdem.org" 
+     data-layout="button_count">
+</div>
+</div>
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) return;
+     js = d.createElement(s); js.id = id;
+     /* js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1"; */
+     js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+     fjs.parentNode.insertBefore(js, fjs);
+ }(document, 'script', 'facebook-jssdk'));
+</script>
+
+{% endblock %}
