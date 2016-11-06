@@ -167,6 +167,10 @@ def feed(request):
     return render(request, 'core/feed.html', {'items':items})
 
 def get_item_details(item, get_activity=False):
+    """
+    Return a dict describing the properties of some ParticipationItem,
+    used to render the item with templates/core/feed_item.html
+    """
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
     ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(project_id)+"/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]]}

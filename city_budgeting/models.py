@@ -6,11 +6,15 @@ import random
 
 fake_first_names = ["John", "Alfonso", "Meg", "David", "Akshay", "Erika", "Kurt", "Casey", "Terry", "Monique", "Carmen", "Marco"]
 fake_last_names = ["Thatcher", "McGregor", "Testerman", "Hodges", "Black", "Ericson", "Chen", "Joseph", "Lester", "Lopez", "Jackson", "Hollande"]
-fake_budgets = [[i*pow(10,j) for i in range(1,10)] for j in range(4,7)]
+fake_budgets = []
+for j in range(1,10):
+    for i in range(1,100):
+        fake_budgets.append(i*pow(10,j))
+
 
 def gen_random_name(different_than=None):
     n = random.choice(fake_first_names)+" "+random.choice(fake_last_names)
-    while not different_than == n:
+    while different_than == n:
         n = random.choice(fake_first_names)+" "+random.choice(fake_last_names)
     return n
 
@@ -21,8 +25,8 @@ def gen_random_budget(different_than=None):
     """
     def ratio (x,y):
         if x>y:
-            return x/y
-        return y/x
+            return 1.0*x/y
+        return 1.0*y/x
 
     n = random.choice(fake_budgets)    
     while ratio(n, different_than)<1.3 or ratio(n, different_than)>100:
@@ -43,6 +47,7 @@ class CityBudgetingProject(cm.ParticipationProject):
     def update_items(self):
         # generate basic quiz
         if CityBudgetQuiz.objects.filter(participation_project=self).count() == 0:
+            sys.stderr.write("creating a new quiz\n")
             item = CityBudgetQuiz()
             item.name = self.name
             item.participation_project = self
@@ -53,9 +58,9 @@ class CityBudgetingProject(cm.ParticipationProject):
             q1.question_text = "Who is "+self.city.name+"'s Mayor?"
             for i in range(5):
                 q1.__dict__["option"+str(i+1)] = gen_random_name(self.mayor_name)
-            c = random.randrange(0,5)
+            c = random.randrange(1,6)
             q1.correct_answer_index = c
-            q1.__dict__["option"+str(c+1)] = self.mayor_name
+            q1.__dict__["option"+str(c)] = self.mayor_name
             q1.save()
 
             q2 = TMCQ()
@@ -64,11 +69,15 @@ class CityBudgetingProject(cm.ParticipationProject):
 
             for i in range(5):
                 q2.__dict__["option"+str(i+1)] = gen_random_budget(self.total_expected_expenditure)
-            c = random.randrange(0,5)
+            c = random.randrange(1,6)
             q2.correct_answer_index = c
-            q2.__dict__["option"+str(c+1)] = self.total_expected_revenue
+            q2.__dict__["option"+str(c)] = self.total_expected_revenue
             q2.save()
+            sys.stderr.write("here 4\n")
 
+            num_tmcq = TMCQ.objects.all().count()
+            sys.stderr.write("total number of tmcqs in DB: "+str(num_tmcq)+"\n")
+            sys.stderr.flush()
             return set([item.id])
         return set()
 

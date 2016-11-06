@@ -36,12 +36,13 @@ def new_project(request):
 
 def administer_project(request, project_id):
     project = CityBudgetingProject.objects.get(pk=project_id)
-    questions = project.get_questions()
     items = CityBudgetQuiz.objects.filter(participation_project=project).distinct()
 
     item_details = []
 
     for item in items:
+        questions = Question.objects.filter(item=item).distinct()
+
         current_item_detail = get_item_details(item, True)
 
         responses = QuizResponse.objects.filter(participation_item=item)
@@ -56,21 +57,11 @@ def administer_project(request, project_id):
             except:
                 raise Exception("Invalid question type. Only TMCQ supported")
             else:
+                # response_counts looks like: [{'option_index':1, 'count':13}, {...}, ...]
                 response_counts = TMCQResponse.objects.filter(item_response__participation_item=item).filter(question=q).values('option_index').annotate(count=Count("id"))
-                rc_option_indices = [x["option_index"] for x in response_counts]
                 answers = []
                 for i in range(1,6):
-                    question = None
-                    if i == 1:
-                        question = tmcq.option1
-                    elif i == 2:
-                        question = tmcq.option2
-                    elif i == 3:
-                        question = tmcq.option3
-                    elif i == 4:
-                        question = tmcq.option4
-                    elif i == 5:
-                        question = tmcq.option5
+                    question = tmcq.__dict__["option{}".format(i)]
 
                     rc = [x for x in response_counts if x["option_index"] == i]
                     if len(rc) == 1:
@@ -78,13 +69,14 @@ def administer_project(request, project_id):
                     else:
                         answers.append([question, 0])
                 summary["answers"] = answers
+                summary["correct_answer"] = tmcq.__dict__["option{}".format(tmcq.correct_answer_index)]
             question_summaries.append(summary)
 
         current_item_detail["question_summaries"] = question_summaries
         current_item_detail["num_responses"] = num_responses
         item_details.append(current_item_detail)
 
-    return render(request, 'land_use_planning/project_results.html', {"items": item_details})
+    return render(request, 'city_budgeting/project_results.html', {"items": item_details})
 
 
 def participate(request, item_id):
@@ -92,11 +84,11 @@ def participate(request, item_id):
     p = u.userprofile
 
     item = CityBudgetQuiz.objects.get(pk=item_id)
-    project = item.participation_project.landuseproject
-    title = project.name
+    # project = item.participation_project.landuseproject
+    title = item.name
 
     if request.method == 'POST':
-        form = QuizResponseForm(project, request.POST )        
+        form = QuizResponseForm(item, request.POST )        
         if form.is_valid():
             item_response = QuizResponse()
             item_response.user_profile = p
@@ -119,11 +111,11 @@ def participate(request, item_id):
                         qr.option_index = int(form.cleaned_data[key])
                         qr.save()
                         
-            return render(request, 'core/thanks.html', {"action_description": "responding to the land use planning project: "+title})
+            return render(request, 'core/thanks.html', {"action_description": "taking "+title})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
     else:
-        form = QuizResponseForm(project)
+        form = QuizResponseForm(item)
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
 
 

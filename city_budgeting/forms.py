@@ -2,6 +2,7 @@ from django import forms
 from city_budgeting.models import TMCQ, Question
 from core import forms as cf
 import json
+import sys
 
 class CreateProjectForm(forms.Form):
     place_name = cf.tag_aac.get_new_form_field()    
@@ -13,12 +14,11 @@ class CreateProjectForm(forms.Form):
     budget_url = forms.URLField()
 
 class QuizResponseForm(forms.Form):
-    def __init__(self, project, *args, **kwargs):
+    def __init__(self, item, *args, **kwargs):
         super(QuizResponseForm, self).__init__(*args, **kwargs)
-
-        ans = project.name+ ":"
         i = 1
-        for question in project.get_questions():
+        questions = Question.objects.filter(item=item).distinct()
+        for question in questions:
             try:
                 tmcq = question.tmcq
                 label = str(i)
