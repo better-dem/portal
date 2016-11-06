@@ -105,11 +105,14 @@ def participate(request, item_id):
             item_response.participation_item = item
             item_response.save()
             
+            question_summaries = []
+            
             # TODO: instead, use CityBudgetingProject.get_questions()
             for key in form.cleaned_data:
                 if "field_prf_" in key:
                     question_id = key.lstrip("field_prf_")
                     question = Question.objects.get(pk=question_id)
+                    question_summary=dict()
                     try:
                         tmcq = question.tmcq
                     except:
@@ -120,10 +123,26 @@ def participate(request, item_id):
                         qr.question = question
                         qr.option_index = int(form.cleaned_data[key])
                         qr.save()
-                        
-            score = str(round(100*score_quiz_response(item_response)))+"%"
 
-            return render(request, 'city_budgeting/thanks.html', {"action_description": "taking "+title, "score": score})
+                        question_summary["label"] = tmcq.question_text
+                        question_summary["correct"] = tmcq.correct_answer_index == qr.option_index
+                        answers = []
+                        for i in range(1,6):
+                            a = dict()
+                            a["correct_answer"] = tmcq.correct_answer_index == i
+                            a["user_answer"] = qr.option_index == i
+                            a["option_text"] = tmcq.__dict__["option"+str(i)]
+                            answers.append(a)
+                        question_summary["answers"] = answers
+
+                    question_summaries.append(question_summary)
+
+            s = score_quiz_response(item_response)
+            all_scores = sorted([score_quiz_response(i) for i in QuizResponse.objects.filter(participation_item=item)], reverse=True)
+            rank = all_scores.index(s)+1
+            rank_str = "Your rank: {} out of {} total participants".format(rank, len(all_scores))
+            score = str(round(100*s))+"%"
+            return render(request, 'city_budgeting/thanks.html', {"action_description": "taking "+title, "score": score, "rank": rank_str, "question_summaries": question_summaries})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
     else:

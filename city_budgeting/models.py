@@ -118,6 +118,71 @@ class CityBudgetingProject(cm.ParticipationProject):
                 c = random.randrange(1,6)
                 q.save()
 
+            services_directly_provided = Service.objects.filter(source="PC").distinct()
+            services_privately_provided = Service.objects.filter(source="PP").distinct()
+            services_not_provided = Service.objects.filter(source="NP").distinct()
+            services_provided_through_partnership = Service.objects.filter(source="PR").distinct()
+
+            # how is a service provided?
+            if services_directly_provided.count()>=4 and services_provided_through_partnership.count()>0:
+                q = TMCQ()
+                q.item = item
+                q.question_text = "Which of these services is provided not by the city directly, but through a regional partnership?"
+                shuff = list(services_directly_provided[:4])
+                random.shuffle(shuff)
+                c = random.randrange(5)
+                q.correct_answer_index = c
+                shuff.insert(c, services_provided_through_partnership[0])
+                for i in range(5):
+                    st = shuff[i]
+                    st_str = [t[1] for t in Service.SERVICE_TYPES if t[0]==st.service_type][0]
+                    q.__dict__["option"+str(i+1)] = st_str
+                q.save()
+
+            elif services_directly_provided.count()>=4 and services_privately_provided.count()>0:
+                q = TMCQ()
+                q.item = item
+                q.question_text = "Which of these services does the city contract out to a private company?"
+                shuff = list(services_directly_provided[:4])
+                random.shuffle(shuff)
+                c = random.randrange(5)
+                q.correct_answer_index = c
+                shuff.insert(c, services_privately_provided[0])
+                for i in range(5):
+                    st = shuff[i]
+                    st_str = [t[1] for t in Service.SERVICE_TYPES if t[0]==st.service_type][0]
+                    q.__dict__["option"+str(i+1)] = st_str
+                q.save()
+
+            elif services_directly_provided.count()>=4 and services_not_provided.count()>0:
+                q = TMCQ()
+                q.item = item
+                q.question_text = "Which of these services does the city not provide?"
+                shuff = list(services_directly_provided[:4])
+                random.shuffle(shuff)
+                c = random.randrange(5)
+                q.correct_answer_index = c
+                shuff.insert(c, services_not_provided[0])
+                for i in range(5):
+                    st = shuff[i]
+                    st_str = [t[1] for t in Service.SERVICE_TYPES if t[0]==st.service_type][0]
+                    q.__dict__["option"+str(i+1)] = st_str
+                q.save()
+
+            # Most expensive service
+            if len(expensive_services) > 4:
+                q = TMCQ()
+                q.item = item
+                q.question_text = "Which of these services is most expensive this year?"
+                shuff = list(expensive_services)
+                random.shuffle(shuff)
+                q.correct_answer_index = shuff.index(expensive_services[0])+1
+                for i in range(5):
+                    st = shuff[i]
+                    st_str = [t[1] for t in Service.SERVICE_TYPES if t[0]==st.service_type][0]
+                    q.__dict__["option"+str(i+1)] = st_str
+                c = random.randrange(1,6)
+                q.save()
 
             num_tmcq = TMCQ.objects.all().count()
             sys.stderr.write("total number of tmcqs in DB: "+str(num_tmcq)+"\n")
