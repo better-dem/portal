@@ -169,20 +169,6 @@ class CityBudgetingProject(cm.ParticipationProject):
                     q.__dict__["option"+str(i+1)] = st_str
                 q.save()
 
-            # Most expensive service
-            if len(expensive_services) > 4:
-                q = TMCQ()
-                q.item = item
-                q.question_text = "Which of these services is most expensive this year?"
-                shuff = list(expensive_services)
-                random.shuffle(shuff)
-                q.correct_answer_index = shuff.index(expensive_services[0])+1
-                for i in range(5):
-                    st = shuff[i]
-                    st_str = [t[1] for t in Service.SERVICE_TYPES if t[0]==st.service_type][0]
-                    q.__dict__["option"+str(i+1)] = st_str
-                c = random.randrange(1,6)
-                q.save()
 
             num_tmcq = TMCQ.objects.all().count()
             sys.stderr.write("total number of tmcqs in DB: "+str(num_tmcq)+"\n")
