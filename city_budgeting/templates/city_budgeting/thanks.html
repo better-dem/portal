@@ -16,39 +16,35 @@
     <table width=100%>
 	<tr>
 	    <td width=50px>
-    {% if question_summary.correct %}
-    <h1><span class="glyphicon glyphicon-ok" aria-hidden="true" style="color:green"></span></h1>
-    {% else %}
-    <h1><span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:red"></span></h1>
-    {% endif %}
-    </td>
-    <td>
-    <table class="table">
-	<!-- <thead><th>Response</th><th>Count</th></thead> -->
-	<tbody>
-	    {% for answer in question_summary.answers %}
-
-	    {% if answer.user_answer %}
-	    {% if answer.correct_answer %}
-	    <tr><td class="success">{{ answer.option_text }}</td></tr>	    
-	    {% else %}
-	    <tr><td class="danger">{{ answer.option_text }}</td></tr>	    
-	    {% endif %}	    
-
-	    {% else %}
-	    {% if answer.correct_answer %}
-	    <tr><td class="info">{{ answer.option_text }}</td></tr>
-	    {% else %}	    
-	    <tr><td>{{ answer.option_text }}</td></tr>
-	    {% endif %}
-	    {% endif %}
-	    
-	    {% endfor %}
-	</tbody>
+		{% if question_summary.correct %}
+		<h1><span class="glyphicon glyphicon-ok" aria-hidden="true" style="color:green"></span></h1>
+		{% else %}
+		<h1><span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:red"></span></h1>
+		{% endif %}
+	    </td>
+	    <td>
+		<table class="table">
+		    <tbody>
+			{% for answer in question_summary.answers %}
+			{% if answer.user_answer %}
+			{% if answer.correct_answer %}
+			<tr><td class="success">{{ answer.option_text }}</td></tr>	    
+			{% else %}
+			<tr><td class="danger">{{ answer.option_text }}</td></tr>	    
+			{% endif %}	    
+			{% else %}
+			{% if answer.correct_answer %}
+			<tr><td class="info">{{ answer.option_text }}</td></tr>
+			{% else %}	    
+			<tr><td>{{ answer.option_text }}</td></tr>
+			{% endif %}
+			{% endif %}
+			{% endfor %}
+		    </tbody>
+		</table>
+	    </td>
+	</tr>
     </table>
-</td>
-</tr>
-</table>
 </p>
 {% endfor %}
 

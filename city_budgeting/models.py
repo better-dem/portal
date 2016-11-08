@@ -99,11 +99,8 @@ class CityBudgetingProject(cm.ParticipationProject):
             q3.__dict__["option"+str(c)] = gen_random_name(city_council_members)
             q3.save()
 
-            # questions about services
-            services = Service.objects.filter(city_budget=self)
-
             # "most expensive service"
-            expensive_services = services.filter(expected_expenditure__isnull=False).order_by("-expected_expenditure")[:5]
+            expensive_services = Service.objects.filter(city_budget=self).filter(expected_expenditure__isnull=False).order_by("-expected_expenditure")[:5]
             if len(expensive_services) > 4:
                 q = TMCQ()
                 q.item = item
@@ -118,10 +115,10 @@ class CityBudgetingProject(cm.ParticipationProject):
                 c = random.randrange(1,6)
                 q.save()
 
-            services_directly_provided = Service.objects.filter(source="PC").distinct()
-            services_privately_provided = Service.objects.filter(source="PP").distinct()
-            services_not_provided = Service.objects.filter(source="NP").distinct()
-            services_provided_through_partnership = Service.objects.filter(source="PR").distinct()
+            services_directly_provided = Service.objects.filter(city_budget=self).filter(source="PC").distinct()
+            services_privately_provided = Service.objects.filter(city_budget=self).filter(source="PP").distinct()
+            services_not_provided = Service.objects.filter(city_budget=self).filter(source="NP").distinct()
+            services_provided_through_partnership = Service.objects.filter(city_budget=self).filter(source="PR").distinct()
 
             # how is a service provided?
             if services_directly_provided.count()>=4 and services_provided_through_partnership.count()>0:
@@ -131,7 +128,7 @@ class CityBudgetingProject(cm.ParticipationProject):
                 shuff = list(services_directly_provided[:4])
                 random.shuffle(shuff)
                 c = random.randrange(5)
-                q.correct_answer_index = c
+                q.correct_answer_index = c+1
                 shuff.insert(c, services_provided_through_partnership[0])
                 for i in range(5):
                     st = shuff[i]
@@ -146,7 +143,7 @@ class CityBudgetingProject(cm.ParticipationProject):
                 shuff = list(services_directly_provided[:4])
                 random.shuffle(shuff)
                 c = random.randrange(5)
-                q.correct_answer_index = c
+                q.correct_answer_index = c+1
                 shuff.insert(c, services_privately_provided[0])
                 for i in range(5):
                     st = shuff[i]
@@ -161,7 +158,7 @@ class CityBudgetingProject(cm.ParticipationProject):
                 shuff = list(services_directly_provided[:4])
                 random.shuffle(shuff)
                 c = random.randrange(5)
-                q.correct_answer_index = c
+                q.correct_answer_index = c+1
                 shuff.insert(c, services_not_provided[0])
                 for i in range(5):
                     st = shuff[i]
@@ -169,10 +166,6 @@ class CityBudgetingProject(cm.ParticipationProject):
                     q.__dict__["option"+str(i+1)] = st_str
                 q.save()
 
-
-            num_tmcq = TMCQ.objects.all().count()
-            sys.stderr.write("total number of tmcqs in DB: "+str(num_tmcq)+"\n")
-            sys.stderr.flush()
             return set([item.id])
 
         return set()
