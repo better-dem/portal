@@ -42,6 +42,15 @@ def get_item_subclass_test(app):
     subclass_name = m.__name__.lower().replace("_","")
     return lambda x: getattr(x, subclass_name)
 
+def get_project_subclass_test(app):
+    project_models = get_app_project_models(app)
+    if len(project_models) == 0:
+        raise Exception("app"+app.name+" has no Participation Project models")
+    m = project_models[0]
+    subclass_name = m.__name__.lower().replace("_","")
+    return lambda x: getattr(x, subclass_name)
+
+
 def get_provider_permission(app):
     project_model = get_app_project_models(app)[0]
     model_name = project_model.__name__.lower().replace("_","")
@@ -57,6 +66,17 @@ class ParticipationProject(models.Model):
 
     def update_items(self):
         raise Exception("Please overwrite the update_items() method for your participation app")
+
+    def get_inherited_instance(self):
+        ans = self
+        for t in [get_project_subclass_test(app) for app in get_registered_participation_apps()]:
+            try:
+                ans = t(self)
+            except:
+                continue
+            else:
+                return ans
+        raise Exception("unknown subclass type")
 
 
 class ParticipationItem(models.Model):

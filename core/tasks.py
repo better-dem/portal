@@ -5,6 +5,17 @@ import sys
 from celery import shared_task
 from django.core.files.storage import default_storage
 import itertools
+from django.db.models.signals import post_save
+        
+
+# signals to trigger tasks
+def process_new_project(sender, instance, created, **kwargs):
+    if created:
+        # start bg task to create items for project
+        item_update.delay(instance.id)
+
+def register_participation_project_subclass(cls):
+    post_save.connect(process_new_project, sender=cls)
 
 ### Begin: Tasks for loading data files & updating the database
 
@@ -93,19 +104,14 @@ def insert_usa_and_states(small_test):
 ### Begin: Regular Background tasks
 
 @shared_task
-def item_update():
-    apps = cm.get_registered_participation_apps()
-    num_items_created = 0
-    for app in apps:
-        project_model = cm.get_app_project_models(app)[0]
-        projects = project_model.objects.all()
-        for p in projects:
-            item_ids = p.update_items()
-            for item_id in item_ids:
-                i = cm.ParticipationItem.objects.get(pk=item_id)
-                for t in i.tags.all():
-                    feed_update_by_tag.delay(t.id)
-            num_items_created += len(item_ids)
+def item_update(project_id):
+    p = cm.ParticipationProject.objects.get(pk=project_id).get_inherited_instance()
+    item_ids = p.update_items()
+    num_items_created = len(item_ids)
+    for item_id in item_ids:
+        i = cm.ParticipationItem.objects.get(pk=item_id)
+        for t in i.tags.all():
+            feed_update_by_tag.delay(t.id)
             
     sys.stdout.write("number of items created: "+str(num_items_created))
     sys.stdout.flush()

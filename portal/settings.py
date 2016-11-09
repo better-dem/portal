@@ -172,12 +172,8 @@ BROKER_URL = os.environ["REDIS_URL"]
 
 # from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
 CELERYBEAT_SCHEDULE = {
-    'item-update': {
-        'task': 'core.tasks.item_update',
-        'schedule': celery.schedules.schedule(run_every=2)
-    },
-    # 'feed-update': {
-    #     'task': 'core.tasks.feed_update',
+    # 'item-update': {
+    #     'task': 'core.tasks.item_update',
     #     'schedule': celery.schedules.schedule(run_every=2)
     # },
 }
