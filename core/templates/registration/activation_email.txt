@@ -1,6 +1,6 @@
 {% load i18n %}
-{% trans "Activate account at" %} {{ site.name }}:
+Thank you for registering for a Better Dem Portal account.
 
-http://{{ site.domain }}{% url 'registration_activate' activation_key %}
+Please finish your registration here: http://{{ site.domain }}{% url 'registration_activate' activation_key %}
 
 {% blocktrans %}Link is valid for {{ expiration_days }} days.{% endblocktrans %}

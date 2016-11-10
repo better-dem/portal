@@ -6,7 +6,7 @@ from celery import shared_task
 from django.core.files.storage import default_storage
 import itertools
 from django.db.models.signals import post_save
-        
+from django.contrib.gis.geos import Point        
 
 # signals to trigger tasks
 def process_new_project(sender, instance, created, **kwargs):
@@ -40,6 +40,7 @@ def insert_uscitieslist_v0(small_test):
                 continue
 
             name = row[1]
+            county = row[2]
             state = row[4]
             lat = row[7]
             lon = row[8]
@@ -47,14 +48,14 @@ def insert_uscitieslist_v0(small_test):
             median_income = row[12]
             land_area = row[13]
 
-            if not cm.GeoTag.objects.filter(name=name, detail=state+", United States").exists():
-                t = cm.GeoTag.objects.create(name=name, feature_type=cm.GeoTag.CITY, detail=state+", United States",point="POINT({} {})".format(str(lon), str(lat)))
+            if not cm.GeoTag.objects.filter(name=name, point__distance_lte=(Point(float(lon), float(lat)), 1000)).exists():
+                t = cm.GeoTag.objects.create(name=name, feature_type=cm.GeoTag.CITY, detail=county+", "+state+", United States", point="POINT({} {})".format(str(lon), str(lat)))
                 t.save()
                 num_changes += 1
             else:
                 # update feature type if its missing
                 # assume there's only one match
-                obj = cm.GeoTag.objects.filter(name=name, detail=state+", United States")[0]
+                obj = cm.GeoTag.objects.filter(name=name, point__distance_lte=(Point(float(lon), float(lat)), 1000))[0]
                 if obj.feature_type == cm.GeoTag.UNKNOWN:
                     obj.feature_type = cm.GeoTag.CITY
                     obj.save()

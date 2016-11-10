@@ -134,8 +134,9 @@ class Tag(models.Model):
 
 class GeoTag(Tag):
     polygon = models.PolygonField(geography = True, blank=True, null=True)
-    polygon_area = models.FloatField(blank = True, default=-1)
+    polygon_area = models.FloatField(blank = True, null=True)
     point = models.PointField(geography = True, blank=True, null=True)
+    population = models.PositiveIntegerField(blank=True, null=True)
 
     COUNTRY="CO"
     STATE_OR_PROVINCE="SP"

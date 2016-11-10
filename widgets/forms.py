@@ -308,7 +308,7 @@ class AjaxStringLookupWidget(forms.Widget):
         input_id = kwargs['attrs']['id']
         if value is None:
             value = 'null'
-        render_html = "<input type='text' name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
+        render_html = "<input type='text' size=\"40\" name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
         render_html += '<script type="text/javascript">\n'
         render_html += "attach_ajax_string_listener(\""+self.ajax_url+"\", \""+str(input_id)+"\")\n"
         render_html += "</script>\n"
