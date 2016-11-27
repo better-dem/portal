@@ -21,7 +21,6 @@ DEBUG = os.environ["DJANGO_DEBUG_STATE"]=="True"
 
 INSTALLED_APPS = [
     'core.apps.CoreConfig',
-    'dummy_participation_project.apps.DummyParticipationProjectConfig',
     'manual_news_article_curation.apps.ManualNewsArticleCurationConfig',
     'land_use_planning.apps.LandUsePlanningConfig',
     'city_budgeting.apps.CityBudgetingConfig',

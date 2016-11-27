@@ -3,6 +3,7 @@ from django.contrib.gis.db import models
 from django.db import transaction
 from django.db.models.signals import post_save, m2m_changed
 from django.contrib.auth.models import User, Permission
+from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
 from django.apps import apps
 import sys
@@ -115,7 +116,9 @@ class ParticipationItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
-    
+    is_temporary = models.BooleanField(default=False)
+    session_key = models.CharField(blank=True, null=True)
+
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
     user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
@@ -158,6 +161,16 @@ def create_user_profile(sender, instance, created, **kwargs):
         new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
 
 post_save.connect(create_user_profile, sender=User)
+
+
+def create_temporary_profile(sender, instance, created, **kwargs):
+    if created:
+        new_profile = TemporaryProfile()
+        new_profile.session = instance
+        new_profile.save()
+        new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
+
+post_save.connect(create_temporary_profile, sender=Session)
 
 def process_new_item(sender, instance, created, **kwargs):
     if created:
