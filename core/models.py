@@ -116,8 +116,6 @@ class ParticipationItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
-    is_temporary = models.BooleanField(default=False)
-    session_key = models.CharField(blank=True, null=True)
 
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)

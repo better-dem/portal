@@ -11,15 +11,9 @@ from django.core.files.storage import default_storage
 
 def get_profile_and_permissions(request):
     user = request.user
-    try:
-        profile = user.userprofile
-    except AttributeError:
-        session = request.session
-        matching_profiles = UserProfile.objects.filter(session_key=session.session_key)
-        if len(matching_profiles) > 0:
-            return (matching_profiles[0], user.get_all_permissions())
-        
-
+    if isinstance(user, AnonymousUser):
+        return (None, [])
+    profile = user.userprofile        
     perms = user.get_all_permissions()    
     return (profile, perms)
 
@@ -29,7 +23,8 @@ def test_geo(request):
 
 def upload_dataset(request):
     (profile, permissions) = get_profile_and_permissions(request)
-
+    if profile is None:
+        return render(request, "core/please_login.html")
     app = cm.get_core_app()
     perm = cm.get_provider_permission(app)
     if not app.label+"."+perm.codename in permissions:
@@ -55,6 +50,8 @@ def upload_dataset(request):
 
 def show_profile(request):
     (profile, permissions) = get_profile_and_permissions(request)
+    if profile is None:
+        return render(request, "core/please_login.html")
     tags = [t.name for t in profile.tags.all()[:100]]
 
     profile_apps = []
@@ -82,6 +79,8 @@ def show_profile(request):
 
 def update_profile_tags(request):
     (profile, permissions) = get_profile_and_permissions(request)
+    if profile is None:
+        return render(request, "core/please_login.html")
     if request.method == 'POST':
         form = AddTagForm(request.POST)
         if form.is_valid():
@@ -99,6 +98,9 @@ def update_profile_tags(request):
     
 def app_view_relay(request, app_name, action_name, project_id, item_id):
     (profile, permissions) = get_profile_and_permissions(request)
+    # TODO: allow some participation even if the user isn't logged in / registered
+    if profile is None:
+        return render(request, "core/please_login.html")
     if not app_name in [app.label for app in cm.get_registered_participation_apps()]:
         raise Exception("app not registered or does not exist:" + str(app_name))
     else:
@@ -125,11 +127,17 @@ def app_view_relay(request, app_name, action_name, project_id, item_id):
 
 def feed(request):
     (profile, permissions) = get_profile_and_permissions(request)
-    items = None
+    num_tags_followed = 1
+    if profile is None:
+        # show recent results for United States, suggest that the user follow more places
+        items = []
+        return render(request, 'core/feed.html', {'items':items, 'num_tags_followed':num_tags_followed})
+
+    num_tags_followed = len(profile.tags)
     recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
     items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
     tasks.feed_update_by_user_profile.delay(profile.id)
-    return render(request, 'core/feed.html', {'items':items})
+    return render(request, 'core/feed.html', {'items':items, 'num_tags_followed':num_tags_followed})
 
 def get_item_details(item, get_activity=False):
     """

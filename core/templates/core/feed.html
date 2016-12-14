@@ -1,6 +1,48 @@
 {% extends "core/base.html" %}
 {% block content %}
+{% load staticfiles %}
 <h2>Participation Feed</h2>
+
+<a href="/update_tags">
+    <div class="input-group" id="update_tags_field">
+	<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+	<input id="email" type="text" class="form-control" name="email" placeholder="See participation opportunities for more places">
+    </div>
+</a>
+
+<script>
+ if ({{ num_tags_followed }} < 3){
+
+     var tour = new Tour({
+	 storage: false,
+	 backdrop: true,
+	 /* debug: true, */
+	 template: `<div class='popover tour'>
+    <div class='arrow'></div>
+    <div class='popover-content'></div>
+  </div>`,
+	 steps: [
+	     {
+		 element: "#update_tags_field",
+		 title: "Want to see opportunities in your area?",
+		 content: "Right now, you're only following {{ num_tags_followed }} places. Click here to see what opportunities there are in your home state and city!"
+	     }
+	 ]});
+     
+     console.log(tour)
+     
+     // Initialize the tour
+     tour.init();
+     setTimeout(function() {tour.start();}, 10000)
+
+     $(document).on('click', function (e) {
+	 if (tour.getCurrentStep() != null){
+	     tour.end()
+	 }
+     });
+     
+ }
+</script>
 
 {% for item in items %}
 {% include "core/feed_item.html" %}
