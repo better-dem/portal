@@ -68,7 +68,7 @@ def insert_uscitieslist_v0(small_test):
     sys.stdout.flush()
 
 @shared_task
-def insert_usa_and_states(small_test):
+def insert_states(small_test):
     filename = "/uploads/misc/tmp"
     sys.stdout.write("Processing csv for file: "+str(filename)+"\n")
     i = 0

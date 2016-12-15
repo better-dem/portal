@@ -36,8 +36,8 @@ def upload_dataset(request):
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
                 tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"])
                 return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
-            elif form.cleaned_data["format_id"] == "usa_and_states_v0":
-                tasks.insert_usa_and_states.delay(form.cleaned_data["small_test"])
+            elif form.cleaned_data["format_id"] == "states_v1":
+                tasks.insert_states.delay(form.cleaned_data["small_test"])
                 return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
             else:
                 return HttpResponse("Sorry, this format is not known")
@@ -129,11 +129,8 @@ def feed(request):
     (profile, permissions) = get_profile_and_permissions(request)
     num_tags_followed = 1
     if profile is None:
-        # show recent results for United States, suggest that the user follow more places
-        items = []
-        return render(request, 'core/feed.html', {'items':items, 'num_tags_followed':num_tags_followed})
-
-    num_tags_followed = len(profile.tags)
+        u,profile = cm.get_default_user_profile()
+    num_tags_followed = profile.tags.count()
     recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
     items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
     tasks.feed_update_by_user_profile.delay(profile.id)

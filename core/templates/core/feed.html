@@ -2,14 +2,13 @@
 {% block content %}
 {% load staticfiles %}
 <h2>Participation Feed</h2>
-
 <a href="/update_tags">
     <div class="input-group" id="update_tags_field">
 	<span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
 	<input id="email" type="text" class="form-control" name="email" placeholder="See participation opportunities for more places">
     </div>
 </a>
-
+<br>
 <script>
  if ({{ num_tags_followed }} < 3){
 

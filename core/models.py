@@ -60,6 +60,11 @@ def get_provider_permission(app):
     perm = Permission.objects.get(content_type=content_type, codename__startswith="add_")
     return perm
 
+def get_default_user_profile():
+    user = User.objects.get(username="default")
+    profile = user.userprofile
+    return (user, profile)
+
 ### Start core models
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 100)
@@ -159,16 +164,6 @@ def create_user_profile(sender, instance, created, **kwargs):
         new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
 
 post_save.connect(create_user_profile, sender=User)
-
-
-def create_temporary_profile(sender, instance, created, **kwargs):
-    if created:
-        new_profile = TemporaryProfile()
-        new_profile.session = instance
-        new_profile.save()
-        new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
-
-post_save.connect(create_temporary_profile, sender=Session)
 
 def process_new_item(sender, instance, created, **kwargs):
     if created:
