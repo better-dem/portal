@@ -5,8 +5,9 @@ from django.db.models.signals import post_save, m2m_changed
 from django.contrib.auth.models import User, Permission
 from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
-import sys
+import sys, random, string
 
 ### Start functions for accessing particpation app API
 def get_core_app():
@@ -60,10 +61,22 @@ def get_provider_permission(app):
     perm = Permission.objects.get(content_type=content_type, codename__startswith="add_")
     return perm
 
-def get_default_user_profile():
-    user = User.objects.get(username="default")
-    profile = user.userprofile
-    return (user, profile)
+def get_default_user():
+    return User.objects.get_or_create(
+        username = "default", 
+        defaults = {"email":"default@default.default", 
+                    "password": ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(20)), 
+                    "last_login": "2016-12-15T15:53:48.874Z", 
+                    "is_superuser": False, 
+                    "first_name": "", 
+                    "last_name": "", 
+                    "is_staff": False, 
+                    "is_active": True, 
+                    "date_joined": "2016-11-09T22:26:10.731Z", 
+                })[0]
+
+def get_usa():
+    return GeoTag.objects.get_or_create(name="United States of America", defaults={"detail": "North America", "feature_type": "CO"})[0]
 
 ### Start core models
 class ParticipationProject(models.Model):
@@ -130,8 +143,11 @@ class FeedMatch(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length = 300)
-    # ex: state + country name if the tag is a city
+    # ex: county + state + country name if the tag is a city
     detail = models.CharField(max_length = 300, blank=True, null=True)
+
+    class Meta:
+        unique_together = (("name", "detail"),)
 
     def get_name(self):
         if not self.detail is None:
@@ -161,7 +177,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         new_profile = UserProfile()
         new_profile.user = instance
         new_profile.save()
-        new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
+        new_profile.tags.add(get_usa())
 
 post_save.connect(create_user_profile, sender=User)
 

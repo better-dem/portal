@@ -149,7 +149,7 @@ AWS_S3_HOST="s3-us-west-1.amazonaws.com"
 STATIC_URL = "https://"+AWS_STORAGE_BUCKET_NAME+"."+AWS_S3_HOST+"/"
 
 ### Settings for django registration
-ACCOUNT_ACTIVATION_DAYS=2
+ACCOUNT_ACTIVATION_DAYS=7
 REGISTRATION_OPEN=True
 REGISTRATION_SALT="fd43*7uHJjh(*Jmnbyt5$Th"
 

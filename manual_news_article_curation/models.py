@@ -35,4 +35,4 @@ class NewsArticleItem(cm.ParticipationItem):
 
     def set_relevant_tags(self):
         # i should do some NLP or something...
-        self.tags.add(cm.GeoTag.objects.get(name="United States of America"))
+        self.tags.add(cm.get_usa())

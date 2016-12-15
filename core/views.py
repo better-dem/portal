@@ -129,7 +129,8 @@ def feed(request):
     (profile, permissions) = get_profile_and_permissions(request)
     num_tags_followed = 1
     if profile is None:
-        u,profile = cm.get_default_user_profile()
+        u = cm.get_default_user()
+        profile = u.userprofile
     num_tags_followed = profile.tags.count()
     recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
     items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
