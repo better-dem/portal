@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from city_budgeting.models import CityBudgetingProject, QuizResponse, Question, QuestionResponse, TMCQResponse, CityBudgetQuiz, Service
 from .forms import CreateProjectForm, QuizResponseForm
@@ -10,8 +10,7 @@ import core.forms as cf
 import core.models as cm
 
 def new_project(request):
-    u = request.user
-    p = u.userprofile
+    (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
         form = CreateProjectForm(request.POST)
@@ -25,7 +24,7 @@ def new_project(request):
             project.mayor_name = form.cleaned_data["mayor_name"]
             project.council_members = form.cleaned_data["council_members"]
             project.budget_url = form.cleaned_data["budget_url"]
-            project.owner_profile = p
+            project.owner_profile = profile
             project.save()
 
             for st in Service.SERVICE_TYPES:
@@ -46,7 +45,7 @@ def new_project(request):
 
 
 def administer_project(request, project_id):
-    project = CityBudgetingProject.objects.get(pk=project_id)
+    project = get_object_or_404(CityBudgetingProject, pk=project_id)
     items = CityBudgetQuiz.objects.filter(participation_project=project).distinct()
 
     item_details = []
@@ -91,12 +90,9 @@ def administer_project(request, project_id):
 
 
 def participate(request, item_id):
-    (profile, permissions) = cv.get_profile_and_permissions(request)
-    if profile is None:
-        user = cm.get_default_user()
-        profile = user.userprofile
+    (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
-    item = CityBudgetQuiz.objects.get(pk=item_id)
+    item = get_object_or_404(CityBudgetQuiz, pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     # project = item.participation_project.landuseproject
     title = item.name
@@ -115,7 +111,7 @@ def participate(request, item_id):
             for key in form.cleaned_data:
                 if "field_prf_" in key:
                     question_id = key.lstrip("field_prf_")
-                    question = Question.objects.get(pk=question_id)
+                    question = get_object_or_404(Question, pk=question_id)
                     question_summary=dict()
                     try:
                         tmcq = question.tmcq

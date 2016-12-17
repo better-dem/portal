@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from land_use_planning.models import LandUseProject, FeedbackGoal, ItemResponse, Question, QuestionResponse, TMCQResponse, LandUseParticipationItem
 from .forms import CreateProjectForm, ItemResponseForm
@@ -6,12 +6,11 @@ from django.db.models import Count
 import os
 import sys
 import core.models as cm
-from core.views import get_item_details
+import core.views as cv
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
 
 def new_project(request):
-    u = request.user
-    p = u.userprofile
+    (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
         form = CreateProjectForm(request.POST)
@@ -23,7 +22,7 @@ def new_project(request):
             poly_data = [(x[1], x[0]) for x in form.cleaned_data["polygon_field"]]
             poly_data.append(poly_data[0]) # polygon must be instantiated with a closed ring
             project.polygon = Polygon(LinearRing(tuple(poly_data)))
-            project.owner_profile = p
+            project.owner_profile = profile
             project.save()
 
             goals = FeedbackGoal.objects.all()
@@ -40,14 +39,14 @@ def new_project(request):
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
 
 def administer_project(request, project_id):
-    project = LandUseProject.objects.get(pk=project_id)
+    project = get_object_or_404(LandUseProject, pk=project_id)
     questions = project.get_questions()
     items = LandUseParticipationItem.objects.filter(participation_project=project).distinct()
 
     item_details = []
 
     for item in items:
-        current_item_detail = get_item_details(item, True)
+        current_item_detail = cv.get_item_details(item, True)
 
         responses = ItemResponse.objects.filter(participation_item=item)
         num_responses = responses.count()
@@ -93,10 +92,7 @@ def administer_project(request, project_id):
 
 
 def participate(request, item_id):
-    (profile, permissions) = cv.get_profile_and_permissions(request)
-    if profile is None:
-        user = cm.get_default_user()
-        profile = user.userprofile
+    (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     item = LandUseParticipationItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
@@ -115,7 +111,7 @@ def participate(request, item_id):
             for key in form.cleaned_data:
                 if "field_prf_" in key:
                     question_id = key.lstrip("field_prf_")
-                    question = Question.objects.get(pk=question_id)
+                    question = get_object_or_404(Question, pk=question_id)
                     try:
                         tmcq = question.tmcq
                     except:

@@ -4,6 +4,12 @@
 Thank you for {{ action_description }}.
 </p>
 
+{% if unregistered %}
+<p>
+Please <a href="/accounts/register">register</a> to use our full features and get updates.
+</p>
+{% endif %}
+
 {% block thanks_detail %}{% endblock %}
 
 {% if item_link %}
@@ -13,7 +19,7 @@ You can administer this project <a href={{ item_link }}>here</a>.
 {% endif %}
 
 <p>
-<a href="/">Go back to home page</a>.
+<a href="/">Go back to the feed</a>.
 </p>
 
 {% endblock %}
