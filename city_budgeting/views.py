@@ -5,8 +5,9 @@ from .forms import CreateProjectForm, QuizResponseForm
 from django.db.models import Count
 import os
 import sys
-from core.views import get_item_details
+import core.views as cv
 import core.forms as cf
+import core.models as cm
 
 def new_project(request):
     u = request.user
@@ -53,7 +54,7 @@ def administer_project(request, project_id):
     for item in items:
         questions = Question.objects.filter(item=item).distinct()
 
-        current_item_detail = get_item_details(item, True)
+        current_item_detail = cv.get_item_details(item, True)
 
         responses = QuizResponse.objects.filter(participation_item=item)
         num_responses = responses.count()
@@ -90,10 +91,13 @@ def administer_project(request, project_id):
 
 
 def participate(request, item_id):
-    u = request.user
-    p = u.userprofile
+    (profile, permissions) = cv.get_profile_and_permissions(request)
+    if profile is None:
+        user = cm.get_default_user()
+        profile = user.userprofile
 
     item = CityBudgetQuiz.objects.get(pk=item_id)
+    context = cv.get_default_og_metadata(request, item)
     # project = item.participation_project.landuseproject
     title = item.name
 
@@ -101,7 +105,7 @@ def participate(request, item_id):
         form = QuizResponseForm(item, request.POST )        
         if form.is_valid():
             item_response = QuizResponse()
-            item_response.user_profile = p
+            item_response.user_profile = profile
             item_response.participation_item = item
             item_response.save()
             
@@ -142,12 +146,15 @@ def participate(request, item_id):
             rank = all_scores.index(s)+1
             rank_str = "Your rank: {} out of {} total participants".format(rank, len(all_scores))
             score = str(round(100*s))+"%"
-            return render(request, 'city_budgeting/thanks.html', {"action_description": "taking "+title, "score": score, "rank": rank_str, "question_summaries": question_summaries})
+            context.update({"action_description": "taking "+title, "score": score, "rank": rank_str, "question_summaries": question_summaries})
+            return render(request, 'city_budgeting/thanks.html', context)
         else:
-            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
+            context.update({'form': form, 'action_path' : request.path, 'title' : title})
+            return render(request, 'core/generic_form.html', context)
     else:
         form = QuizResponseForm(item)
-        return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
+        context.update({'form': form, 'action_path' : request.path, 'title' : title})
+        return render(request, 'core/generic_form.html', context)
 
 
 

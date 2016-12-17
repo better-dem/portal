@@ -111,6 +111,8 @@ USE_TZ = True
 DATABASES['default'].update(dj_database_url.config())
 DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
+SECURE_SSL_REDIRECT = os.environ["SECURE_SSL_REDIRECT"]=="True"
+
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 

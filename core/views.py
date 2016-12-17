@@ -9,6 +9,21 @@ from core.forms import UploadGeoTagset, AddTagForm, get_matching_tags, get_best_
 import sys
 from django.core.files.storage import default_storage
 
+def get_default_og_metadata(request, participation_item=None):
+    ans = {
+        "og_image": "https://raw.githubusercontent.com/better-dem/better-dem.github.io/master/images/logo.png",
+        "og_type": "website",
+        "og_title": "Better Democracy Portal",
+        "og_description": "Aggregating and creating opportunities to participate with your government",
+        # "og_url": request.get_host()+"/"+request.get_path()
+    }
+    if not participation_item is None:
+        # app = cm.get_app_for_model(participation_item.get_inherited_instance())
+        # ans["og_url"] = request.get_host()+"/apps/"+app.label+"/participate/-1/"+str(participation_item.id)
+        if not participation_item.display_image_url is None and not participation_item.display_image_url=="":
+            ans["og_image"] = participation_item.display_image_url
+    return ans
+
 def get_profile_and_permissions(request):
     user = request.user
     if isinstance(user, AnonymousUser):
@@ -100,7 +115,8 @@ def app_view_relay(request, app_name, action_name, project_id, item_id):
     (profile, permissions) = get_profile_and_permissions(request)
     # TODO: allow some participation even if the user isn't logged in / registered
     if profile is None:
-        return render(request, "core/please_login.html")
+        user = cm.get_default_user()
+        profile = user.userprofile
     if not app_name in [app.label for app in cm.get_registered_participation_apps()]:
         raise Exception("app not registered or does not exist:" + str(app_name))
     else:
@@ -120,7 +136,7 @@ def app_view_relay(request, app_name, action_name, project_id, item_id):
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "administer a project"})
         elif action_name == "participate":
             cm.ParticipationItem.objects.filter(pk=item_id).distinct().update(visits=F('visits')+1)
-            cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=item_id).update(has_been_visited=True)
+            cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=item_id).update(has_been_visited=True) 
             return app.views_module.participate(request, item_id) 
         else:
             raise Exception("invalid action:" + str(action_name))
@@ -135,7 +151,9 @@ def feed(request):
     recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
     items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
     tasks.feed_update_by_user_profile.delay(profile.id)
-    return render(request, 'core/feed.html', {'items':items, 'num_tags_followed':num_tags_followed})
+    context = {'items': items, 'num_tags_followed': num_tags_followed}
+    context.update(get_default_og_metadata(request))
+    return render(request, 'core/feed.html', context)
 
 def get_item_details(item, get_activity=False):
     """

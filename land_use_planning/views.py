@@ -5,6 +5,7 @@ from .forms import CreateProjectForm, ItemResponseForm
 from django.db.models import Count
 import os
 import sys
+import core.models as cm
 from core.views import get_item_details
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
 
@@ -92,10 +93,13 @@ def administer_project(request, project_id):
 
 
 def participate(request, item_id):
-    u = request.user
-    p = u.userprofile
+    (profile, permissions) = cv.get_profile_and_permissions(request)
+    if profile is None:
+        user = cm.get_default_user()
+        profile = user.userprofile
 
     item = LandUseParticipationItem.objects.get(pk=item_id)
+    context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.landuseproject
     title = project.name
 
@@ -103,7 +107,7 @@ def participate(request, item_id):
         form = ItemResponseForm(project, request.POST )        
         if form.is_valid():
             item_response = ItemResponse()
-            item_response.user_profile = p
+            item_response.user_profile = profile
             item_response.participation_item = item
             item_response.save()
             
@@ -123,12 +127,15 @@ def participate(request, item_id):
                         qr.option_index = int(form.cleaned_data[key])
                         qr.save()
                         
-            return render(request, 'core/thanks.html', {"action_description": "responding to the land use planning project: "+title})
+            context.update({"action_description": "responding to the land use planning project: "+title})
+            return render(request, 'core/thanks.html', context)
         else:
-            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
+            context.update({'form': form, 'action_path' : request.path, 'title' : title})
+            return render(request, 'core/generic_form.html', context)
     else:
         form = ItemResponseForm(project)
-        return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, 'title' : title})
+        context.update({'form': form, 'action_path' : request.path, 'title' : title})
+        return render(request, 'core/generic_form.html', context)
 
 
 

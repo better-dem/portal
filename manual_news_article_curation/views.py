@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from manual_news_article_curation.forms import CreateArticleForm
 from manual_news_article_curation.models import ManualNewsCurationProject, NewsArticleItem
-from core.views import get_item_details
-from core import models as cm
+import core.views as cv
+import core.models as cm
 
 def new_project(request):
     u = request.user
@@ -28,7 +28,7 @@ def new_project(request):
 def administer_project(request, project_id):
     project = ManualNewsCurationProject.objects.get(pk=project_id)
     items = NewsArticleItem.objects.filter(participation_project=project)
-    return render(request, 'core/generic_project_stats.html', {"items": [get_item_details(i, True) for i in items]})
+    return render(request, 'core/generic_project_stats.html', {"items": [cv.get_item_details(i, True) for i in items]})
 
 
 def participate(request, item_id):
