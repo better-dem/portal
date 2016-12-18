@@ -112,7 +112,7 @@ def item_update(project_id):
     for item_id in item_ids:
         i = cm.ParticipationItem.objects.get(pk=item_id)
         for t in i.tags.all():
-            feed_update_by_tag.delay(t.id)
+            feed_update_by_tag(t.id)
             
     sys.stdout.write("number of items created: "+str(num_items_created))
     sys.stdout.flush()
@@ -126,10 +126,9 @@ def feed_update_by_user_profile(profile_id):
     sys.stdout.flush()
     profile = cm.UserProfile.objects.get(pk=profile_id)
     for tag in profile.tags.all():
-        feed_update_by_tag.delay(tag.id, limit_user_profile=profile_id)
+        feed_update_by_tag(tag.id, limit_user_profile=profile_id)
 
 
-@shared_task
 def feed_update_by_tag(tag_id, limit_user_profile=None):
     """
     Update feed relative to some tag
@@ -160,3 +159,4 @@ def feed_update_by_tag(tag_id, limit_user_profile=None):
 
     sys.stdout.write("number of matches created: "+str(num_matches_created))
     sys.stdout.flush()
+
