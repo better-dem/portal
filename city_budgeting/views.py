@@ -36,7 +36,7 @@ def new_project(request):
                     s.expected_expenditure = form.cleaned_data[st[0]+"_expenditure"]
                 s.save()
             
-            return render(request, 'core/thanks.html', {"action_description": "creating a new city budget project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)+"/-1"})
+            return render(request, 'core/thanks.html', {"action_description": "creating a new city budget project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     else:

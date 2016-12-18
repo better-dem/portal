@@ -16,7 +16,7 @@ def new_project(request):
             project.owner_profile = profile
             project.save()
             
-            return render(request, 'core/thanks.html', {"action_description": "creating a new news article project", "link": "/apps/manual_news_article_curation/administer_project/"+str(project.id)+"/-1"})
+            return render(request, 'core/thanks.html', {"action_description": "creating a new news article project", "link": "/apps/manual_news_article_curation/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     else:

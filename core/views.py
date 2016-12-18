@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission, AnonymousUser
+from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden
@@ -14,11 +15,12 @@ def get_default_og_metadata(request, participation_item=None):
         "og_type": "website",
         "og_title": "Better Democracy Portal",
         "og_description": "Aggregating and creating opportunities to participate with your government",
-        # "og_url": request.get_host()+"/"+request.get_path()
+        "og_url": get_current_site(request).domain
     }
     if not participation_item is None:
+        app = cm.get_app_for_model(participation_item.get_inherited_instance().__class__)
         # app = cm.get_app_for_model(participation_item.get_inherited_instance())
-        # ans["og_url"] = request.get_host()+"/apps/"+app.label+"/participate/-1/"+str(participation_item.id)
+        ans["og_url"] = get_current_site(request).domain+"/apps/"+app.label+"/participate/"+str(participation_item.id)
         if not participation_item.display_image_url is None and not participation_item.display_image_url=="":
             ans["og_image"] = participation_item.display_image_url
     return ans
@@ -86,12 +88,12 @@ def show_profile(request):
             profile_app["label"] = profile_app["label"] + " -- No Permissions"
         else:
             profile_app["label"] = profile_app["label"]
-            profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1/-1"
+            profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
             existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile)
             for ep in existing_projects:
                 proj = dict()
                 proj["name"] = ep.name
-                proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)+"/-1"
+                proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)
                 profile_app["existing_projects"].append(proj)
                 
         profile_apps.append(profile_app)
@@ -117,7 +119,7 @@ def update_profile_tags(request):
         form = AddTagForm()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     
-def app_view_relay(request, app_name, action_name, project_id, item_id):
+def app_view_relay(request, app_name, action_name, object_id):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if not app_name in [app.label for app in cm.get_registered_participation_apps()]:
         raise Exception("app not registered or does not exist:" + str(app_name))
@@ -133,15 +135,15 @@ def app_view_relay(request, app_name, action_name, project_id, item_id):
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "create a new project"})
         elif action_name == "administer_project":
             if has_perm:
-                get_object_or_404(cm.ParticipationProject, pk=project_id, owner_profile=profile)
-                return app.views_module.administer_project(request, project_id)
+                get_object_or_404(cm.ParticipationProject, pk=object_id, owner_profile=profile)
+                return app.views_module.administer_project(request, object_id)
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "administer a project"})
         elif action_name == "participate":
-            get_object_or_404(cm.ParticipationItem, pk=item_id)
-            cm.ParticipationItem.objects.filter(pk=item_id).distinct().update(visits=F('visits')+1)
-            cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=item_id).update(has_been_visited=True) 
-            return app.views_module.participate(request, item_id) 
+            get_object_or_404(cm.ParticipationItem, pk=object_id)
+            cm.ParticipationItem.objects.filter(pk=object_id).distinct().update(visits=F('visits')+1)
+            cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=object_id).update(has_been_visited=True) 
+            return app.views_module.participate(request, object_id) 
         else:
             raise Exception("invalid action:" + str(action_name))
 
@@ -162,7 +164,7 @@ def get_item_details(item, get_activity=False):
     """
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
-    ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(project_id)+"/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]]}
+    ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]]}
     if not item.display_image_url == "":
         ans["display_image_url"] = item.display_image_url
     if get_activity:
