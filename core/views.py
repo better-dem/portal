@@ -15,12 +15,12 @@ def get_default_og_metadata(request, participation_item=None):
         "og_type": "website",
         "og_title": "Better Democracy Portal",
         "og_description": "Aggregating and creating opportunities to participate with your government",
-        "og_url": get_current_site(request).domain
+        "og_url": "http://"+get_current_site(request).domain
     }
     if not participation_item is None:
         app = cm.get_app_for_model(participation_item.get_inherited_instance().__class__)
         # app = cm.get_app_for_model(participation_item.get_inherited_instance())
-        ans["og_url"] = get_current_site(request).domain+"/apps/"+app.label+"/participate/"+str(participation_item.id)
+        ans["og_url"] = "http://"+get_current_site(request).domain+"/apps/"+app.label+"/participate/"+str(participation_item.id)
         if not participation_item.display_image_url is None and not participation_item.display_image_url=="":
             ans["og_image"] = participation_item.display_image_url
     return ans
