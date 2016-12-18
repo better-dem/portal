@@ -2,13 +2,20 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Better Democracy Portal{% if title %}: {{ title }}{% endif %}</title>
+	<title>Better Democracy Portal{% if title %}: {{ title }}{% endif %}</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% if og_url %}<meta property="og:url" content="{{ og_url }}" />{% endif %}
+	{% if og_type %}<meta property="og:type" content="{{ og_type }}" />{% endif %}
+	{% if og_title %}<meta property="og:title" content="{{ og_title }}" />{% endif %}
+	{% if og_description %}<meta property="og:description" content="{{ og_description }}" />{% endif %}
+	{% if og_image %}<meta property="og:image" content="{{ og_image }}" />{% else %}<meta property="og:image" content="{% static 'core/img/portal_logo.png' %}" />{% endif %}
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+	<link rel="stylesheet" href="{% static 'core/css/bootstrap-tour.min.css' %}">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
+	<script src="{% static 'core/js/bootstrap-tour.min.js' %}"></script>
     </head>
     <body>
 

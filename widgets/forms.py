@@ -34,6 +34,104 @@ def is_polygon(point_array_string):
         return False
 
 
+class ShowPointWidget(forms.Widget):
+    """
+    Widget to display a polygon on a map.
+    The polygon is not editable.
+    The form field is disabled and should not be required.
+    """
+    class Media:
+        css = {
+            'all' : ('css/poly_style.css',)
+        }
+        js = ("js/maps_utils.js",
+              "js/show_point.js",
+              "https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
+              "https://maps.googleapis.com/maps/api/js?key={}".format(api_key),)
+
+    def render(self, name, value, *args, **kwargs):
+        div_id = 'poly_map_' + kwargs['attrs']['id']
+        input_name = name
+        input_id = kwargs['attrs']['id']
+        if value is None:
+            raise Exception("ShowPointWidget requires the polygon to be defined" + str(value))
+
+        render_html = """
+        <div class='map_widget' id="{}"></div>
+        <input type='hidden' name='{}' id='{}' value='' />
+
+        <script type="text/javascript">
+        google.maps.event.addDomListener(window, 'load', show_point_map('{}', '{}', {}, {}));
+        </script>
+        """
+        render_html_with_id = render_html.format(div_id,
+                                                 input_name,
+                                                 input_id,
+                                                 div_id,
+                                                 input_id, value, 12)
+        return render_html_with_id
+
+    def __init__(self, *args, **kwargs):
+        super(ShowPointWidget, self).__init__(*args, **kwargs)
+
+
+class ShowPointField(forms.Field):
+    def __init__(self,
+        required= True,
+        widget=ShowPointWidget,
+        label=None,
+        initial=None,
+        help_text="",
+        validators=[],
+        *args,
+        **kwargs):
+        super(ShowPointField, self).__init__(required=required,
+            widget=widget,
+            label=label,
+            initial=initial,
+            help_text=help_text,
+            validators=validators,
+            *args,
+            **kwargs)
+        self.disabled = True
+
+    def to_python(self, value):
+        # Convert to expected python value (list of lists of latlngs)
+        value = super(ShowPointField, self).to_python(value)
+        try:
+            json_array = json.loads(value)
+        except:
+            raise ValidationError("Unable to parse input: '{}'".format(value),
+                code="invalid")
+        return json_array
+
+    def validate(self, value):
+        super(ShowPointField, self).validate(value)
+
+    def widget_attrs(self, widget):
+        attrs = super(ShowPointField, self).widget_attrs(widget)
+        return attrs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class ShowPolygonWidget(forms.Widget):
     """
     Widget to display a polygon on a map.
@@ -210,7 +308,7 @@ class AjaxStringLookupWidget(forms.Widget):
         input_id = kwargs['attrs']['id']
         if value is None:
             value = 'null'
-        render_html = "<input type='text' name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
+        render_html = "<input type='text' size=\"40\" name='"+str(input_name)+"' id='"+str(input_id)+"' value='' />\n"
         render_html += '<script type="text/javascript">\n'
         render_html += "attach_ajax_string_listener(\""+self.ajax_url+"\", \""+str(input_id)+"\")\n"
         render_html += "</script>\n"
@@ -262,7 +360,7 @@ class AjaxAutocomplete:
         self.ajax_url = ajax_url
 
     def get_url_pattern(self):
-        return "^"+self.ajax_url+"$"
+        return "^"+self.ajax_url.lstrip("/")+"$"
 
     def ajax_autocomplete_view(self, request):
         if request.is_ajax():
@@ -280,7 +378,7 @@ class AjaxAutocomplete:
             return HttpResponse("this should be an ajax post")
 
     def get_new_form_field(self):
-        return AjaxStringLookupField(self.ajax_url.lstrip("/"))
+        return AjaxStringLookupField(self.ajax_url)
 
 
 

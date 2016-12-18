@@ -2,7 +2,7 @@
 {% block content %}
 
 <h2>Items</h2>
-    Number of items corresponsding to this project: {{ items|length }}.
+    Number of items corresponding to this project: {{ items|length }}.
     {% for item in items %}    
     <p>
 	{% if item.num_matches %}

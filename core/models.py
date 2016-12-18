@@ -3,9 +3,11 @@ from django.contrib.gis.db import models
 from django.db import transaction
 from django.db.models.signals import post_save, m2m_changed
 from django.contrib.auth.models import User, Permission
+from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
-import sys
+import sys, random, string
 
 ### Start functions for accessing particpation app API
 def get_core_app():
@@ -42,6 +44,15 @@ def get_item_subclass_test(app):
     subclass_name = m.__name__.lower().replace("_","")
     return lambda x: getattr(x, subclass_name)
 
+def get_project_subclass_test(app):
+    project_models = get_app_project_models(app)
+    if len(project_models) == 0:
+        raise Exception("app"+app.name+" has no Participation Project models")
+    m = project_models[0]
+    subclass_name = m.__name__.lower().replace("_","")
+    return lambda x: getattr(x, subclass_name)
+
+
 def get_provider_permission(app):
     project_model = get_app_project_models(app)[0]
     model_name = project_model.__name__.lower().replace("_","")
@@ -50,6 +61,23 @@ def get_provider_permission(app):
     perm = Permission.objects.get(content_type=content_type, codename__startswith="add_")
     return perm
 
+def get_default_user():
+    return User.objects.get_or_create(
+        username = "default", 
+        defaults = {"email":"default@default.default", 
+                    "password": ''.join(random.choice(string.ascii_uppercase + string.digits) for i in range(20)), 
+                    "last_login": "2016-12-15T15:53:48.874Z", 
+                    "is_superuser": False, 
+                    "first_name": "", 
+                    "last_name": "", 
+                    "is_staff": False, 
+                    "is_active": True, 
+                    "date_joined": "2016-11-09T22:26:10.731Z", 
+                })[0]
+
+def get_usa():
+    return GeoTag.objects.get_or_create(name="United States of America", defaults={"detail": "North America", "feature_type": "CO"})[0]
+
 ### Start core models
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 100)
@@ -57,6 +85,17 @@ class ParticipationProject(models.Model):
 
     def update_items(self):
         raise Exception("Please overwrite the update_items() method for your participation app")
+
+    def get_inherited_instance(self):
+        ans = self
+        for t in [get_project_subclass_test(app) for app in get_registered_participation_apps()]:
+            try:
+                ans = t(self)
+            except:
+                continue
+            else:
+                return ans
+        raise Exception("unknown subclass type")
 
 
 class ParticipationItem(models.Model):
@@ -95,7 +134,7 @@ class ParticipationItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
-    
+
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
     user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
@@ -104,8 +143,11 @@ class FeedMatch(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length = 300)
-    # ex: state + country name if the tag is a city
+    # ex: county + state + country name if the tag is a city
     detail = models.CharField(max_length = 300, blank=True, null=True)
+
+    class Meta:
+        unique_together = (("name", "detail"),)
 
     def get_name(self):
         if not self.detail is None:
@@ -114,8 +156,9 @@ class Tag(models.Model):
 
 class GeoTag(Tag):
     polygon = models.PolygonField(geography = True, blank=True, null=True)
-    polygon_area = models.FloatField(blank = True, default=-1)
+    polygon_area = models.FloatField(blank = True, null=True)
     point = models.PointField(geography = True, blank=True, null=True)
+    population = models.PositiveIntegerField(blank=True, null=True)
 
     COUNTRY="CO"
     STATE_OR_PROVINCE="SP"
@@ -134,7 +177,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         new_profile = UserProfile()
         new_profile.user = instance
         new_profile.save()
-        new_profile.tags.add(*GeoTag.objects.filter(name="United States of America")[:1])
+        new_profile.tags.add(get_usa())
 
 post_save.connect(create_user_profile, sender=User)
 
