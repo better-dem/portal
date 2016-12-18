@@ -11,7 +11,6 @@ from django.core.files.storage import default_storage
 
 def get_default_og_metadata(request, participation_item=None):
     ans = {
-        "og_image": "https://raw.githubusercontent.com/better-dem/better-dem.github.io/master/images/logo.png",
         "og_type": "website",
         "og_title": "Better Democracy Portal",
         "og_description": "Aggregating and creating opportunities to participate with your government",
