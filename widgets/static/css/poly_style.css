@@ -1,6 +1,19 @@
-
-
 .map_widget {
   width: auto;
-  height: 500px;
+  height: 600px;
 }
+
+@media (max-width: 1000px) {
+    .map_widget {
+	width: auto;
+	height: 300px;
+    }
+}
+
+@media (max-width: 500px) {
+    .map_widget {
+	width: auto;
+	height: 200px;
+    }
+}
+

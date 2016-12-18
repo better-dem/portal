@@ -21,9 +21,9 @@ DEBUG = os.environ["DJANGO_DEBUG_STATE"]=="True"
 
 INSTALLED_APPS = [
     'core.apps.CoreConfig',
-    'dummy_participation_project.apps.DummyParticipationProjectConfig',
     'manual_news_article_curation.apps.ManualNewsArticleCurationConfig',
     'land_use_planning.apps.LandUsePlanningConfig',
+    'city_budgeting.apps.CityBudgetingConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -111,6 +111,9 @@ USE_TZ = True
 DATABASES['default'].update(dj_database_url.config())
 DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
+SECURE_SSL_REDIRECT = os.environ["SECURE_SSL_REDIRECT"]=="True"
+PREPEND_WWW = os.environ["PREPEND_WWW"]=="True"
+
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -149,7 +152,7 @@ AWS_S3_HOST="s3-us-west-1.amazonaws.com"
 STATIC_URL = "https://"+AWS_STORAGE_BUCKET_NAME+"."+AWS_S3_HOST+"/"
 
 ### Settings for django registration
-ACCOUNT_ACTIVATION_DAYS=2
+ACCOUNT_ACTIVATION_DAYS=7
 REGISTRATION_OPEN=True
 REGISTRATION_SALT="fd43*7uHJjh(*Jmnbyt5$Th"
 
@@ -171,12 +174,8 @@ BROKER_URL = os.environ["REDIS_URL"]
 
 # from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
 CELERYBEAT_SCHEDULE = {
-    'item-update': {
-        'task': 'core.tasks.item_update',
-        'schedule': celery.schedules.schedule(run_every=2)
-    },
-    # 'feed-update': {
-    #     'task': 'core.tasks.feed_update',
+    # 'item-update': {
+    #     'task': 'core.tasks.item_update',
     #     'schedule': celery.schedules.schedule(run_every=2)
     # },
 }

@@ -5,6 +5,17 @@ import sys
 from celery import shared_task
 from django.core.files.storage import default_storage
 import itertools
+from django.db.models.signals import post_save
+from django.contrib.gis.geos import Point        
+
+# signals to trigger tasks
+def process_new_project(sender, instance, created, **kwargs):
+    if created:
+        # start bg task to create items for project
+        item_update.delay(instance.id)
+
+def register_participation_project_subclass(cls):
+    post_save.connect(process_new_project, sender=cls)
 
 ### Begin: Tasks for loading data files & updating the database
 
@@ -29,6 +40,7 @@ def insert_uscitieslist_v0(small_test):
                 continue
 
             name = row[1]
+            county = row[2]
             state = row[4]
             lat = row[7]
             lon = row[8]
@@ -36,14 +48,14 @@ def insert_uscitieslist_v0(small_test):
             median_income = row[12]
             land_area = row[13]
 
-            if not cm.GeoTag.objects.filter(name=name, detail=state+", United States").exists():
-                t = cm.GeoTag.objects.create(name=name, feature_type=cm.GeoTag.CITY, detail=state+", United States",point="POINT({} {})".format(str(lon), str(lat)))
+            if not cm.GeoTag.objects.filter(name=name, point__distance_lte=(Point(float(lon), float(lat)), 1000)).exists():
+                t = cm.GeoTag.objects.create(name=name, feature_type=cm.GeoTag.CITY, detail=county+", "+state+", United States", point="POINT({} {})".format(str(lon), str(lat)))
                 t.save()
                 num_changes += 1
             else:
                 # update feature type if its missing
                 # assume there's only one match
-                obj = cm.GeoTag.objects.filter(name=name, detail=state+", United States")[0]
+                obj = cm.GeoTag.objects.filter(name=name, point__distance_lte=(Point(float(lon), float(lat)), 1000))[0]
                 if obj.feature_type == cm.GeoTag.UNKNOWN:
                     obj.feature_type = cm.GeoTag.CITY
                     obj.save()
@@ -56,7 +68,7 @@ def insert_uscitieslist_v0(small_test):
     sys.stdout.flush()
 
 @shared_task
-def insert_usa_and_states(small_test):
+def insert_states(small_test):
     filename = "/uploads/misc/tmp"
     sys.stdout.write("Processing csv for file: "+str(filename)+"\n")
     i = 0
@@ -93,19 +105,14 @@ def insert_usa_and_states(small_test):
 ### Begin: Regular Background tasks
 
 @shared_task
-def item_update():
-    apps = cm.get_registered_participation_apps()
-    num_items_created = 0
-    for app in apps:
-        project_model = cm.get_app_project_models(app)[0]
-        projects = project_model.objects.all()
-        for p in projects:
-            item_ids = p.update_items()
-            for item_id in item_ids:
-                i = cm.ParticipationItem.objects.get(pk=item_id)
-                for t in i.tags.all():
-                    feed_update_by_tag.delay(t.id)
-            num_items_created += len(item_ids)
+def item_update(project_id):
+    p = cm.ParticipationProject.objects.get(pk=project_id).get_inherited_instance()
+    item_ids = p.update_items()
+    num_items_created = len(item_ids)
+    for item_id in item_ids:
+        i = cm.ParticipationItem.objects.get(pk=item_id)
+        for t in i.tags.all():
+            feed_update_by_tag.delay(t.id)
             
     sys.stdout.write("number of items created: "+str(num_items_created))
     sys.stdout.flush()

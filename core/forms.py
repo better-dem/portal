@@ -49,7 +49,7 @@ def get_best_final_matching_tag(q):
 
 matching_object_query = get_matching_tags
 suggestion_function = lambda item: item.get_name()
-ajax_url = "autocomplete_tags/"
+ajax_url = "/autocomplete_tags/"
 tag_aac = wf.AjaxAutocomplete(matching_object_query, suggestion_function, ajax_url)
 
 

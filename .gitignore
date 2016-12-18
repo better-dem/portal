@@ -93,6 +93,7 @@ ENV/
 
 # Emacs tmp files
 *~
+\#*
 
 # Django static folders
 portal/staticfiles

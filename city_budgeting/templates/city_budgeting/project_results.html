@@ -1,0 +1,24 @@
+{% extends "core/generic_project_stats.html" %}
+{% block item_detail %}
+
+<h2>Quiz Results</h2>
+<p>
+    Number of responses: {{ item.num_responses }}
+</p>
+
+{% for question_summary in item.question_summaries %}
+<p>
+    <h3>{{ question_summary.label }}</h3>
+    {% if question_summary.correct_answer %}Correct answer: {{ question_summary.correct_answer }}{% endif %}
+    <table class="table">
+	<thead><th>Response</th><th>Count</th></thead>
+	<tbody>
+	    {% for answer in question_summary.answers %}
+	    <tr><td>{{ answer.0 }}</td><td>{{ answer.1 }}</td></tr>	    
+	    {% endfor %}
+	</tbody>
+    </table>
+</p>
+{% endfor %}
+
+{% endblock %}
