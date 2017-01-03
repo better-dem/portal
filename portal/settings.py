@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'manual_news_article_curation.apps.ManualNewsArticleCurationConfig',
     'land_use_planning.apps.LandUsePlanningConfig',
     'city_budgeting.apps.CityBudgetingConfig',
+    'tool_review.apps.ToolReviewConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -138,6 +139,10 @@ S3DIRECT_DESTINATIONS = {
     # destination specifically for uploading large administrative files
     'data_upload': {
         'key': lambda original_filename: 'uploads/misc/tmp',
+        'auth': lambda u: u.is_authenticated() 
+    },
+    'file_upload': {
+        'key': lambda original_filename: 'uploads/file_uploads/'+original_filename,
         'auth': lambda u: u.is_authenticated() 
     }
 }

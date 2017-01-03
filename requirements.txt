@@ -10,3 +10,4 @@ redis==2.10.5
 kombu==3.0.37
 boto==2.43.0
 django-s3direct==0.4.2
+billiard==3.3.0.20

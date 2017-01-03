@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+
+<h2>{{ review.title }}</h2>
+
+{% with ''|add:review.screenshot_filename as img_filename %}
+<img src="{% static img_filename %}"/>
+{% endwith %}
+
+<p>
+{{ review.summary }}
+</p>
+
+
+{% endblock %}
