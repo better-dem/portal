@@ -5,10 +5,10 @@ from core import models as cm
 
 class ToolReviewProject(cm.ParticipationProject):
     # name <- tool's name
-    url = models.URLField(blank=False)
+    url = models.URLField()
     screenshot_filename = models.FilePathField(max_length=500, blank=True)
-    summary = models.TextField(blank=False)
-    review_video = models.URLField(blank=True)
+    summary = models.TextField()
+    youtube_video_id = models.CharField(max_length=100, blank=True)
     review_blog_post = models.URLField(blank=True)
     tags = models.ManyToManyField(cm.Tag)
     
@@ -31,7 +31,7 @@ class ToolReviewItem(cm.ParticipationItem):
     def set_display_image(self):
         if not self.participation_project.screenshot_filename is None:
             self.display_image_file = self.participation_project.screenshot_filename
-        else:
-            self.display_image_file
+        # else:
+        #     self.display_image_file = "tool_review/img/default.png"
 
 

@@ -377,8 +377,8 @@ class AjaxAutocomplete:
         else:
             return HttpResponse("this should be an ajax post")
 
-    def get_new_form_field(self):
-        return AjaxStringLookupField(self.ajax_url)
+    def get_new_form_field(self, **kwargs):
+        return AjaxStringLookupField(self.ajax_url, **kwargs)
 
 
 
