@@ -5,9 +5,7 @@
 
 <h2>{{ review.title }}</h2>
 
-{% with ''|add:review.screenshot_filename as img_filename %}
-<img src="{% static img_filename %}"/>
-{% endwith %}
+<img src="{% static review.screenshot_filename %}"/>
 
 <p>
 {{ review.summary }}

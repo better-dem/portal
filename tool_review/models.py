@@ -29,6 +29,9 @@ class ToolReviewItem(cm.ParticipationItem):
         self.tags.add(*self.participation_project.tags.all())
 
     def set_display_image(self):
-        return None
+        if not self.participation_project.screenshot_filename is None:
+            self.display_image_file = self.participation_project.screenshot_filename
+        else:
+            self.display_image_file
 
 

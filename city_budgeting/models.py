@@ -178,7 +178,7 @@ class CityBudgetQuiz(cm.ParticipationItem):
         return ans
 
     def set_display_image(self):
-        self.display_image_url = 'city_budgeting/img/default.png'
+        self.display_image_file = 'city_budgeting/img/default.png'
 
     def set_relevant_tags(self):
         self.tags.add(self.participation_project.city)

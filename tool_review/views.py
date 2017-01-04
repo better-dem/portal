@@ -19,11 +19,8 @@ def new_project(request):
             project = ToolReviewProject()
             project.name = form.cleaned_data["tool_name"]
             screenshot_url = form.cleaned_data["screenshot"]
-            sys.stderr.write("screenshotURL:" + screenshot_url + "\n")
             path_with_bucket_and_leading_slash = urlsplit(screenshot_url)[2]
-            sys.stderr.write("path with bucket: " + path_with_bucket_and_leading_slash+"\n")
             path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
-            sys.stderr.write("path without bucket: " + path_without_bucket+"\n")
             project.screenshot_filename = path_without_bucket
             project.summary = form.cleaned_data["summary"]
             project.owner_profile = profile
@@ -50,8 +47,6 @@ def participate(request, item_id):
     project = item.participation_project.toolreviewproject
 
     context.update({"review": project})
-    sys.stderr.write("screenshot filename:" + project.screenshot_filename + "\n")
-    sys.stderr.flush()
     return render(request, 'tool_review/participate.html', context)
 
 

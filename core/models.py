@@ -102,7 +102,7 @@ class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)
     creation_time = models.DateTimeField(auto_now_add=True)
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
-    display_image_url = models.URLField(blank=True)
+    display_image_file = models.FilePathField(max_length=500, blank=True)
     visits = models.IntegerField(default=0)
     tags = models.ManyToManyField('Tag')
 

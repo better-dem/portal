@@ -4,9 +4,8 @@ from django.contrib.gis.db import models
 from core import models as cm
 
 org_logos = dict()
-org_logos["ballotpedia.org"] = "https://ballotpedia.org/wiki/skins/Ballotpedia/images/bp-logo.svg"
-org_logos["nytimes.com"] = "https://a1.nyt.com/assets/homepage/20161012-091952/images/foundation/logos/nyt-logo-379x64.png"
-org_logos["challenge.gov"] = "https://www.challenge.gov/wp-content/themes/challenge-gov-theme/images/challenge_full_logo.png"
+org_logos["ballotpedia.org"] = "manual_news_article_curation/img/bp-logo.svg"
+org_logos["challenge.gov"] = "manual_news_article_curation/img/challenge_full_logo.png"
 
 class ManualNewsCurationProject(cm.ParticipationProject):
     url = models.URLField(blank=False)
@@ -29,9 +28,9 @@ class NewsArticleItem(cm.ParticipationItem):
     def set_display_image(self):
         for org in org_logos:
             if org in self.participation_project.url:
-                self.display_image_url = org_logos[org]
+                self.display_image_file = org_logos[org]
                 return
-        self.display_image_url = 'manual_news_article_curation/img/default.png'
+        self.display_image_file = 'manual_news_article_curation/img/default.png'
 
     def set_relevant_tags(self):
         # i should do some NLP or something...
