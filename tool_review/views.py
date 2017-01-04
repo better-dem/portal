@@ -8,7 +8,7 @@ import sys
 import core.models as cm
 import core.views as cv
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
-
+from urlparse import urlsplit
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -18,7 +18,13 @@ def new_project(request):
         if form.is_valid():
             project = ToolReviewProject()
             project.name = form.cleaned_data["tool_name"]
-            project.screenshot_filename = form.cleaned_data["screenshot"]
+            screenshot_url = form.cleaned_data["screenshot"]
+            sys.stderr.write("screenshotURL:" + screenshot_url + "\n")
+            path_with_bucket_and_leading_slash = urlsplit(screenshot_url)[2]
+            sys.stderr.write("path with bucket: " + path_with_bucket_and_leading_slash+"\n")
+            path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
+            sys.stderr.write("path without bucket: " + path_without_bucket+"\n")
+            project.screenshot_filename = path_without_bucket
             project.summary = form.cleaned_data["summary"]
             project.owner_profile = profile
             project.save()
