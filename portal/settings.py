@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import celery.schedules
 import os
 import dj_database_url
+from django.utils import timezone
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +25,7 @@ INSTALLED_APPS = [
     'manual_news_article_curation.apps.ManualNewsArticleCurationConfig',
     'land_use_planning.apps.LandUsePlanningConfig',
     'city_budgeting.apps.CityBudgetingConfig',
+    'tool_review.apps.ToolReviewConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -138,9 +140,15 @@ S3DIRECT_DESTINATIONS = {
     # destination specifically for uploading large administrative files
     'data_upload': {
         'key': lambda original_filename: 'uploads/misc/tmp',
+        'auth': lambda u: u.is_authenticated()
+    },
+    'file_upload': {
+        'key': lambda original_filename: 'uploads/file_uploads/'+''.join([ch for ch in str(timezone.now()) if ch.isalnum() or ch in ["-", "."]])+"_"+original_filename,
         'auth': lambda u: u.is_authenticated() 
     }
 }
+
+
 
 # S3 static file storage with django-storages
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'

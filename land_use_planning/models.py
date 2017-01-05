@@ -45,7 +45,7 @@ class LandUseParticipationItem(cm.ParticipationItem):
         return ans
 
     def set_display_image(self):
-        self.display_image_url = 'land_use_planning/img/default.png'
+        self.display_image_file = 'land_use_planning/img/default.png'
 
     def set_relevant_tags(self):
         pnt = GEOSGeometry(self.participation_project.polygon).centroid

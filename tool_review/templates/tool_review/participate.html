@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+
+<h2>{{ review.name }}</h2>
+<a href="{{ review.url }}">Visit {{ review.name }} here!</a>
+
+{% if review.youtube_video_id %}
+<p>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ review.youtube_video_id }}" frameborder="0" allowfullscreen></iframe>
+</p>
+{% endif %}
+
+<p>
+{{ review.summary }}
+</p>
+
+<p>
+  <figure>
+    <img class="img-responsive" src="{% static review.screenshot_filename %}"/>
+    <figcaption>A screenshot of {{ review.name }}.</figcaption>
+  </figure>
+</p>
+
+{% endblock %}

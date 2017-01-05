@@ -21,8 +21,8 @@ def get_default_og_metadata(request, participation_item=None):
         app = cm.get_app_for_model(participation_item.get_inherited_instance().__class__)
         # app = cm.get_app_for_model(participation_item.get_inherited_instance())
         # ans["og_url"] = "http://"+get_current_site(request).domain+"/apps/"+app.label+"/participate/"+str(participation_item.id)
-        if not participation_item.display_image_url is None and not participation_item.display_image_url=="":
-            ans["og_image"] = participation_item.display_image_url
+        if not participation_item.display_image_file is None and not participation_item.display_image_file =="":
+            ans["og_image"] = participation_item.display_image_file
     return ans
 
 def get_profile_and_permissions(request):
@@ -165,8 +165,8 @@ def get_item_details(item, get_activity=False):
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
     ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]]}
-    if not item.display_image_url == "":
-        ans["display_image_url"] = item.display_image_url
+    if not item.display_image_file == "":
+        ans["display_image_file"] = item.display_image_file
     if get_activity:
         ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
         ans["num_visits"] = item.visits
