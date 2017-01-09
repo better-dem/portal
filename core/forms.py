@@ -55,3 +55,8 @@ tag_aac = wf.AjaxAutocomplete(matching_object_query, suggestion_function, ajax_u
 
 class AddTagForm(forms.Form):
     place_name = tag_aac.get_new_form_field()
+
+class IssueReportForm(forms.Form):
+    event_id = forms.IntegerField(min_value=0, label="", widget=forms.widgets.HiddenInput, required=True)
+    issue_type = forms.ChoiceField(label = "What type of issue are you reporting?", choices=(("PC", "Propaganda, campaigning, or biased content"), ("BR", "Bug or website error"), ("IA", "Inaccurate content"), ("FR", "Request a feature"), ))
+    description = forms.CharField(widget=forms.widgets.Textarea)

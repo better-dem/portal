@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden
 import core.models as cm
 import core.tasks as tasks
-from core.forms import UploadGeoTagset, AddTagForm, get_matching_tags, get_best_final_matching_tag
+from core.forms import UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
 import sys
 from django.core.files.storage import default_storage
 
@@ -109,7 +109,7 @@ def update_profile_tags(request):
         if form.is_valid():
             match = get_best_final_matching_tag(form.cleaned_data["place_name"])
             if match is None: 
-                return HttpResponse("Sorry, there isn't exactly one tag with this name. (There are "+str(len(possible_matching_tags))+")")
+                return HttpResponse("Sorry, there isn't a tag with this name")
             profile.tags.add(match)
             tasks.feed_update_by_user_profile.delay(profile.id)
             return render(request, "core/thanks.html", {"action_description": "adding "+match.get_name()+" to your profile"})
@@ -204,3 +204,43 @@ def tags(request):
     ans += "Number of unknown geo-tags:"+str(unk.count())+"<br>"
     ans += "<br>".join([i.get_name() for i in unk[:10]])+"<br>"
     return HttpResponse(ans)
+
+
+def event_from_request(request):
+    """
+    create a cm.Event object from the request and return its ID
+    """
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    e = cm.Event()
+    e.user_profile = profile
+    if "REMOTE_ADDR" in request.META:
+        e.ip_addr = request.META["REMOTE_ADDR"]
+    if "HTTP_REFERER" in request.META:
+        e.referring_url = request.META["HTTP_REFERER"]
+    e.save()
+    return e.pk
+
+def donate(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    context = get_default_og_metadata(request)
+    return render(request, 'core/coming_soon.html', context)
+
+def nonpartisanship(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    context = get_default_og_metadata(request)
+    return render(request, 'core/coming_soon.html', context)
+
+def report_issues(request):
+    if request.method == 'POST':
+        form = IssueReportForm(request.POST)
+        if form.is_valid():
+            return HttpResponse("Thank you for submitting this issue")
+        else:
+            if not "event_id" in form.cleaned_data:
+                return HttpResponse(status=500)
+            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
+    else:
+        event_id = event_from_request(request)
+        form = IssueReportForm(initial={"event_id":event_id})
+        return render(request, 'core/generic_form.html', {"title": "Report an Issue", 'form': form, 'action_path' : request.path})
+
