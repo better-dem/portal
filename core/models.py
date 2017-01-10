@@ -102,6 +102,11 @@ class ParticipationProject(models.Model):
         app = get_app_for_model(self.get_inherited_instance().__class__)
         return "/apps/"+app.label+"/delete_project/"+str(self.id)
 
+    def edit_project_link(self):
+        app = get_app_for_model(self.get_inherited_instance().__class__)
+        if app.are_projects_editable:
+            return "/apps/"+app.label+"/edit_project/"+str(self.id)
+
 class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)
     creation_time = models.DateTimeField(auto_now_add=True)

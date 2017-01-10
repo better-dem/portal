@@ -174,6 +174,15 @@ def app_view_relay(request, app_name, action_name, object_id):
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "delete a project"})
 
+        elif action_name == "edit_project":
+            if not app.are_projects_editable:
+                return HttpResponse(status=500)
+            if has_app_perm:
+                project = get_object_or_404(cm.ParticipationProject, pk=object_id, is_active=True, owner_profile=profile)
+                return app.views_module.edit_project(request, object_id) 
+            else:
+                return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "delete a project"})
+
         else:
             raise Exception("invalid action:" + str(action_name))
 

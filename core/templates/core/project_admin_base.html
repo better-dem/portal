@@ -4,7 +4,11 @@
 <p>
   <a href="{{ project.delete_project_link }}" class="btn btn-danger" role="button">Delete This Project</a>
 </p>
-
+{% if project.edit_project_link %}
+<p>
+  <a href="{{ project.edit_project_link }}" class="btn btn-warning" role="button">Edit This Project</a>
+</p>
+{% endif %}
 
 <h2>Items</h2>
     Number of items corresponding to this project: {{ items|length }}.
