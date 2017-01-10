@@ -1,12 +1,8 @@
 {% extends "core/base.html" %}
 {% block content %}
 
-<p>
-  <a href="{{ project.delete_project_link }}" class="btn btn-danger" role="button">Delete This Project</a>
-</p>
+<h2>Please Confirm, You Want To Delete This Project?</h2>
 
-
-<h2>Items</h2>
     Number of items corresponding to this project: {{ items|length }}.
     {% for item in items %}    
     <p>
@@ -29,5 +25,12 @@
     {% block item_detail %}{% endblock %}
 
     {% endfor %}
+
+<br>
+<form action="{{ action_path }}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Yes, I want to delete this project." />
+</form>
+
 
 {% endblock %}

@@ -6,7 +6,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden
 import core.models as cm
 import core.tasks as tasks
-from core.forms import UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
+from core.forms import DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
 import sys
 from django.core.files.storage import default_storage
 
@@ -89,7 +89,7 @@ def show_profile(request):
         else:
             profile_app["label"] = profile_app["label"]
             profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
-            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile)
+            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
             for ep in existing_projects:
                 proj = dict()
                 proj["name"] = ep.name
@@ -120,30 +120,60 @@ def update_profile_tags(request):
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     
 def app_view_relay(request, app_name, action_name, object_id):
+    """
+    The primary routing view for the major portal actions involving participation projects and items:
+    creating projects, administering project, participating in items, and deleting projects
+
+    This view checks permissions, then routes the request to app-specific views.
+    """
+
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if not app_name in [app.label for app in cm.get_registered_participation_apps()]:
         raise Exception("app not registered or does not exist:" + str(app_name))
     else:
         app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
         perm = cm.get_provider_permission(app)
-        has_perm = app.label+"."+perm.codename in permissions
+        has_app_perm = app.label+"."+perm.codename in permissions
         
         if action_name == "new_project":
-            if has_perm:
+            if has_app_perm:
                 return app.views_module.new_project(request) 
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "create a new project"})
+
         elif action_name == "administer_project":
-            if has_perm:
-                get_object_or_404(cm.ParticipationProject, pk=object_id, owner_profile=profile)
+            if has_app_perm:
+                get_object_or_404(cm.ParticipationProject, pk=object_id, owner_profile=profile, is_active=True)
                 return app.views_module.administer_project(request, object_id)
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "administer a project"})
+
         elif action_name == "participate":
-            get_object_or_404(cm.ParticipationItem, pk=object_id)
+            get_object_or_404(cm.ParticipationItem, pk=object_id, is_active=True)
             cm.ParticipationItem.objects.filter(pk=object_id).distinct().update(visits=F('visits')+1)
             cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=object_id).update(has_been_visited=True) 
             return app.views_module.participate(request, object_id) 
+
+        elif action_name == "delete_project":
+            if has_app_perm:
+                project = get_object_or_404(cm.ParticipationProject, pk=object_id, is_active=True, owner_profile=profile)
+                if request.method == 'POST':
+                    form = DeleteProjectConfirmationForm(request.POST)
+                    if form.is_valid():
+                        project.participationitem_set.update(is_active=False)
+                        project.is_active = False
+                        project.save()
+                        return render(request, "core/thanks.html", {"action_description": "removing "+project.name})
+                    else:
+                        return HttpResponse(status=500)
+                else:
+                    form = DeleteProjectConfirmationForm()
+                    items = cm.ParticipationItem.objects.filter(participation_project=project, is_active=True)
+                    items = [get_item_details(i, True) for i in items]
+                    return render(request, 'core/delete_project_confirmation.html', {'form': form, 'action_path' : request.path, "items": items})
+            else:
+                return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "delete a project"})
+
         else:
             raise Exception("invalid action:" + str(action_name))
 
@@ -151,7 +181,7 @@ def feed(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     num_tags_followed = profile.tags.count()
     recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
-    items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches)]
+    items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches) if i.is_active]
     tasks.feed_update_by_user_profile.delay(profile.id)
     context = {'items': items, 'num_tags_followed': num_tags_followed}
     context.update(get_default_og_metadata(request))

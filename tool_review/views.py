@@ -52,7 +52,7 @@ def new_project(request):
 def administer_project(request, project_id):
     project = get_object_or_404(ToolReviewProject, pk=project_id) 
     items = ToolReviewItem.objects.filter(participation_project=project)
-    return render(request, 'core/generic_project_stats.html', {"items": [cv.get_item_details(i, True) for i in items]})
+    return render(request, 'core/generic_project_stats.html', {"items": [cv.get_item_details(i, True) for i in items], "project": project})
 
 
 def participate(request, item_id):
