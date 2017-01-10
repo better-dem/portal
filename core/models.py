@@ -170,6 +170,16 @@ class GeoTag(Tag):
 
     feature_type = models.CharField(max_length=2, choices=FEATURE_TYPE_CHOICES, default=UNKNOWN)
 
+class Event(models.Model):
+    """
+    Event model used to record the context for various events such as key performance indicators
+    (issue reports, donate button clicks)
+    """
+    user_profile = models.ForeignKey(UserProfile)
+    ip_addr = models.CharField(max_length = 100, blank=True, null=True)
+    referring_url = models.CharField(max_length = 500, blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
 ### Signal handling
 
 def create_user_profile(sender, instance, created, **kwargs):

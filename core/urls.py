@@ -5,6 +5,9 @@ from . import views
 from . import forms
 
 urlpatterns = [
+    url(r'^donate/$', views.donate, name="donate"),
+    url(r'^nonpartisanship/$', views.nonpartisanship, name="nonpartisanship"),
+    url(r'^report_issues/$', views.report_issues, name="report_issues"),
     url(r'^accounts/', include('registration.backends.hmac.urls')),
     url(r'^accounts/profile', views.show_profile, name="profile"),
     url(r'^$', views.feed, name="feed"),

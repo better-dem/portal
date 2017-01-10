@@ -135,6 +135,16 @@ STATICFILES_DIRS = [
 ]
 
 # s3direct options
+def upload_filename(original_filename):
+    """
+    clean up problematic characters from uploaded filenames and "guarentee" uniqueness by adding a timestamp
+    """
+    ans = "uploads/file_uploads/"
+    ans += ''.join([ch for ch in str(timezone.now()) if ch.isalnum() or ch in ["-", "."]])
+    ans += '_'
+    ans += ''.join([ch for ch in original_filename if ch.isalnum() or ch in ["-", "_", "."]])
+    return ans
+
 S3DIRECT_REGION = 'us-west-1'
 S3DIRECT_DESTINATIONS = {
     # destination specifically for uploading large administrative files
@@ -143,12 +153,10 @@ S3DIRECT_DESTINATIONS = {
         'auth': lambda u: u.is_authenticated()
     },
     'file_upload': {
-        'key': lambda original_filename: 'uploads/file_uploads/'+''.join([ch for ch in str(timezone.now()) if ch.isalnum() or ch in ["-", "."]])+"_"+original_filename,
+        'key': lambda original_filename: upload_filename(original_filename),
         'auth': lambda u: u.is_authenticated() 
     }
 }
-
-
 
 # S3 static file storage with django-storages
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
