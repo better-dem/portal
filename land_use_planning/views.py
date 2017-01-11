@@ -41,7 +41,7 @@ def new_project(request):
 def administer_project(request, project_id):
     project = get_object_or_404(LandUseProject, pk=project_id)
     questions = project.get_questions()
-    items = LandUseParticipationItem.objects.filter(participation_project=project).distinct()
+    items = LandUseParticipationItem.objects.filter(participation_project=project,  is_active=True).distinct()
 
     item_details = []
 
@@ -88,7 +88,7 @@ def administer_project(request, project_id):
         current_item_detail["num_responses"] = num_responses
         item_details.append(current_item_detail)
 
-    return render(request, 'land_use_planning/project_results.html', {"items": item_details})
+    return render(request, 'land_use_planning/project_results.html', {"items": item_details, "project":project})
 
 
 def participate(request, item_id):

@@ -1,0 +1,36 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<h2>Please Confirm, You Want To Delete This Project?</h2>
+
+    Number of items corresponding to this project: {{ items|length }}.
+    {% for item in items %}    
+    <p>
+	{% if item.num_matches %}
+	Number of times this item has been recommended to users: {{ item.num_matches }}.
+	{% endif %}
+    </p>
+
+    <p>
+	{% if item.num_visits %}
+	Number of times this item has been visited: {{ item.num_visits }}.
+	{% endif %}
+    </p>
+	
+    <p>
+	How this item is displayed to users:
+	{% include "core/feed_item.html" with item=item %}
+    </p>    
+
+    {% block item_detail %}{% endblock %}
+
+    {% endfor %}
+
+<br>
+<form action="{{ action_path }}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Yes, I want to delete this project." />
+</form>
+
+
+{% endblock %}

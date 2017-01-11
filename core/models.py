@@ -82,6 +82,7 @@ def get_usa():
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 100)
     owner_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
 
     def update_items(self):
         raise Exception("Please overwrite the update_items() method for your participation app")
@@ -97,6 +98,14 @@ class ParticipationProject(models.Model):
                 return ans
         raise Exception("unknown subclass type")
 
+    def delete_project_link(self):
+        app = get_app_for_model(self.get_inherited_instance().__class__)
+        return "/apps/"+app.label+"/delete_project/"+str(self.id)
+
+    def edit_project_link(self):
+        app = get_app_for_model(self.get_inherited_instance().__class__)
+        if app.are_projects_editable:
+            return "/apps/"+app.label+"/edit_project/"+str(self.id)
 
 class ParticipationItem(models.Model):
     name = models.CharField(max_length = 100)
@@ -105,6 +114,7 @@ class ParticipationItem(models.Model):
     display_image_file = models.FilePathField(max_length=500, blank=True)
     visits = models.IntegerField(default=0)
     tags = models.ManyToManyField('Tag')
+    is_active = models.BooleanField(default=True)
 
     def get_inherited_instance(self):
         ans = self

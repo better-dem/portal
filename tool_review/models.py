@@ -13,7 +13,7 @@ class ToolReviewProject(cm.ParticipationProject):
     tags = models.ManyToManyField(cm.Tag)
     
     def update_items(self):
-        if ToolReviewItem.objects.filter(participation_project=self).count()==0:
+        if ToolReviewItem.objects.filter(participation_project=self, is_active=True).count()==0:
             item = ToolReviewItem()
             item.name = self.name
             item.participation_project = self
