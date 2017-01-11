@@ -22,7 +22,7 @@ class ManualNewsCurationProject(cm.ParticipationProject):
         return set()
 
 class NewsArticleItem(cm.ParticipationItem):
-    def get_description(self):
+    def get_inline_display(self):
         return self.participation_project.manualnewscurationproject.first_paragraph[:300]+"..."
 
     def set_display_image(self):

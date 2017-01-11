@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'land_use_planning.apps.LandUsePlanningConfig',
     'city_budgeting.apps.CityBudgetingConfig',
     'tool_review.apps.ToolReviewConfig',
+    'single_quiz.apps.SingleQuizConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',

@@ -38,7 +38,7 @@ class LandUseProject(cm.ParticipationProject):
         
 
 class LandUseParticipationItem(cm.ParticipationItem):
-    def get_description(self):
+    def get_inline_display(self):
         ans = "Land use planning project"
         if self.tags.all().count() > 0:
             ans += " for "+self.tags.all()[0].get_name()

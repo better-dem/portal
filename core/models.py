@@ -130,7 +130,7 @@ class ParticipationItem(models.Model):
     def set_relavent_tags(self):
         raise Exception("set_relevant_tags() method needs to be implemented by all ParticipationItem subclasses.")
 
-    def get_description(self):
+    def get_inline_display(self):
         return self.name + " participation item"
 
     def set_display_image(self):

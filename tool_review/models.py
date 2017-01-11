@@ -22,8 +22,8 @@ class ToolReviewProject(cm.ParticipationProject):
         return set()
 
 class ToolReviewItem(cm.ParticipationItem):
-    def get_description(self):
-        return "Tool review for "+self.name
+    def get_inline_display(self):
+        return self.participationitem.summary
 
     def set_relevant_tags(self):
         self.tags.add(*self.participation_project.tags.all())
