@@ -7,7 +7,9 @@
 	<img src="{% static item.display_image_file %}" class="img-thumbnail" width="90" height="90">
 	{% endif %}
 
+	{% block custom_item_content %}
 	{{ item.display }}
+	{% endblock %}
     </div>
     <div class="panel-footer">{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}</div>
 </div>

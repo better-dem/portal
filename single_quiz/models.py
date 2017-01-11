@@ -10,7 +10,7 @@ class SingleQuizProject(cm.ParticipationProject):
     option3 = models.CharField(max_length = 100, blank=True, null=True)
     option4 = models.CharField(max_length = 100, blank=True, null=True)
     option5 = models.CharField(max_length = 100, blank=True, null=True)
-    correct_answer_index = models.IntegerField()
+    correct_answer_index = models.IntegerField() # 1-5 (not 0-4)
     citation_url = models.URLField()
     explanation = models.TextField()
     tags = models.ManyToManyField(cm.Tag)
@@ -27,11 +27,7 @@ class SingleQuizProject(cm.ParticipationProject):
 
 class SingleQuizItem(cm.ParticipationItem):
     def get_inline_display(self):
-        ans = """
-        <input type="text" id="single_quiz_text_{}" data-quiz-id={}></input><br>
-        <input type="submit" id="single_quiz_submit_{}" data-quiz-id={} data-target-url="/apps/single_quiz/participate/{}"></input><br>
-        """.format(self.id, self.id, self.id)
-        return self.participationitem.summary
+        return "single quiz " + str(self.id)
 
     def set_relevant_tags(self):
         self.tags.add(*self.participation_project.tags.all())
@@ -42,6 +38,6 @@ class SingleQuizItem(cm.ParticipationItem):
 
 class SingleQuizResponse(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
-    participation_item = models.ForeignKey(CityBudgetQuiz, on_delete = models.CASCADE)
+    participation_item = models.ForeignKey(SingleQuizItem, on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
     answer_index = models.IntegerField()

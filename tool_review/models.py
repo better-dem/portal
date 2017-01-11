@@ -23,7 +23,7 @@ class ToolReviewProject(cm.ParticipationProject):
 
 class ToolReviewItem(cm.ParticipationItem):
     def get_inline_display(self):
-        return self.participationitem.summary
+        return self.participation_project.get_inherited_instance().summary
 
     def set_relevant_tags(self):
         self.tags.add(*self.participation_project.tags.all())

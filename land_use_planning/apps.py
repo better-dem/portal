@@ -8,6 +8,7 @@ from importlib import import_module
 class LandUsePlanningConfig(AppConfig):
     name = 'land_use_planning'
     are_projects_editable = False
+    custom_feed_item_template = None
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

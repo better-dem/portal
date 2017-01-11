@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<form target=".">
+<input type="text" id="single_quiz_text" data-quiz-id="{{ item.id }}"></input><br>
+<input type="submit" id="single_quiz_submit" data-quiz-id="{{ item.id }}" data-target-url="/apps/single_quiz/participate/{{ item.idx }}"></input><br>
+
+
+<form action="{{ action_path }}" {% if enctype_data %}enctype="multipart/form-data"{% endif %} method="post">
+    {% csrf_token %}
+    {{ form.media }}
+    {% for field in form %}
+    <p>
+        {% if field.errors %}
+        <div class="alert alert-warning">{{ field.errors }}</div>
+        {% endif %}
+        <h4>{{ field.label_tag }}</h4>
+        {% if field.help_text %}
+        <h5>{{ field.help_text|safe }}</h5>
+        {% endif %}
+	{{ field }}
+    </p>
+    {% endfor %}
+    <input type="submit" value="Submit" />
+</form>
+<br>
+
+
+
+{% endblock %}

@@ -8,6 +8,7 @@ from importlib import import_module
 class ToolReviewConfig(AppConfig):
     name = 'tool_review'
     are_projects_editable = True
+    custom_feed_item_template = None
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

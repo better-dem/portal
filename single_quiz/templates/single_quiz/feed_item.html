@@ -1,0 +1,5 @@
+{% extends "core/feed_item.html" %}
+{% block custom_item_content %}
+<input type="text" id="single_quiz_text" data-quiz-id="{{ item.id }}"></input><br>
+<input type="submit" id="single_quiz_submit" data-quiz-id="{{ item.id }}" data-target-url="/apps/single_quiz/participate/{{ item.id }}"></input><br>
+{% endblock %}

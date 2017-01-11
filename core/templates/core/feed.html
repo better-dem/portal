@@ -44,6 +44,11 @@
 </script>
 
 {% for item in items %}
+{% if item.custom_template %}
+{% include item.custom_template %}
+{% else %}
 {% include "core/feed_item.html" %}
+{% endif %}
+
 {% endfor %}
 {% endblock %}

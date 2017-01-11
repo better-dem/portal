@@ -209,6 +209,8 @@ def get_item_details(item, get_activity=False):
     if get_activity:
         ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
         ans["num_visits"] = item.visits
+    if app.custom_feed_item_template:
+        ans["custom_template"] = app.custom_feed_item_template
     return ans
 
 def tags(request):
