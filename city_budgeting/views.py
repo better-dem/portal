@@ -46,7 +46,7 @@ def new_project(request):
 
 def administer_project(request, project_id):
     project = get_object_or_404(CityBudgetingProject, pk=project_id)
-    items = CityBudgetQuiz.objects.filter(participation_project=project).distinct()
+    items = CityBudgetQuiz.objects.filter(participation_project=project,  is_active=True).distinct()
 
     item_details = []
 

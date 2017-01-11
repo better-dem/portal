@@ -51,6 +51,8 @@ def new_project(request):
 
 def propagate_project_changes(project, change_set):
     if "tags" in change_set or "name" in change_set:
+        sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project")
+        sys.stderr.flush()
         # de-activate all existing items and re-create items for this project
         ToolReviewItem.objects.filter(participation_project=project, is_active=True).update(is_active=False)
         project.update_items()
@@ -99,9 +101,15 @@ def edit_project(request, project_id):
             t3 = cf.get_best_final_matching_tag(form.cleaned_data["tag3"])
             if not t3 is None:
                 new_tags.add(t3)
+
+            sys.stderr.write("new tags:"+str(new_tags)+"\n")
+            sys.stderr.write("current tags:"+str(current_tags)+"\n")
+            sys.stderr.write("difference:"+str(new_tags.symmetric_difference(current_tags))+"\n")
+            sys.stderr.flush()
             
             if len(new_tags.symmetric_difference(current_tags)) > 0:
-                project.tags.set(new_tags)
+                project.tags.clear()
+                project.tags.add(*new_tags)
                 changes.add("tags")
 
             propagate_project_changes(project, changes)
@@ -126,7 +134,7 @@ def edit_project(request, project_id):
 def administer_project(request, project_id):
     project = get_object_or_404(ToolReviewProject, pk=project_id) 
     items = ToolReviewItem.objects.filter(participation_project=project)
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items], "project": project})
+    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project})
 
 
 def participate(request, item_id):

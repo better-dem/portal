@@ -41,7 +41,7 @@ def new_project(request):
 def administer_project(request, project_id):
     project = get_object_or_404(LandUseProject, pk=project_id)
     questions = project.get_questions()
-    items = LandUseParticipationItem.objects.filter(participation_project=project).distinct()
+    items = LandUseParticipationItem.objects.filter(participation_project=project,  is_active=True).distinct()
 
     item_details = []
 

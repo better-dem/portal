@@ -30,6 +30,8 @@ def get_matching_tags(q):
         return Tag.objects.filter(name__istartswith=name)
 
 def get_best_final_matching_tag(q):
+    if len(q) == 0:
+        return None
     possible_matches = get_matching_tags(q)
     if len(possible_matches) == 1:
         return possible_matches[0]
