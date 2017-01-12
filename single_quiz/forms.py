@@ -14,8 +14,7 @@ class ParticipateForm(forms.Form):
     def __init__(self, item, *args, **kwargs):
         super(ParticipateForm, self).__init__(*args, **kwargs)
         choices = get_choices(item)
-        self.fields["choice"] = forms.ChoiceField(label=item.participation_project.singlequizproject.question_text, choices=choices)
-
+        self.fields["choice"] = forms.ChoiceField(label="", choices=choices)
 
 class CreateProjectForm(forms.Form):
     question_text = forms.CharField(max_length=500)

@@ -17,6 +17,7 @@ def new_project(request):
         if form.is_valid():
             project = SingleQuizProject()
             project.name = form.cleaned_data["question_text"]
+            project.question_text = form.cleaned_data["question_text"]
 
             project.option1=form.cleaned_data["option1"]
             project.option2=form.cleaned_data["option2"]
@@ -83,16 +84,17 @@ def participate(request, item_id):
                 if request.is_ajax():
                     return JsonResponse(content)
                 else:
-                    return HttpResponse(content["response"])
+                    content.update({'action_description': "responding to this mini-quiz", "ans_correct": True, "source": project.citation_url})
+                    return render(request, 'single_quiz/thanks.html', content)
             else:
                 content = {"reveal": ["incorrect"], "hide": ["correct", "single_quiz_ajax_form"], "response": "Sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)], "explanation": project.explanation}
                 if request.is_ajax():
                     return JsonResponse(content)
                 else:
-                    return HttpResponse(content["response"])
-                return HttpResponse()
+                    content.update({'action_description': "responding to this mini-quiz", "ans_correct": False, "source": project.citation_url})
+                    return render(request, 'single_quiz/thanks.html', content)
         else:
-            return render(request, 'core/generic_form.html', {'form': form, 'action_path': request.path})
+            return render(request, 'core/generic_form.html', {'form': form, 'action_path': request.path, "form_title": project.question_text})
     else:
         form = ParticipateForm(item)
-        return render(request, 'core/generic_form.html', {'form': form, 'action_path': request.path})
+        return render(request, 'core/generic_form.html', {'form': form, 'action_path': request.path, "form_title": project.question_text})

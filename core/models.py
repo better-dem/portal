@@ -188,6 +188,7 @@ class Event(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     ip_addr = models.CharField(max_length = 100, blank=True, null=True)
     referring_url = models.CharField(max_length = 500, blank=True, null=True)
+    path = models.CharField(max_length=500, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
 ### Signal handling

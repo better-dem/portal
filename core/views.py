@@ -255,6 +255,7 @@ def event_from_request(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     e = cm.Event()
     e.user_profile = profile
+    e.path = request.path
     if "REMOTE_ADDR" in request.META:
         e.ip_addr = request.META["REMOTE_ADDR"]
     if "HTTP_REFERER" in request.META:
@@ -272,7 +273,7 @@ def nonpartisanship(request):
     context = get_default_og_metadata(request)
     return render(request, 'core/coming_soon.html', context)
 
-def report_issues(request):
+def report_issues(request, *args, **kwargs):
     if request.method == 'POST':
         form = IssueReportForm(request.POST)
         if form.is_valid():

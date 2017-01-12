@@ -1,0 +1,26 @@
+{% extends "core/thanks.html" %}
+{% block thanks_detail %}
+<div class="jumbotron">
+
+{% if ans_correct %}
+  <span class="correct">
+    <h1 style="display: inline;"><span class="glyphicon glyphicon-ok" aria-hidden="true" style="color:green"></span> </h1>
+  </span>
+{% else %}
+  <span class="incorrect">
+    <h1 style="display: inline;"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:red"></span> </h1>
+  </span>
+{% endif %}
+  <span>
+    <h1 class="response" style="display: inline;">{{ response }}</h1>
+  </span>
+  <p>
+    <div class="explanation">{{ explanation }}</div>
+  </p>
+  <p>
+    Follow our sources <a href="{{ source }}">here</a>!
+  </p>
+
+</div>
+
+{% endblock %}
