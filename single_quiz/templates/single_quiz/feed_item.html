@@ -1,5 +1,35 @@
 {% extends "core/feed_item.html" %}
 {% block custom_item_content %}
-<input type="text" id="single_quiz_text" data-quiz-id="{{ item.id }}"></input><br>
-<input type="submit" id="single_quiz_submit" data-quiz-id="{{ item.id }}" data-target-url="/apps/single_quiz/participate/{{ item.id }}"></input><br>
+        
+<div id="single_quiz_result_{{ item.id }}">
+  <div class="single_quiz_ajax_form">
+    <h4><label for="id_choice">{{ item.itemobj.name }}</label></h4>
+    <select id="single_quiz_{{ item.id }}">
+      {% if item.projectobj.option1 %}  <option value="1">{{ item.projectobj.option1 }}</option>{% endif %}
+      {% if item.projectobj.option2 %}  <option value="2">{{ item.projectobj.option2 }}</option>{% endif %}
+      {% if item.projectobj.option3 %}  <option value="3">{{ item.projectobj.option3 }}</option>{% endif %}
+      {% if item.projectobj.option4 %}  <option value="4">{{ item.projectobj.option4 }}</option>{% endif %}
+      {% if item.projectobj.option5 %}  <option value="5">{{ item.projectobj.option5 }}</option>{% endif %}
+    </select>
+    <div>
+      <input type="submit" class="portal_ajax_submit" id="single_quiz_submit" data-target-element="single_quiz_{{ item.id }}" data-result-element="single_quiz_result_{{ item.id }}" data-target-url="{{ item.link }}" value="Submit"></input>
+    </div>
+  </div>
+  <span class="correct" style="display: none;">
+    <h1 style="display: inline;"><span class="glyphicon glyphicon-ok" aria-hidden="true" style="color:green"></span> </h1>
+  </span>
+  <span class="incorrect" style="display: none;">
+    <h1 style="display: inline;"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:red"></span> </h1>
+  </span>
+  <span>
+    <h4 class="response" style="display: none;" data-display-style="inline"></h4>
+  </span>
+  <p>
+    <div class="explanation"></div>
+  </p>
+  <p style="display; none">
+    Follow our sources <a href="{{ item.projectobj.citation_url }}">here</a>!
+  </p>
+</div>
+
 {% endblock %}

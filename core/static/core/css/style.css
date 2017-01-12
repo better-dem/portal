@@ -11,6 +11,10 @@
     margin-right: 15px;
 }
 
+.item_content {
+    float: right;
+}
+
 body {
   padding-top: 70px;
 }

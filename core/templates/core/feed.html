@@ -49,6 +49,8 @@
 {% else %}
 {% include "core/feed_item.html" %}
 {% endif %}
-
 {% endfor %}
+
+<script src="{% static 'core/js/feed_ajax.js' %}"></script>
+
 {% endblock %}

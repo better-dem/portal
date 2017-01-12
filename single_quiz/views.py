@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from single_quiz.models import SingleQuizProject, SingleQuizItem
 from .forms import CreateProjectForm, ParticipateForm
 import os
@@ -56,23 +56,41 @@ def administer_project(request, project_id):
     return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project})
 
 def participate(request, item_id):
-    # TODO: !!! Handle posts, ajax, inline display
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     item = SingleQuizItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.singlequizproject
 
-    # context.update({"project": project, "item":item})
-    # return render(request, 'single_quiz/participate.html', context)
-
     if request.method == 'POST':
-        form = ParticipateForm(item, request.POST)
+        form = None
+
+        # populate the form differently depending on whether data is from ajax
+        if request.is_ajax():
+            choice = request.body.strip()
+            sys.stderr.write("choice returned by ajax:\n")
+            sys.stderr.write(choice)
+            sys.stderr.flush()
+            data = {"choice":choice}
+            form = ParticipateForm(item, data)
+        else:
+            form = ParticipateForm(item, request.POST)
+
+        # respond differently
         if form.is_valid():
             if form.cleaned_data["choice"] == str(project.correct_answer_index):
-                return HttpResponse("correct!")
+                content = {"reveal": ["correct"], "hide": ["incorrect", "single_quiz_ajax_form"], "response": "Correct!", "explanation": project.explanation}
+                if request.is_ajax():
+                    return JsonResponse(content)
+                else:
+                    return HttpResponse(content["response"])
             else:
-                return HttpResponse("sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)])
+                content = {"reveal": ["incorrect"], "hide": ["correct", "single_quiz_ajax_form"], "response": "Sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)], "explanation": project.explanation}
+                if request.is_ajax():
+                    return JsonResponse(content)
+                else:
+                    return HttpResponse(content["response"])
+                return HttpResponse()
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path': request.path})
     else:
