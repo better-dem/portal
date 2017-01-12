@@ -80,14 +80,14 @@ def participate(request, item_id):
         # respond differently
         if form.is_valid():
             if form.cleaned_data["choice"] == str(project.correct_answer_index):
-                content = {"reveal": ["correct"], "hide": ["incorrect", "single_quiz_ajax_form"], "response": "Correct!", "explanation": project.explanation}
+                content = {"reveal": ["correct", "sources"], "hide": ["incorrect", "single_quiz_ajax_form"], "response": "Correct!", "explanation": project.explanation}
                 if request.is_ajax():
                     return JsonResponse(content)
                 else:
                     content.update({'action_description': "responding to this mini-quiz", "ans_correct": True, "source": project.citation_url})
                     return render(request, 'single_quiz/thanks.html', content)
             else:
-                content = {"reveal": ["incorrect"], "hide": ["correct", "single_quiz_ajax_form"], "response": "Sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)], "explanation": project.explanation}
+                content = {"reveal": ["incorrect", "sources"], "hide": ["correct", "single_quiz_ajax_form"], "response": "Sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)], "explanation": project.explanation}
                 if request.is_ajax():
                     return JsonResponse(content)
                 else:
