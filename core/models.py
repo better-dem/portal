@@ -80,7 +80,7 @@ def get_usa():
 
 ### Start core models
 class ParticipationProject(models.Model):
-    name = models.CharField(max_length = 100)
+    name = models.CharField(max_length = 500)
     owner_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
 
@@ -108,7 +108,7 @@ class ParticipationProject(models.Model):
             return "/apps/"+app.label+"/edit_project/"+str(self.id)
 
 class ParticipationItem(models.Model):
-    name = models.CharField(max_length = 100)
+    name = models.CharField(max_length = 500)
     creation_time = models.DateTimeField(auto_now_add=True)
     participation_project = models.ForeignKey('ParticipationProject', on_delete=models.CASCADE)
     display_image_file = models.FilePathField(max_length=500, blank=True)
