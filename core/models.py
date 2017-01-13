@@ -130,7 +130,7 @@ class ParticipationItem(models.Model):
     def set_relavent_tags(self):
         raise Exception("set_relevant_tags() method needs to be implemented by all ParticipationItem subclasses.")
 
-    def get_description(self):
+    def get_inline_display(self):
         return self.name + " participation item"
 
     def set_display_image(self):
@@ -188,6 +188,7 @@ class Event(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     ip_addr = models.CharField(max_length = 100, blank=True, null=True)
     referring_url = models.CharField(max_length = 500, blank=True, null=True)
+    path = models.CharField(max_length=500, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
 ### Signal handling

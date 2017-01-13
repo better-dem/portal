@@ -4,10 +4,18 @@
     <div class="panel-body">
 
 	{% if item.display_image_file %}
+	<span>
 	<img src="{% static item.display_image_file %}" class="img-thumbnail" width="90" height="90">
+	</span>
 	{% endif %}
 
-	{{ item.description }}
+	<span class="item_content">
+	  <div>
+	  {% block custom_item_content %}
+	  {{ item.display }}
+	  {% endblock %}
+	  </div>
+	</span>
     </div>
-    <div class="panel-footer">{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}</div>
+    <div class="panel-footer">{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}<a style="float: right;" href="/report_issues{{ item.link }}" data-toggle="tooltip" title="Report a problem with this item"><span class="glyphicon glyphicon-ban-circle"></span></a></div>
 </div>

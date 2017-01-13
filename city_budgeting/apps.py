@@ -6,6 +6,7 @@ from importlib import import_module
 class CityBudgetingConfig(AppConfig):
     name = 'city_budgeting'
     are_projects_editable = False
+    custom_feed_item_template = None
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

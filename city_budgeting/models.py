@@ -171,7 +171,7 @@ class CityBudgetingProject(cm.ParticipationProject):
         return set()
 
 class CityBudgetQuiz(cm.ParticipationItem):
-    def get_description(self):
+    def get_inline_display(self):
         ans = "City budget quiz"
         if self.tags.all().count() > 0:
             ans += " for "+self.tags.all()[0].get_name()

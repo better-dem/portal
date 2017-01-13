@@ -5,10 +5,10 @@ from django.utils.module_loading import module_has_submodule
 from importlib import import_module
 
 
-class ToolReviewConfig(AppConfig):
-    name = 'tool_review'
-    are_projects_editable = True
-    custom_feed_item_template = None
+class SingleQuizConfig(AppConfig):
+    name = 'single_quiz'
+    are_projects_editable = False
+    custom_feed_item_template = "single_quiz/feed_item.html"
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

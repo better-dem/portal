@@ -8,7 +8,6 @@ import sys
 import core.models as cm
 import core.views as cv
 import core.forms as cf
-from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
 from urlparse import urlsplit
 
 def new_project(request):

@@ -1,6 +1,11 @@
 {% extends "core/base.html" %}
-{% block content%}
-{% if form_title %}<h1> {{ form_title }}</h1>{% endif %}
+{% block content %}
+{% load staticfiles %}
+
+<form target=".">
+<input type="text" id="single_quiz_text" data-quiz-id="{{ item.id }}"></input><br>
+<input type="submit" id="single_quiz_submit" data-quiz-id="{{ item.id }}" data-target-url="/apps/single_quiz/participate/{{ item.idx }}"></input><br>
+
 
 <form action="{{ action_path }}" {% if enctype_data %}enctype="multipart/form-data"{% endif %} method="post">
     {% csrf_token %}
@@ -20,4 +25,7 @@
     <input type="submit" value="Submit" />
 </form>
 <br>
+
+
+
 {% endblock %}

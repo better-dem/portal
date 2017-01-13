@@ -203,12 +203,15 @@ def get_item_details(item, get_activity=False):
     """
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
-    ans = {"label": item.name, "description": item.get_inherited_instance().get_description(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]]}
+    project = item.participation_project.get_inherited_instance()
+    ans = {"label": item.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
     if not item.display_image_file == "":
         ans["display_image_file"] = item.display_image_file
     if get_activity:
         ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
         ans["num_visits"] = item.visits
+    if app.custom_feed_item_template:
+        ans["custom_template"] = app.custom_feed_item_template
     return ans
 
 def tags(request):
@@ -252,6 +255,7 @@ def event_from_request(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     e = cm.Event()
     e.user_profile = profile
+    e.path = request.path
     if "REMOTE_ADDR" in request.META:
         e.ip_addr = request.META["REMOTE_ADDR"]
     if "HTTP_REFERER" in request.META:
@@ -269,7 +273,7 @@ def nonpartisanship(request):
     context = get_default_og_metadata(request)
     return render(request, 'core/coming_soon.html', context)
 
-def report_issues(request):
+def report_issues(request, *args, **kwargs):
     if request.method == 'POST':
         form = IssueReportForm(request.POST)
         if form.is_valid():
