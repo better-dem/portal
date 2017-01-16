@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
@@ -71,6 +72,7 @@ def upload_dataset(request):
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
     
 
+@ensure_csrf_cookie
 def show_profile(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if is_default_user:
@@ -119,6 +121,7 @@ def update_profile_tags(request):
         form = AddTagForm()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     
+@ensure_csrf_cookie
 def app_view_relay(request, app_name, action_name, object_id):
     """
     The primary routing view for the major portal actions involving participation projects and items:
@@ -186,6 +189,7 @@ def app_view_relay(request, app_name, action_name, object_id):
         else:
             raise Exception("invalid action:" + str(action_name))
 
+@ensure_csrf_cookie
 def feed(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     num_tags_followed = profile.tags.count()
