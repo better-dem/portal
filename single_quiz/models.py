@@ -35,7 +35,7 @@ class SingleQuizItem(cm.ParticipationItem):
     def set_display_image(self):
         self.display_image_file = "single_quiz/img/default.png"
 
-
+# !! TODO: this is never used
 class SingleQuizResponse(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
     participation_item = models.ForeignKey(SingleQuizItem, on_delete = models.CASCADE)

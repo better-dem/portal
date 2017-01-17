@@ -7,7 +7,34 @@ import traceback
 from django.http import HttpResponse
 
 api_key = os.environ["GOOGLE_MAPS_API_KEY"]
+JQUERY="https://code.jquery.com/jquery-1.12.4.js" # this is already included in all BDN pages
 
+##### Begin Date Picking widget for use with the DateField
+
+# the builtin only works in Chrome...
+
+class DatePickerJQueryWidget(forms.Widget):
+    class Media:
+        css = {
+            'all': ("https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",)
+        }
+        js = ("https://code.jquery.com/ui/1.12.1/jquery-ui.js",)
+
+    def render(self, name, value, *args, **kwargs):
+        input_name = name
+        input_id = kwargs['attrs']['id']
+        render_html = ""
+        render_html += "<input type='text' name='"+input_name+"' id='"+input_id+"' value='' />"
+        render_html += "<script type=\"text/javascript\">"
+        render_html += "$( function() {"
+        render_html += "$( \"#"+input_id+"\" ).datepicker();"
+        render_html += "});"
+        render_html += "</script>"
+        return render_html
+
+    def __init__(self, *args, **kwargs):
+        super(DatePickerJQueryWidget, self).__init__(*args, **kwargs)
+        
 
 def validate_polygon(point_array):
     if point_array is None:
@@ -46,7 +73,6 @@ class ShowPointWidget(forms.Widget):
         }
         js = ("js/maps_utils.js",
               "js/show_point.js",
-              "https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
               "https://maps.googleapis.com/maps/api/js?key={}".format(api_key),)
 
     def render(self, name, value, *args, **kwargs):
@@ -112,25 +138,7 @@ class ShowPointField(forms.Field):
         attrs = super(ShowPointField, self).widget_attrs(widget)
         return attrs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+##### Begin ShowPolygon widget and field
 
 class ShowPolygonWidget(forms.Widget):
     """
@@ -144,7 +152,6 @@ class ShowPolygonWidget(forms.Widget):
         }
         js = ("js/maps_utils.js",
               "js/show_polygon.js",
-              "https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
               "https://maps.googleapis.com/maps/api/js?key={}".format(api_key),)
 
     def render(self, name, value, *args, **kwargs):
@@ -210,6 +217,8 @@ class ShowPolygonField(forms.Field):
         attrs = super(ShowPolygonField, self).widget_attrs(widget)
         return attrs
 
+##### Begin EditablePolygon widget and field
+
 class EditablePolygonWidget(forms.Widget):
     """
     Widget for a user-editable Polygon form field
@@ -220,7 +229,6 @@ class EditablePolygonWidget(forms.Widget):
         }
         js = ("js/maps_utils.js",
               "js/demo_poly_draw.js",
-              "https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
               "https://maps.googleapis.com/maps/api/js?key={}".format(api_key),)
         
     def render(self, name, value, *args, **kwargs):
@@ -297,8 +305,7 @@ class AjaxStringLookupWidget(forms.Widget):
             'all' : ("css/autocomplete.css",)
         }
 
-        js = ("https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js",
-              "js/jquery.autocomplete.min.js",
+        js = ("js/jquery.autocomplete.min.js",
               "js/setup_ajax.js",
               "js/ajax_string_lookup.js",)
         
@@ -379,8 +386,6 @@ class AjaxAutocomplete:
 
     def get_new_form_field(self, **kwargs):
         return AjaxStringLookupField(self.ajax_url, **kwargs)
-
-
 
 # create aac in advance
 # form is imported by urls, 
