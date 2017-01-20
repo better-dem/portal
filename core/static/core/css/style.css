@@ -11,7 +11,13 @@
     margin-right: 15px;
 }
 
+/* to prevent the nav bar from covering the top of the page */
 body {
-  padding-top: 31px;
+  padding-top: 50px;
 }
 
+/* to prevent buttons from getting really long */
+/* if they do, they can drag the nav bar off screen fro small devices */
+.btn {
+    white-space: normal;
+}
