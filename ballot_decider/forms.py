@@ -50,6 +50,7 @@ class CreateProjectForm(forms.Form):
             ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
+        return data
 
     def clean_participation_item_number_2(self):
         data = self.cleaned_data['participation_item_number_2']
@@ -59,6 +60,7 @@ class CreateProjectForm(forms.Form):
             ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
+        return data
 
     def clean_participation_item_number_3(self):
         data = self.cleaned_data['participation_item_number_3']
@@ -68,3 +70,4 @@ class CreateProjectForm(forms.Form):
             ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
+        return data

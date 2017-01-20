@@ -31,8 +31,6 @@ def new_project(request):
 
             for i in range(1,4):
                 quote = form.cleaned_data.get("pov_quote_"+str(i), None)
-                sys.stderr.write("quote from point of view:"+str(quote)+"\n")
-                sys.stderr.flush()
                 if not quote is None and not quote=="":
                     pov = PointOfView()
                     pov.quote = quote
@@ -68,5 +66,5 @@ def participate(request, item_id):
     item = BallotDeciderItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.ballotdeciderproject
-    context.update({"ballot": item})
+    context.update({"ballot": project, "items": [cv.get_item_details(i, False) for i in project.basics.all() if i.is_active]})
     return render(request, 'ballot_decider/participate.html', context)
