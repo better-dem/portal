@@ -1,0 +1,101 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+
+<h2>{{ ballot.name }}</h2>
+
+<i>{{ ballot.ballot_text }}</i>
+
+<h3>The election is coming up on {{ ballot.election_date }}</h3>
+<h4>Find out where to register and how to vote <a href="{{ ballot.election_website }}">here!</a></h4>
+
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Tradeoff Questionnaire</a>
+      </h4>
+    </div>
+    <div id="collapse1" class="panel-collapse collapse">
+      <div class="panel-body">
+
+	<p>
+	  Eventually, we'll put a bunch of nifty widgets here.
+	  Just you wait!
+	</p>
+	
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Back to Basics</a>
+      </h4>
+    </div>
+    <div id="collapse2" class="panel-collapse collapse">
+      <div class="panel-body">
+	
+	<p>
+	  Check up on your knowledge before you decide with these quiz questions and resources.
+	</p>
+
+	{% for item in items %}
+	{% if item.custom_template %}
+	{% include item.custom_template %}
+	{% else %}
+	{% include "core/feed_item.html" %}
+	{% endif %}
+	{% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Points of View</a>
+      </h4>
+    </div>
+    <div id="collapse3" class="panel-collapse collapse">
+      <div class="panel-body">
+
+	<p>
+	  Some people took the time to voice their opinion on {{ ballot.name }}.
+	  How does your point of view agree or differ from theirs?
+	</p>
+
+	{% for pov in ballot.points_of_view.all %}
+	<div class="panel panel-info">
+	  <div class="panel-body">
+
+	    <p style="display: inline;">
+	      <h1 style="display: inline; vertical-align: bottom;"> &ldquo; </h1>
+	      {{ pov.quote }} 
+	      <h1 style="display: inline; vertical-align: top;"> &rdquo;</h1>
+	    </p>
+	    
+	    <p>
+	      Do you agree?
+	    </p>
+
+	  </div>
+	  <div class="panel-footer panel-info">
+	    Follow our sources <a href = "{{ pov.citation_url }}">here!</a>
+	  </div>
+	</div>
+
+	{% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="{% static 'core/js/feed_ajax.js' %}"></script>
+
+{% endblock %}

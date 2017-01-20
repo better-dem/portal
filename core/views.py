@@ -4,7 +4,7 @@ from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
 import core.tasks as tasks
 from core.forms import DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
@@ -188,6 +188,13 @@ def app_view_relay(request, app_name, action_name, object_id):
 
         else:
             raise Exception("invalid action:" + str(action_name))
+
+def splash_if_anon(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not is_default_user:
+        return HttpResponseRedirect("/feed")
+    else:
+        return render(request, "core/splash.html")
 
 @ensure_csrf_cookie
 def feed(request):

@@ -2,65 +2,15 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-	<title>Better Democracy Portal{% if title %}: {{ title }}{% endif %}</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	{% if og_url %}<meta property="og:url" content="{{ og_url }}" />{% endif %}
-	{% if og_type %}<meta property="og:type" content="{{ og_type }}" />{% endif %}
-	{% if og_title %}<meta property="og:title" content="{{ og_title }}" />{% endif %}
-	{% if og_description %}<meta property="og:description" content="{{ og_description }}" />{% endif %}
-	{% if og_image %}<meta property="og:image" content="{{ og_image }}" />{% else %}<meta property="og:image" content="{% static 'core/img/portal_logo.png' %}" />{% endif %}
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<link rel="stylesheet" href="{% static 'core/css/style.css' %}">
-	<link rel="stylesheet" href="{% static 'core/css/bootstrap-tour.min.css' %}">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	<script src="{% static 'core/js/bootstrap-tour.min.js' %}"></script>
+      {% include "core/head.html" %}
+      {% block extra_imports %}{% endblock %}
     </head>
     <body>
 
-	<nav class="navbar navbar-inverse navbar-fixed-top">
-	    <div class="container">
-		<div class="navbar-header">
-		    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-			<span class="sr-only">Toggle navigation</span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-		    </button>
-		    <a class="navbar-brand" href="/" data-toggle="tooltip" title="Visit your participation feed">Better Democracy Portal</a>
-		</div>
-		<div id="navbar" class="navbar-collapse collapse">
-
-		    <ul class="nav navbar-nav navbar-right">
-
-			{% if user.is_authenticated %}
-			<li><a href="/accounts/profile" data-toggle="tooltip" title="Visit your profile"><span class="glyphicon glyphicon-user"></span> {{ user.username }}</a></li>
-			<li><a href="/accounts/logout" data-toggle="tooltip" title="Log out of your account: {{ user.username }}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-			{% else %}
-			<li><a href="/accounts/login" data-toggle="tooltip" title="Log in to get recommendations specific to your interests"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-			<li><a href="/accounts/register" data-toggle="tooltip" title="Sign up for an account to get the most out of this site"><span class="glyphicon glyphicon-user"></span> Register</a></li>
-			{% endif %}
-
-  		        <li class="dropdown">
-		          <a class="dropdown-toggle" data-toggle="dropdown" href="#">About Us<span class="caret"></span></a>
-		          <ul class="dropdown-menu">
-			    <li><a href="http://betterdem.org"><span class="glyphicon glyphicon-info-sign"></span> Better Democracy Network</a></li>
-			    <li><a href="/nonpartisanship"><span class="glyphicon glyphicon-paperclip"></span> Nonpartisanship Policy</a></li>
-			    <li><a href="/donate"><span class="glyphicon glyphicon-usd"></span> Donate</a></li>
-		          </ul>
-		        </li>
-
-		        <li><a href="/report_issues" data-toggle="tooltip" title="Report bugs, biased or inaccurate content, and more"><span class="glyphicon glyphicon-ban-circle"></span> Report An Issue</a></li>
-
-		    </ul>
-		</div>
-	    </div>
-	</nav>
-	
-	<div class="container">
-	    {% block content %}{% endblock %}
-	</div>
+      {% include "core/navbar.html" %}
+      <div class="container">
+	{% block content %}{% endblock %}
+      </div>
 
     </body>
 </html>

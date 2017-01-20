@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'city_budgeting.apps.CityBudgetingConfig',
     'tool_review.apps.ToolReviewConfig',
     'single_quiz.apps.SingleQuizConfig',
+    'ballot_decider.apps.BallotDeciderConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',

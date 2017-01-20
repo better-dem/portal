@@ -1,0 +1,191 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      {% include "core/head.html" %}
+      <style>
+	.parallax {
+	height: 500px;
+	background-attachment: fixed;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	}
+	
+	#p2 {
+	height: 200px;
+	}
+
+	.full-centered {
+	height: 100%;
+	display: -webkit-flexbox;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-direction: column;
+	flex-direction: column;
+	-webkit-flex-align: center;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+	justify-content: center;
+	}
+
+
+	.side-by-side-centered {
+	height: 100%;
+	display: -webkit-flexbox;
+	display: -ms-flexbox;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-align: center;
+	-ms-flex-align: center;
+	-webkit-align-items: center;
+	align-items: center;
+	justify-content: center;
+	}
+
+
+	.three-container {
+	height: 300px;
+	}
+	.three-item {
+	max-width: 300px;
+	padding: 30px;
+	}
+
+	.jumbo1 {
+	display: block;
+	font-size: 72px;
+	color: black;
+	}
+	.jumbo2 {
+	display: block;
+	font-size: 40px;
+	color: black;
+	}
+
+	@media (max-width: 1000px) {
+	.jumbo1 {
+	font-size: 50px;
+	}
+	.jumbo2 {
+	font-size: 25px;
+	}
+	.three-item {
+	max-width: 200px;
+	}
+	}
+		
+	@media (max-width: 600px) {
+	.parallax {
+	height: 300px;
+	}
+	.jumbo1 {
+	font-size: 32px;
+	}
+	.jumbo2 {
+	font-size: 20px;
+	}
+	.side-by-side-centered {
+	-webkit-flex-direction: column;
+	flex-direction: column;
+	align-items: left;
+	}
+	.three-container {
+	height: 500px;
+	}
+	.three-item {
+	max-width: 80%;
+	width: 80%;
+	padding: 0px;
+	}
+	}
+
+
+	@media (max-width: 400px) {
+	.parallax {
+	height: 200px;
+	}
+	.jumbo1 {
+	font-size: 25px;
+	}
+	.jumbo2 {
+	font-size: 15px;
+	}
+	.three-item {
+	max-width: 100%;
+	width: 100%;
+	padding: 0px;
+	}
+	}
+
+      </style>
+    </head>
+    <body>
+
+      {% include "core/navbar.html" %}
+
+      <!-- Container element -->
+      <div class="parallax" style="background-image: url('{% static 'core/img/us_capital_building.jpeg' %}');">
+	<div class="full-centered">
+	  <div class="jumbo1" style="text-align: center;">Welcome to the Better Democracy Portal</div>
+	  <div class="jumbo2" style="text-align: center;">Your resource to learn about and participate in government</div>
+	  <p></p>
+	  <a href="/feed/" class="btn btn-primary" role="button">Get Started!</a>
+	  
+	</div>
+      </div>
+
+      <div class="three-container">
+	<div class="side-by-side-centered">
+	  <div class="three-item">
+	    <h2>We are:</h2>
+	    <ul>
+	      <li>A Washington State nonprofit</li>
+	      <li>Engineers and social scientists</li>
+	      <li>Passionate about your voice</li>
+	    </ul>
+	  </div>
+
+
+	  <div class="three-item">
+	    <h2>We do:</h2>
+	    <ul>
+	      <li>Local</li>
+	      <li>State</li>
+	      <li>Federal</li>
+	    </ul>
+	  </div>
+	  
+	  <div class="three-item">
+	    <h2>We make:</h2>
+	    <ul>
+	      <li>Interactive visualizations</li>
+	      <li>Decision tools</li>
+	      <li>Outreach tools</li>
+	      <li>Quizzes and videos</li>
+	    </ul>
+	  </div>
+
+	</div>
+      </div>
+
+      <div id="p2" class="parallax" style="background-image: url('{% static 'core/img/us_capital_building.jpeg' %}');">
+      </div>
+
+      <div style="text-align: center;">
+	<p></p>
+	<p>
+	  The Better Democracy Portal is built and operated by Better Democracy Network.
+	</p>
+	<p>
+	  Learn more about the Better Democracy Network <a href="http://betterdem.org">here</a>.
+	</p>
+	<p></p>
+      </div>
+
+    </body>
+</html>
+
+      
