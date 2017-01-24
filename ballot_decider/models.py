@@ -49,7 +49,7 @@ class POVToolResponse(models.Model):
     def generate_decision(self):
         item_responses = self.povitemresponse_set.all()
         scored_response_strings = {k.point_of_view.quote: k.point_of_view.favorability*k.score for k in item_responses}
-        pros = [k in item_responses if k.point_of_view.favorability > 0]
+        pros = [k for k in item_responses if k.point_of_view.favorability > 0]
         cons = [k for k in item_responses if k.point_of_view.favorability < 0]
         sorted_pros = sorted(pros, key=lambda x: abs(scored_response_strings[x]), reverse=True)
         sorted_cons = max(cons, key=lambda x: abs(scored_response_strings[x]), reverse=True)

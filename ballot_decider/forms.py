@@ -7,9 +7,9 @@ from widgets import forms as wf
 class ParticipateForm(forms.Form):
     def __init__(self, item, *args, **kwargs):
         super(ParticipateForm, self).__init__(*args, **kwargs)
-        povs = item.participationproject.ballotdeciderproject.pointofview_set.all():
+        povs = item.participationproject.ballotdeciderproject.pointofview_set.all()
         for pov in povs:
-            self.fields[pov.id] = forms.IntegerField(widget = NumberInput({attrs={'type': 'range', 'step': '1'}}))
+            self.fields["pov_weight_"+str(pov.id)] = forms.IntegerField(widget = NumberInput(attrs={'type': 'range', 'step': '1'}))
 
 class CreateProjectForm(forms.Form):
     measure_name = forms.CharField()

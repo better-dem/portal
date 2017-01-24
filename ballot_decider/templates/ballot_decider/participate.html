@@ -64,8 +64,8 @@
       <div class="panel-body">
 
 	<p>
-	  Some people took the time to voice their opinion on {{ ballot.name }}.
-	  How does your point of view agree or differ from theirs?
+	  Here are some arguments for and against {{ ballot.name }}.
+	  How important are these points to you?
 	</p>
 
 	{% for pov in ballot.points_of_view.all %}
@@ -73,13 +73,19 @@
 	  <div class="panel-body">
 
 	    <p style="display: inline;">
-	      <h1 style="display: inline; vertical-align: bottom;"> &ldquo; </h1>
+	    {% if pov.favorability > 0 %}
+	      <span class="glyphicon glyphicon-plus" aria-hidden="true" style="color:green; font-size: 24px;"></span>
+	    {% elif pov.favorability < 0 %}
+	      <span class="glyphicon glyphicon-minus" aria-hidden="true" style="color:red; font-size: 24px;"></span>
+	    {% endif %}
+	      <b>&ldquo;</b>
 	      {{ pov.quote }} 
-	      <h1 style="display: inline; vertical-align: top;"> &rdquo;</h1>
+	      <b> &rdquo;</b>
 	    </p>
 	    
 	    <p>
-	      Do you agree?
+	      How important is this point for your decision?<br>
+	      <div style="display: inline-block; margin: 20px;"><b>Not at all<br>important</b></div><div style="display: inline-block;"><input type="range" style="max-width: 300px; display: inline;" id="pov_weight_{{ pov.id }}" value="0" max="100" min="0"></div><div style="display: inline-block; margin: 20px;"><b>Very<br>important</b></div>
 	    </p>
 
 	  </div>
@@ -89,6 +95,8 @@
 	</div>
 
 	{% endfor %}
+
+	<div class="btn btn-primary" role="button">Decide!</div>
 
       </div>
     </div>
