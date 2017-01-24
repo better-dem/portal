@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from ballot_decider.models import BallotDeciderProject, BallotDeciderItem, PointOfView
-from .forms import CreateProjectForm
+from .forms import CreateProjectForm, ParticipateForm
 import os
 import sys
 import core.models as cm
 import core.views as cv
 import core.forms as cf
-
+import json
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -67,4 +67,10 @@ def participate(request, item_id):
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.ballotdeciderproject
     context.update({"ballot": project, "items": [cv.get_item_details(i, False) for i in project.basics.all() if i.is_active]})
-    return render(request, 'ballot_decider/participate.html', context)
+    if not request.method == "POST":
+        return render(request, 'ballot_decider/participate.html', context)
+    if request.method == 'POST' and request.is_ajax():
+        submission_data = json.loads(request.body.strip())        
+        form = ParticipateForm(item, data)
+
+

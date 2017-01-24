@@ -1,8 +1,15 @@
 from django import forms
-from django.forms.widgets import Textarea, DateInput
+from django.forms.widgets import Textarea, DateInput, NumberInput
 from core import forms as cf
 from core import models as cm
 from widgets import forms as wf
+
+class ParticipateForm(forms.Form):
+    def __init__(self, item, *args, **kwargs):
+        super(ParticipateForm, self).__init__(*args, **kwargs)
+        povs = item.participationproject.ballotdeciderproject.pointofview_set.all():
+        for pov in povs:
+            self.fields[pov.id] = forms.IntegerField(widget = NumberInput({attrs={'type': 'range', 'step': '1'}}))
 
 class CreateProjectForm(forms.Form):
     measure_name = forms.CharField()
