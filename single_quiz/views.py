@@ -7,7 +7,7 @@ import sys
 import core.models as cm
 import core.views as cv
 import core.forms as cf
-
+import json
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -68,11 +68,10 @@ def participate(request, item_id):
 
         # populate the form differently depending on whether data is from ajax
         if request.is_ajax():
-            choice = request.body.strip()
-            sys.stderr.write("choice returned by ajax:\n")
-            sys.stderr.write(choice)
-            sys.stderr.flush()
-            data = {"choice":choice}
+            submission = request.body.strip()
+            submission = json.loads(submission)
+            assert(len(submission) == 1)
+            data = {"choice":submission.values()[0]}
             form = ParticipateForm(item, data)
         else:
             form = ParticipateForm(item, request.POST)

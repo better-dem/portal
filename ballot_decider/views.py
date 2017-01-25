@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from ballot_decider.models import BallotDeciderProject, BallotDeciderItem, PointOfView
+from ballot_decider.models import BallotDeciderProject, BallotDeciderItem, PointOfView, POVToolResponse, POVItemResponse
 from .forms import CreateProjectForm, ParticipateForm
 import os
 import sys
@@ -70,7 +70,41 @@ def participate(request, item_id):
     if not request.method == "POST":
         return render(request, 'ballot_decider/participate.html', context)
     if request.method == 'POST' and request.is_ajax():
-        submission_data = json.loads(request.body.strip())        
-        form = ParticipateForm(item, data)
+        submission_data = json.loads(request.body.strip())
+        form = ParticipateForm(item, submission_data)
+        if form.is_valid():
+            submission = POVToolResponse()
+            submission.user_profile = profile
+            submission.participation_item = item
+            submission.save()
+            for k in form.cleaned_data.keys():
+                if "pov_weight" in k:
+                    pov_id = int(k.replace("pov_weight_", ""))
+                    pov = PointOfView.objects.get(id=pov_id)
+                    item_response = POVItemResponse()
+                    item_response.point_of_view = pov
+                    item_response.score = int(form.cleaned_data[k])
+                    item_response.tool_response = submission
+                    item_response.save()
 
+            decision, explanation = submission.generate_decision()
+            
+            content = dict()
+            content["reveal"] = ["response"]
+            content["hide"] = ["ajax_form"]
+            content["explanation"] = explanation
+            if decision == 0:
+                content["reveal"].append("no-decision")
+            elif decision >= 50:
+                content["reveal"].append("strong-yes")
+            elif decision > 0:
+                content["reveal"].append("lean-yes")
+            elif decision <= -50:
+                content["reveal"].append("strong-no")
+            elif decision < 0:
+                content["reveal"].append("lean-no")
+
+            return JsonResponse(content)
+        else:
+            return HttpResponse("sorry, the form isn't valid")
 

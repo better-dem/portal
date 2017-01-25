@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from core import models as cm
+import sys
 
 class BallotDeciderProject(cm.ParticipationProject):
     ballot_text = models.TextField()
@@ -51,12 +52,12 @@ class POVToolResponse(models.Model):
         scored_response_strings = {k.point_of_view.quote: k.point_of_view.favorability*k.score for k in item_responses}
         pros = [k for k in item_responses if k.point_of_view.favorability > 0]
         cons = [k for k in item_responses if k.point_of_view.favorability < 0]
-        sorted_pros = sorted(pros, key=lambda x: abs(scored_response_strings[x]), reverse=True)
-        sorted_cons = max(cons, key=lambda x: abs(scored_response_strings[x]), reverse=True)
+        sorted_pros = sorted([p.point_of_view.quote for p in pros], key=lambda x: abs(scored_response_strings[x]), reverse=True)
+        sorted_cons = sorted([c.point_of_view.quote for c in cons], key=lambda x: abs(scored_response_strings[x]), reverse=True)
         if len(scored_response_strings) == 0:
             final_decision = 0
         else: 
-            final_decision = 1.0 * sum(scored_response_strings) / len(scored_response_strings)
+            final_decision = 1.0 * sum(scored_response_strings.values()) / len(scored_response_strings)
 
         explanation = ""
         if final_decision > 0:
@@ -64,18 +65,14 @@ class POVToolResponse(models.Model):
             if len(concessions) > 0:
                 explanation += "Although I agree that " + concessions[0] + ", "
             main_argument = sorted_pros[0]
-            if abs(scored_response_strings[main_argument]) > \
-               abs(scored_response_strings[concessions[0]]):
-                explanation += "I decided to vote yes because "+main_argument+"."
+            explanation += "I decided to vote yes because "+main_argument+"."
 
         elif final_decision < 0:
             concessions = [k for k in sorted_pros if not scored_response_strings[k] == 0]
             if len(concessions) > 0:
                 explanation += "Although I agree that " + concessions[0] + ", "
             main_argument = sorted_cons[0]
-            if abs(scored_response_strings[main_argument]) > \
-               abs(scored_response_strings[concessions[0]]):
-                explanation += "I decided to vote no because "+main_argument+"."
+            explanation += "I decided to vote no because "+main_argument+"."
 
         else:
             if len([k for k in scored_response_strings if not scored_response_strings[k] == 0]) == 0:
@@ -83,9 +80,10 @@ class POVToolResponse(models.Model):
             else:
                 explanation = "I find that the pros and cons completely cancel each other out, so I'll abstain from voting."
 
-        return {"decision": final_decision, "explanation": explanation}
+        return final_decision, explanation
         
 
 class POVItemResponse(models.Model):
     point_of_view = models.ForeignKey(PointOfView)
     score = models.FloatField()
+    tool_response = models.ForeignKey(POVToolResponse)

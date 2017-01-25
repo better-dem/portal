@@ -98,11 +98,23 @@ var submit_ajax_form = function(url, content, cb) {
     $.post(url, content, cb);
 }
 
+// get a map of elementID -> value for all the elements in b's data-target-element attribute
+var get_form_data_object = function(b){
+    var data_elements = b.getAttribute("data-target-element").split(",")
+    var message = {}
+    for (var i = 0; i < data_elements.length; i++){
+	if (data_elements[i] != ""){
+	    message[data_elements[i]] = document.getElementById(data_elements[i]).value;
+	}
+    }
+    return JSON.stringify(message)
+}
+
 // register event triggers for a button based on its attributes
 var register_event_trigger = function(b){
     b.addEventListener("click", function(e) {
 	submit_ajax_form(b.getAttribute("data-target-url"),
-			 document.getElementById(b.getAttribute("data-target-element")).value,
+			 get_form_data_object(b),
 			 get_form_response_cb(b.getAttribute("data-result-element")))
     }, false);
 }
