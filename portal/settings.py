@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'tool_review.apps.ToolReviewConfig',
     'single_quiz.apps.SingleQuizConfig',
     'ballot_decider.apps.BallotDeciderConfig',
+    'interactive_visualization.apps.InteractiveVisualizationConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',

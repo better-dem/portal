@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<link rel="stylesheet" href="https://dc-js.github.io/dc.js/css/dc.css">
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
+<script type="text/javascript" src="https://rawgit.com/crossfilter/reductio/master/reductio.js"></script>
+<script type="text/javascript" src="https://npmcdn.com/universe@0.8.0/universe.js"></script>
+
+
+<div id="housing_costs"></div>
+
+<!-- No spaces around commas! This is important!! :( -->
+<pre id="data" style="display: none;">
+Household_Income,Residence_Type,Selected_Housing_Costs
+10,0,5
+12,0,3
+13,0,8
+100,1,10
+80,1,22
+90,1,20
+60,2,11
+25,2,12
+</pre>
+
+
+<script>
+var chart = dc.barChart("#housing_costs");
+var parsed_data = d3.csv.parse(d3.select('pre#data').text());
+console.log('parsed data', parsed_data)
+
+var ndx = crossfilter(parsed_data),
+    residence_type = ndx.dimension(function(d) {return +d.Residence_Type;}),
+    number_of_samples = residence_type.group().reduce(
+
+);
+
+
+chart
+    .width(768)
+    .height(480)
+    .x(d3.scale.linear().domain([0,120]))
+    .brushOn(false)
+    .yAxisLabel("This is the Y Axis!")
+    .dimension(residence_type)
+    .group(number_of_samples)
+    .on('renderlet', function(chart) {
+        chart.selectAll('rect').on("click", function(d) {
+            console.log("click!", d);
+        });
+    });
+
+chart.render();
+
+
+</script>
+
+
+{% endblock %}
