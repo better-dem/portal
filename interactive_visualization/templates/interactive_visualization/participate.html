@@ -9,41 +9,72 @@
 <script type="text/javascript" src="https://rawgit.com/crossfilter/reductio/master/reductio.js"></script>
 <script type="text/javascript" src="https://npmcdn.com/universe@0.8.0/universe.js"></script>
 
+<p>
+  <div id="housing_costs">
+    <a class="reset" href="javascript:chart1.filterAll();dc.redrawAll();" style="visibility: hidden;">reset</a>
+  </div>
 
-<div id="housing_costs"></div>
+  
+  <div id="residence_types"></div>
+
+</p>
 
 <!-- No spaces around commas! This is important!! :( -->
 <pre id="data" style="display: none;">
 Household_Income,Residence_Type,Selected_Housing_Costs
-10,0,5
-12,0,3
-13,0,8
-100,1,10
-80,1,22
-90,1,20
-60,2,11
-25,2,12
+10,rent,5
+12,rent,3
+13,rent,8
+100,own,10
+80,own,22
+90,own,20
+60,mortgage,11
+25,mortgage,12
 </pre>
 
 
 <script>
-var chart = dc.barChart("#housing_costs");
+var chart1 = dc.barChart("#housing_costs");
 var parsed_data = d3.csv.parse(d3.select('pre#data').text());
 console.log('parsed data', parsed_data)
 
 var ndx = crossfilter(parsed_data),
-    residence_type = ndx.dimension(function(d) {return +d.Residence_Type;}),
-    number_of_samples = residence_type.group().reduce(
+    housing_costs = ndx.dimension(function(d) {return +d.Selected_Housing_Costs;}),
+    number_of_samples = housing_costs.group(function(d){return Math.floor(1.0*d/5)*5});
 
-);
+chart1
+    .width(300)
+    .height(200)
+    .turnOnControls(true)
+    .x(d3.scale.linear().domain([0,20]))
+    .xUnits(function(){return 4;}) // in other words, the number of bins. Since we have a width of 20, and each bin has a width of 5, we want 4 bins
+    .brushOn(true)
+    .yAxisLabel("Number of households")
+    .xAxisLabel("Selected housing costs")
+    .dimension(housing_costs)
+    .group(number_of_samples)
+    .on('renderlet', function(chart) {
+        chart.selectAll('rect').on("click", function(d) {
+            console.log("click!", d);
+        });
+    });
+
+chart1.render();
 
 
-chart
-    .width(768)
-    .height(480)
-    .x(d3.scale.linear().domain([0,120]))
+var chart2 = dc.barChart("#residence_types");
+
+var residence_type = ndx.dimension(function(d) {return d.Residence_Type;}),
+    number_of_samples = residence_type.group();
+
+chart2
+    .width(300)
+    .height(200)
+    .x(d3.scale.ordinal())
+    .xUnits(dc.units.ordinal)
     .brushOn(false)
-    .yAxisLabel("This is the Y Axis!")
+    .yAxisLabel("Number of households")
+    .xAxisLabel("Household type")
     .dimension(residence_type)
     .group(number_of_samples)
     .on('renderlet', function(chart) {
@@ -52,8 +83,7 @@ chart
         });
     });
 
-chart.render();
-
+chart2.render();
 
 </script>
 
