@@ -6,21 +6,40 @@
 <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
 <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
 <script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
-<script type="text/javascript" src="https://rawgit.com/crossfilter/reductio/master/reductio.js"></script>
-<script type="text/javascript" src="https://npmcdn.com/universe@0.8.0/universe.js"></script>
 
 <p>
+  <strong>Prop. 1 Outcome</strong>
   <div id="dc_switch"></div>
 </p>
 
-<p>
-  <div id="housing_costs">
-    <a class="reset" href="javascript:chart1.filterAll();dc.redrawAll();" style="visibility: hidden;">reset</a>
+<!-- <div class="row"> -->
+<!--   <div id="housing_costs" style="margin-left: 15px;"> -->
+<!--     <strong>Selected Housing Costs</strong> -->
+<!--     <a class="reset" href="javascript:chart1.filterAll();dc.redrawAll();" style="display: none;">reset</a> -->
+
+<!--     <div class="clearfix"></div> -->
+<!--   </div> -->
+<!-- </div> -->
+
+<div class="row">
+  <div id="housing_costs_percentage_of_income" style="margin-left: 15px;">
+    <strong>Selected Housing Costs as a Percentage of Income</strong>
+    <a class="reset" href="javascript:chart3.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
   </div>
+</div>
 
-  <div id="residence_types"></div>
 
-</p>
+<div class="row">
+  <div id="residence_types" style="margin-left: 15px;">
+    <strong>Residence Types</strong>
+    <a class="reset" href="javascript:chart2.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+
 
 <!-- No spaces around commas! This is important!! :( -->
 <pre id="data" style="display: none;">
@@ -32,7 +51,7 @@ no,100,own,10
 no,80,own,22
 no,90,own,20
 no,60,mortgage,11
-no,25,mortgage,12
+no,45,mortgage,12
 yes,10,rent,5
 yes,12,rent,3
 yes,13,rent,8
@@ -40,7 +59,7 @@ yes,100,own,21
 yes,80,own,33
 yes,90,own,31
 yes,60,mortgage,22
-yes,25,mortgage,23
+yes,45,mortgage,23
 </pre>
 
 
@@ -48,57 +67,49 @@ yes,25,mortgage,23
 
 var toggle_column="vote";
 
-var chart1 = dc.barChart("#housing_costs");
 var parsed_data = d3.csv.parse(d3.select('pre#data').text());
 console.log('parsed data', parsed_data)
 
+var binwidth=5
 var ndx = crossfilter(parsed_data),
     housing_costs = ndx.dimension(function(d) {return +d.Selected_Housing_Costs;}),
-    number_of_samples = housing_costs.group(function(d){return Math.floor(1.0*d/5)*5});
+    number_of_samples = housing_costs.group(function(d) { return binwidth * Math.floor(1.0 * d / binwidth)});
 
-chart1
+
+var housing_costs_as_a_percentage_of_income = ndx.dimension(function(d) {return 100.0 * +d.Selected_Housing_Costs / +d.Household_Income;}),
+    number_of_samples = housing_costs_as_a_percentage_of_income.group(function(d) { return binwidth * Math.floor(1.0 * d / binwidth)});
+
+var chart3 = dc.barChart("#housing_costs_percentage_of_income"); 
+chart3
     .width(300)
     .height(200)
+    .dimension(housing_costs_as_a_percentage_of_income)
+    .group(number_of_samples)
     .turnOnControls(true)
-    .x(d3.scale.linear().domain([0,25]))
-    .xUnits(function(){return 5;}) // in other words, the number of bins. Since we have a width of 25, and each bin has a width of 5, we want 5 bins
+    .elasticX(true)
+    .x(d3.scale.linear())
+    .xAxisPadding(10)
+    .xUnits(dc.units.fp.precision(binwidth))
     .brushOn(true)
     .yAxisLabel("Number of households")
-    .xAxisLabel("Selected housing costs")
-    .dimension(housing_costs)
-    .group(number_of_samples)
-    .on('renderlet', function(chart) {
-        chart.selectAll('rect').on("click", function(d) {
-            console.log("click!", d);
-        });
-    });
+    .xAxisLabel("% of household income towards housing")
 
 
 
-var chart2 = dc.barChart("#residence_types");
 
 var residence_type = ndx.dimension(function(d) {return d.Residence_Type;}),
     number_of_samples = residence_type.group();
 
+var chart2 = dc.rowChart("#residence_types");
 chart2
     .width(300)
     .height(200)
     .x(d3.scale.ordinal())
-    .xUnits(dc.units.ordinal)
-    .brushOn(false)
-    .yAxisLabel("Number of households")
-    .xAxisLabel("Household type")
+    .elasticX(true)
     .dimension(residence_type)
     .group(number_of_samples)
-    .on('renderlet', function(chart) {
-        chart.selectAll('rect').on("click", function(d) {
-            console.log("click!", d);
-        });
-    });
 
-
-
-chart1.render();
+chart3.render();
 chart2.render();
 
 // set up a data toggle using radio buttons
@@ -126,7 +137,21 @@ for (var i = 0; i < keys.length; i++){
     elem.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle(this);' name='optradio' value='"+keys[i]+"'"+ selected_str +">"+keys[i]+"</label></div>"
 }
 
-
+// from the answer here: http://stackoverflow.com/questions/21114336/how-to-add-axis-labels-for-row-chart-using-dc-js-or-d3-js
+// it's pretty weird (and terrible) that dc.js doesn't have this already...
+function addXAxis(chartToUpdate, displayText)
+{
+    chartToUpdate.svg()
+                .append("text")
+                .attr("class", "x-axis-label")
+                .attr("text-anchor", "middle")
+                .attr("x", chartToUpdate.width()/2)
+                .attr("y", chartToUpdate.height())
+                .text(displayText);
+}
+addXAxis(chart2, "Number of Households");
+chart3.filterAll()
+dc.redrawAll()
 
 </script>
 
