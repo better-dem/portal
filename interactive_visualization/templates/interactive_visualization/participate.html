@@ -10,30 +10,44 @@
 <script type="text/javascript" src="https://npmcdn.com/universe@0.8.0/universe.js"></script>
 
 <p>
+  <div id="dc_switch"></div>
+</p>
+
+<p>
   <div id="housing_costs">
     <a class="reset" href="javascript:chart1.filterAll();dc.redrawAll();" style="visibility: hidden;">reset</a>
   </div>
 
-  
   <div id="residence_types"></div>
 
 </p>
 
 <!-- No spaces around commas! This is important!! :( -->
 <pre id="data" style="display: none;">
-Household_Income,Residence_Type,Selected_Housing_Costs
-10,rent,5
-12,rent,3
-13,rent,8
-100,own,10
-80,own,22
-90,own,20
-60,mortgage,11
-25,mortgage,12
+vote,Household_Income,Residence_Type,Selected_Housing_Costs
+no,10,rent,5
+no,12,rent,3
+no,13,rent,8
+no,100,own,10
+no,80,own,22
+no,90,own,20
+no,60,mortgage,11
+no,25,mortgage,12
+yes,10,rent,5
+yes,12,rent,3
+yes,13,rent,8
+yes,100,own,21
+yes,80,own,33
+yes,90,own,31
+yes,60,mortgage,22
+yes,25,mortgage,23
 </pre>
 
 
 <script>
+
+var toggle_column="vote";
+
 var chart1 = dc.barChart("#housing_costs");
 var parsed_data = d3.csv.parse(d3.select('pre#data').text());
 console.log('parsed data', parsed_data)
@@ -46,8 +60,8 @@ chart1
     .width(300)
     .height(200)
     .turnOnControls(true)
-    .x(d3.scale.linear().domain([0,20]))
-    .xUnits(function(){return 4;}) // in other words, the number of bins. Since we have a width of 20, and each bin has a width of 5, we want 4 bins
+    .x(d3.scale.linear().domain([0,25]))
+    .xUnits(function(){return 5;}) // in other words, the number of bins. Since we have a width of 25, and each bin has a width of 5, we want 5 bins
     .brushOn(true)
     .yAxisLabel("Number of households")
     .xAxisLabel("Selected housing costs")
@@ -59,7 +73,6 @@ chart1
         });
     });
 
-chart1.render();
 
 
 var chart2 = dc.barChart("#residence_types");
@@ -83,7 +96,37 @@ chart2
         });
     });
 
+
+
+chart1.render();
 chart2.render();
+
+// set up a data toggle using radio buttons
+
+var dc_dimension = ndx.dimension(function(d) {return d[toggle_column];});
+var handle_dc_switch_toggle = function(elem){
+    var val = elem.value;
+    dc_dimension.filterAll()
+    dc_dimension.filter(function(d){return d == val;})
+    dc.redrawAll();
+}
+
+var toggle_group = dc_dimension.group();
+console.log(toggle_group)
+console.log(toggle_group.all())
+var keys = toggle_group.all().map(function(x) {return x.key;})
+console.log("keys:", keys)
+elem = document.getElementById("dc_switch")
+for (var i = 0; i < keys.length; i++){
+    var selected_str = ""
+    if (i==0){
+    selected_str = " checked='checked'"
+    handle_dc_switch_toggle({"value":keys[i]})
+    }
+    elem.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle(this);' name='optradio' value='"+keys[i]+"'"+ selected_str +">"+keys[i]+"</label></div>"
+}
+
+
 
 </script>
 
