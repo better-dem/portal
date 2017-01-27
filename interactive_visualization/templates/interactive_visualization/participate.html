@@ -2,82 +2,88 @@
 {% block content %}
 {% load staticfiles %}
 
-<link rel="stylesheet" href="https://dc-js.github.io/dc.js/css/dc.css">
-<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
-<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
-<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
+<link rel="stylesheet" href="{% static 'interactive_visualization/css/dc.css' %}">
+<script type="text/javascript" src="{% static 'interactive_visualization/js/d3.js' %}"></script>
+<script type="text/javascript" src="{% static 'interactive_visualization/js/crossfilter.js' %}"></script>
+<script type="text/javascript" src="{% static 'interactive_visualization/js/dc.js' %}"></script>
 
+{% if project.switch_variable %}
 <p>
-  <strong>Prop. 1 Outcome</strong>
-  <div id="dc_switch"></div>
+  <strong>{{ project.switch_title }}</strong>
+  <div id="dc_switch_{{ project.id }}"></div>
+  {{ project.switch_note }}
 </p>
+{% endif %}
 
-<!-- <div class="row"> -->
-<!--   <div id="housing_costs" style="margin-left: 15px;"> -->
-<!--     <strong>Selected Housing Costs</strong> -->
-<!--     <a class="reset" href="javascript:chart1.filterAll();dc.redrawAll();" style="display: none;">reset</a> -->
-
-<!--     <div class="clearfix"></div> -->
-<!--   </div> -->
-<!-- </div> -->
-
+{% if project.bar1_variable %}
 <div class="row">
-  <div id="housing_costs_percentage_of_income" style="margin-left: 15px;">
-    <strong>Selected Housing Costs as a Percentage of Income</strong>
-    <a class="reset" href="javascript:chart3.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+  <div id="bar1_{{ project.id }}_div" style="margin-left: 15px;">
+    <strong>{{ project.bar1_title }}</strong>
+    <a class="reset" href="javascript:bar1_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
 </div>
+{% endif %}
 
-
+{% if project.pie1_variable %}
 <div class="row">
-  <div id="residence_types" style="margin-left: 15px;">
-    <strong>Residence Types</strong>
-    <a class="reset" href="javascript:chart2.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+  <div id="pie1_{{ project.id }}_div" style="margin-left: 15px;">
+    <strong>{{ project.pie1_title }}</strong>
+    <a class="reset" href="javascript:pie1_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
 </div>
+{% endif %}
 
+{% if project.bar2_variable %}
+<div class="row">
+  <div id="bar2_{{ project.id }}_div" style="margin-left: 15px;">
+    <strong>{{ project.bar2_title }}</strong>
+    <a class="reset" href="javascript:bar2_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+{% endif %}
+
+{% if project.pie2_variable %}
+<div class="row">
+  <div id="pie2_{{ project.id }}_div" style="margin-left: 15px;">
+    <strong>{{ project.pie2_title }}</strong>
+    <a class="reset" href="javascript:pie2_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+{% endif %}
 
 <!-- No spaces around commas! This is important!! :( -->
-<pre id="data" style="display: none;">
-vote,Household_Income,Residence_Type,Selected_Housing_Costs
-no,10,rent,5
-no,12,rent,3
-no,13,rent,8
-no,100,own,10
-no,80,own,22
-no,90,own,20
-no,60,mortgage,11
-no,45,mortgage,12
-yes,10,rent,5
-yes,12,rent,3
-yes,13,rent,8
-yes,100,own,21
-yes,80,own,33
-yes,90,own,31
-yes,60,mortgage,22
-yes,45,mortgage,23
+<pre id="data_interactive_visualization_{{ project.id }}" style="display: none;">
+{{ project.csv_data }}
 </pre>
 
 
 <script>
 
-var toggle_column="vote";
+{% if project.switch_variable %}
+var toggle_column_interactive_visualization_{{ project.id }}="{{ project.switch_variable }}";
+{% endif %}
 
-var parsed_data = d3.csv.parse(d3.select('pre#data').text());
+var parsed_data_interactive_visualization_{{ project.id }} = d3.csv.parse(d3.select('pre#data').text());
 console.log('parsed data', parsed_data)
 
-var binwidth=5
-var ndx = crossfilter(parsed_data),
-    housing_costs = ndx.dimension(function(d) {return +d.Selected_Housing_Costs;}),
-    number_of_samples = housing_costs.group(function(d) { return binwidth * Math.floor(1.0 * d / binwidth)});
+var bin_width_interactive_visualization_{{ project.id }}=5
+var xfilter_interactive_visualization_{{ project.id }} = crossfilter(parsed_data);
 
 
-var housing_costs_as_a_percentage_of_income = ndx.dimension(function(d) {return 100.0 * +d.Selected_Housing_Costs / +d.Household_Income;}),
-    number_of_samples = housing_costs_as_a_percentage_of_income.group(function(d) { return binwidth * Math.floor(1.0 * d / binwidth)});
+
+var housing_costs = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return +d.Selected_Housing_Costs;}),
+    number_of_samples = housing_costs.group(function(d) { return bin_width_interactive_visualization_{{ project.id }} * Math.floor(1.0 * d / bin_width_interactive_visualization_{{ project.id }})});
+
+var housing_costs_as_a_percentage_of_income = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return 100.0 * +d.Selected_Housing_Costs / +d.Household_Income;}),
+    number_of_samples = housing_costs_as_a_percentage_of_income.group(function(d) { return bin_width_interactive_visualization_{{ project.id }} * Math.floor(1.0 * d / bin_width_interactive_visualization_{{ project.id }})});
 
 var chart3 = dc.barChart("#housing_costs_percentage_of_income"); 
 chart3
@@ -89,7 +95,7 @@ chart3
     .elasticX(true)
     .x(d3.scale.linear())
     .xAxisPadding(10)
-    .xUnits(dc.units.fp.precision(binwidth))
+    .xUnits(dc.units.fp.precision(bin_width_interactive_visualization_{{ project.id }}))
     .brushOn(true)
     .yAxisLabel("Number of households")
     .xAxisLabel("% of household income towards housing")
@@ -97,7 +103,7 @@ chart3
 
 
 
-var residence_type = ndx.dimension(function(d) {return d.Residence_Type;}),
+var residence_type = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return d.Residence_Type;}),
     number_of_samples = residence_type.group();
 
 var chart2 = dc.rowChart("#residence_types");
@@ -114,7 +120,7 @@ chart2.render();
 
 // set up a data toggle using radio buttons
 
-var dc_dimension = ndx.dimension(function(d) {return d[toggle_column];});
+var dc_dimension = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return d[toggle_column];});
 var handle_dc_switch_toggle = function(elem){
     var val = elem.value;
     dc_dimension.filterAll()
@@ -149,8 +155,15 @@ function addXAxis(chartToUpdate, displayText)
                 .attr("y", chartToUpdate.height())
                 .text(displayText);
 }
+{% if project.pie1_variable %}addXAxis(pie1_{{ project.id }}_chart.filterAll(), {{ project. }}){% endif %}
+{% if project.pie1_variable %}pie1_{{ project.id }}_chart.filterAll(){% endif %}
 addXAxis(chart2, "Number of Households");
 chart3.filterAll()
+
+// remove filters and redraw bar charts so they don't start out with a reset button 
+// (due to what I assume is a dc.js bug)
+{% if project.bar1_variable %}bar1_{{ project.id }}_chart.filterAll(){% endif %}
+{% if project.bar2_variable %}bar2_{{ project.id }}_chart.filterAll(){% endif %}
 dc.redrawAll()
 
 </script>

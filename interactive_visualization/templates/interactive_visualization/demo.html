@@ -1,0 +1,159 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<link rel="stylesheet" href="https://dc-js.github.io/dc.js/css/dc.css">
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/d3.js"></script>
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/crossfilter.js"></script>
+<script type="text/javascript" src="https://dc-js.github.io/dc.js/js/dc.js"></script>
+
+<p>
+  <strong>Prop. 1 Outcome</strong>
+  <div id="dc_switch"></div>
+</p>
+
+<!-- <div class="row"> -->
+<!--   <div id="housing_costs" style="margin-left: 15px;"> -->
+<!--     <strong>Selected Housing Costs</strong> -->
+<!--     <a class="reset" href="javascript:chart1.filterAll();dc.redrawAll();" style="display: none;">reset</a> -->
+
+<!--     <div class="clearfix"></div> -->
+<!--   </div> -->
+<!-- </div> -->
+
+<div class="row">
+  <div id="housing_costs_percentage_of_income" style="margin-left: 15px;">
+    <strong>Selected Housing Costs as a Percentage of Income</strong>
+    <a class="reset" href="javascript:chart3.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div id="residence_types" style="margin-left: 15px;">
+    <strong>Residence Types</strong>
+    <a class="reset" href="javascript:chart2.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+
+
+<!-- No spaces around commas! This is important!! :( -->
+<pre id="data" style="display: none;">
+vote,Household_Income,Residence_Type,Selected_Housing_Costs
+no,10,rent,5
+no,12,rent,3
+no,13,rent,8
+no,100,own,10
+no,80,own,22
+no,90,own,20
+no,60,mortgage,11
+no,45,mortgage,12
+yes,10,rent,5
+yes,12,rent,3
+yes,13,rent,8
+yes,100,own,21
+yes,80,own,33
+yes,90,own,31
+yes,60,mortgage,22
+yes,45,mortgage,23
+</pre>
+
+
+<script>
+
+var toggle_column="vote";
+
+var parsed_data = d3.csv.parse(d3.select('pre#data').text());
+console.log('parsed data', parsed_data)
+
+var binwidth=5
+var ndx = crossfilter(parsed_data),
+    housing_costs = ndx.dimension(function(d) {return +d.Selected_Housing_Costs;}),
+    number_of_samples = housing_costs.group(function(d) { return binwidth * Math.floor(1.0 * d / binwidth)});
+
+
+var housing_costs_as_a_percentage_of_income = ndx.dimension(function(d) {return 100.0 * +d.Selected_Housing_Costs / +d.Household_Income;}),
+    number_of_samples = housing_costs_as_a_percentage_of_income.group(function(d) { return binwidth * Math.floor(1.0 * d / binwidth)});
+
+var chart3 = dc.barChart("#housing_costs_percentage_of_income"); 
+chart3
+    .width(300)
+    .height(200)
+    .dimension(housing_costs_as_a_percentage_of_income)
+    .group(number_of_samples)
+    .turnOnControls(true)
+    .elasticX(true)
+    .x(d3.scale.linear())
+    .xAxisPadding(10)
+    .xUnits(dc.units.fp.precision(binwidth))
+    .brushOn(true)
+    .yAxisLabel("Number of households")
+    .xAxisLabel("% of household income towards housing")
+
+
+
+
+var residence_type = ndx.dimension(function(d) {return d.Residence_Type;}),
+    number_of_samples = residence_type.group();
+
+var chart2 = dc.rowChart("#residence_types");
+chart2
+    .width(300)
+    .height(200)
+    .x(d3.scale.ordinal())
+    .elasticX(true)
+    .dimension(residence_type)
+    .group(number_of_samples)
+
+chart3.render();
+chart2.render();
+
+// set up a data toggle using radio buttons
+
+var dc_dimension = ndx.dimension(function(d) {return d[toggle_column];});
+var handle_dc_switch_toggle = function(elem){
+    var val = elem.value;
+    dc_dimension.filterAll()
+    dc_dimension.filter(function(d){return d == val;})
+    dc.redrawAll();
+}
+
+var toggle_group = dc_dimension.group();
+console.log(toggle_group)
+console.log(toggle_group.all())
+var keys = toggle_group.all().map(function(x) {return x.key;})
+console.log("keys:", keys)
+elem = document.getElementById("dc_switch")
+for (var i = 0; i < keys.length; i++){
+    var selected_str = ""
+    if (i==0){
+    selected_str = " checked='checked'"
+    handle_dc_switch_toggle({"value":keys[i]})
+    }
+    elem.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle(this);' name='optradio' value='"+keys[i]+"'"+ selected_str +">"+keys[i]+"</label></div>"
+}
+
+// from the answer here: http://stackoverflow.com/questions/21114336/how-to-add-axis-labels-for-row-chart-using-dc-js-or-d3-js
+// it's pretty weird (and terrible) that dc.js doesn't have this already...
+function addXAxis(chartToUpdate, displayText)
+{
+    chartToUpdate.svg()
+                .append("text")
+                .attr("class", "x-axis-label")
+                .attr("text-anchor", "middle")
+                .attr("x", chartToUpdate.width()/2)
+                .attr("y", chartToUpdate.height())
+                .text(displayText);
+}
+addXAxis(chart2, "Number of Households");
+chart3.filterAll()
+dc.redrawAll()
+
+</script>
+
+
+{% endblock %}
