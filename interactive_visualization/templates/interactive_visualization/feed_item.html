@@ -1,0 +1,204 @@
+{% extends "core/feed_item.html" %}
+{% block display_image %}
+{% endblock %}
+{% block custom_item_content %}
+
+<h2>{{ item.projectobj.name }}</h2>
+
+{% if item.projectobj.switch_variable %}
+<p>
+  <strong>{{ item.projectobj.switch_title }}</strong>
+  {{ item.projectobj.switch_note }}
+  <div id="dc_switch_{{ item.projectobj.id }}"></div>
+</p>
+{% endif %}
+
+{% if item.projectobj.bar1_variable %}
+<div class="row">
+  <div id="bar1_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
+    <strong>{{ item.projectobj.bar1_title }}</strong>
+    <a class="reset" href="javascript:bar1_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+{% endif %}
+
+{% if item.projectobj.pie1_variable %}
+<div class="row">
+  <div id="pie1_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
+    <strong>{{ item.projectobj.pie1_title }}</strong>
+    <a class="reset" href="javascript:pie1_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+{% endif %}
+
+{% if item.projectobj.bar2_variable %}
+<div class="row">
+  <div id="bar2_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
+    <strong>{{ item.projectobj.bar2_title }}</strong>
+    <a class="reset" href="javascript:bar2_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+{% endif %}
+
+{% if item.projectobj.pie2_variable %}
+<div class="row">
+  <div id="pie2_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
+    <strong>{{ item.projectobj.pie2_title }}</strong>
+    <a class="reset" href="javascript:pie2_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+
+    <div class="clearfix"></div>
+  </div>
+</div>
+{% endif %}
+
+<p>
+<h4 >Methodology Note: </h4>{{ item.projectobj.methodology_note }}<br>
+Find out more about our methodology <a href="{{ item.projectobj.methodology_url }}">here</a>
+</p>
+
+<!-- No spaces around commas! This is important!! :( -->
+<pre id="data_IV_{{ item.projectobj.id }}" style="display: none;">
+{{ item.projectobj.csv_data }}
+</pre>
+
+
+<script>
+
+var parsed_data_IV_{{ item.projectobj.id }} = d3.csv.parse(d3.select('pre#data_IV_{{ item.projectobj.id }}').text());
+console.log('parsed data', parsed_data_IV_{{ item.projectobj.id }})
+var bin_width_IV_{{ item.projectobj.id }}=5
+var xfilter_IV_{{ item.projectobj.id }} = crossfilter(parsed_data_IV_{{ item.projectobj.id }});
+
+//// bar chart 1
+{% if item.projectobj.bar1_variable %}
+var bar1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar1_variable }}"];}),
+    number_of_samples = bar1_dimension_{{ item.projectobj.id }}.group(function(d) { return bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
+
+var bar1_{{ item.projectobj.id }}_chart = dc.barChart("#bar1_{{ item.projectobj.id }}_div"); 
+bar1_{{ item.projectobj.id }}_chart
+    .width(300)
+    .height(200)
+    .dimension(bar1_dimension_{{ item.projectobj.id }})
+    .group(number_of_samples)
+    .turnOnControls(true)
+    .elasticX(true)
+    .x(d3.scale.linear())
+    .xAxisPadding(10)
+    .xUnits(dc.units.fp.precision(bin_width_IV_{{ item.projectobj.id }}))
+    .brushOn(true)
+    .yAxisLabel("{{ item.projectobj.bar1_y_label }}")
+    .xAxisLabel("{{ item.projectobj.bar1_x_label }}")
+{% endif %}
+
+//// bar chart 2
+{% if item.projectobj.bar2_variable %}
+var bar2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar2_variable }}"];}),
+    number_of_samples = bar2_dimension_{{ item.projectobj.id }}.group(function(d) { return bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
+
+var bar2_{{ item.projectobj.id }}_chart = dc.barChart("#bar2_{{ item.projectobj.id }}_div"); 
+bar2_{{ item.projectobj.id }}_chart
+    .width(300)
+    .height(200)
+    .dimension(bar2_dimension_{{ item.projectobj.id }})
+    .group(number_of_samples)
+    .turnOnControls(true)
+    .elasticX(true)
+    .x(d3.scale.linear())
+    .xAxisPadding(10)
+    .xUnits(dc.units.fp.precision(bin_width_IV_{{ item.projectobj.id }}))
+    .brushOn(true)
+    .yAxisLabel("{{ item.projectobj.bar2_y_label }}")
+    .xAxisLabel("{{ item.projectobj.bar2_x_label }}")
+{% endif %}
+
+//// pie chart 1 (for now, I'm actually using row charts instead of pie charts)
+{% if item.projectobj.pie1_variable %}
+var pie1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.pie1_variable }}"];}),
+    number_of_samples = pie1_dimension_{{ item.projectobj.id }}.group();
+
+var pie1_{{ item.projectobj.id }}_chart = dc.rowChart("#pie1_{{ item.projectobj.id }}_div");
+pie1_{{ item.projectobj.id }}_chart
+    .width(300)
+    .height(200)
+    .x(d3.scale.ordinal())
+    .elasticX(true)
+    .dimension(pie1_dimension_{{ item.projectobj.id }})
+    .group(number_of_samples)
+{% endif %}
+
+//// pie chart 2 (for now, I'm actually using row charts instead of pie charts)
+{% if item.projectobj.pie2_variable %}
+var pie2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.pie2_variable }}"];}),
+    number_of_samples = pie2_dimension_{{ item.projectobj.id }}.group();
+
+var pie2_{{ item.projectobj.id }}_chart = dc.rowChart("#pie2_{{ item.projectobj.id }}_div");
+pie2_{{ item.projectobj.id }}_chart
+    .width(300)
+    .height(200)
+    .x(d3.scale.ordinal())
+    .elasticX(true)
+    .dimension(pie2_dimension_{{ item.projectobj.id }})
+    .group(number_of_samples)
+{% endif %}
+
+//// Render all charts
+{% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.render(){% endif %}
+{% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.render(){% endif %}
+{% if item.projectobj.pie1_variable %}pie1_{{ item.projectobj.id }}_chart.render(){% endif %}
+{% if item.projectobj.pie2_variable %}pie2_{{ item.projectobj.id }}_chart.render(){% endif %}
+
+//// set up a data toggle using radio buttons
+{% if item.projectobj.switch_variable %}
+var toggl_dim_IV_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.switch_variable }}"];});
+var handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){
+    var val = elem.value;
+    toggl_dim_IV_{{ item.projectobj.id }}.filterAll()
+    toggl_dim_IV_{{ item.projectobj.id }}.filter(function(d){return d == val;})
+    dc.redrawAll();
+}
+
+var toggle_group_IV_{{ item.projectobj.id }} = toggl_dim_IV_{{ item.projectobj.id }}.group();
+var toggle_keys_IV_{{ item.projectobj.id }} = toggle_group_IV_{{ item.projectobj.id }}.all().map(function(x) {return x.key;})
+var switch_elem_IV_{{ item.projectobj.id }} = document.getElementById("dc_switch_{{ item.projectobj.id }}")
+for (var i = 0; i < toggle_keys_IV_{{ item.projectobj.id }}.length; i++){
+    var selected_str = ""
+    if (i==0){
+    selected_str = " checked='checked'"
+    handle_dc_switch_toggle_IV_{{ item.projectobj.id }}({"value":toggle_keys_IV_{{ item.projectobj.id }}[i]})
+    }
+    switch_elem_IV_{{ item.projectobj.id }}.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle_IV_{{ item.projectobj.id }}(this);' name='optradio' value='"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"'"+ selected_str +">"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"</label></div>"
+}
+{% endif %}
+
+//// Finalize charts: add axis labels and re-draw to work around dc.js issues
+
+// from the answer here: http://stackoverflow.com/questions/21114336/how-to-add-axis-labels-for-row-chart-using-dc-js-or-d3-js
+// it's pretty weird (and terrible) that dc.js doesn't have this already...
+function addXAxis(chartToUpdate, displayText)
+{
+    chartToUpdate.svg()
+                .append("text")
+                .attr("class", "x-axis-label")
+                .attr("text-anchor", "middle")
+                .attr("x", chartToUpdate.width()/2)
+                .attr("y", chartToUpdate.height())
+                .text(displayText);
+}
+{% if item.projectobj.pie1_variable %}addXAxis(pie1_{{ item.projectobj.id }}_chart, "{{ item.projectobj.pie1_title }}"){% endif %}
+{% if item.projectobj.pie2_variable %}addXAxis(pie2_{{ item.projectobj.id }}_chart, "{{ item.projectobj.pie2_title }}"){% endif %}
+
+// remove filters and redraw bar charts so they don't start out with a reset button 
+// (due to what I assume is a dc.js bug)
+{% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.filterAll(){% endif %}
+{% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.filterAll(){% endif %}
+dc.redrawAll()
+
+</script>
+
+{% endblock %}

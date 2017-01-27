@@ -3,11 +3,13 @@
     <div class="panel-heading"><a href="{{ item.link }}">{{ item.label }}</a></div>
     <div class="panel-body">
 
+	{% block display_image %}
 	{% if item.display_image_file %}
 	<span>
 	<img src="{% static item.display_image_file %}" class="img-thumbnail" width="90" height="90">
 	</span>
 	{% endif %}
+	{% endblock %}
 
 	<span class="item_content">
 	  <div>

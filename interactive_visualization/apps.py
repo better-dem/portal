@@ -8,7 +8,7 @@ from importlib import import_module
 class InteractiveVisualizationConfig(AppConfig):
     name = 'interactive_visualization'
     are_projects_editable = False
-    custom_feed_item_template = None
+    custom_feed_item_template = "interactive_visualization/feed_item.html"
 
     def ready(self):
         if module_has_submodule(self.module, "views"):
