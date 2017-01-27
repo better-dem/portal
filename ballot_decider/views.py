@@ -21,13 +21,23 @@ def new_project(request):
             project.ballot_text = form.cleaned_data["ballot_text"]
             project.election_date = form.cleaned_data["election_date"]
             project.election_website = form.cleaned_data["election_website"]
+            if "basics_notes" in form.cleaned_data and not form.cleaned_data["basics_notes"] == "":
+                project.basics_notes = form.cleaned_data["basics_notes"]
+            if "effects_notes" in form.cleaned_data and not form.cleaned_data["effects_notes"] == "":
+                project.effects_notes = form.cleaned_data["effects_notes"]
             project.save()
 
             for i in range(1,4):
-                data = form.cleaned_data.get("participation_item_number_"+str(i), None)
+                data = form.cleaned_data.get("basics"+str(i), None)
                 if not data is None and not data=="":
                     item = cm.ParticipationItem.objects.get(id=data, is_active=True)
                     project.basics.add(item)
+
+            for i in range(1,4):
+                data = form.cleaned_data.get("effects"+str(i), None)
+                if not data is None and not data=="":
+                    item = cm.ParticipationItem.objects.get(id=data, is_active=True)
+                    project.effects.add(item)
 
             for i in range(1,4):
                 quote = form.cleaned_data.get("pov_quote_"+str(i), None)
@@ -66,7 +76,8 @@ def participate(request, item_id):
     item = BallotDeciderItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.ballotdeciderproject
-    context.update({"ballot": project, "items": [cv.get_item_details(i, False) for i in project.basics.all() if i.is_active]})
+    context.update({"ballot": project, "basics": [cv.get_item_details(i, False) for i in project.basics.all() if i.is_active], \
+                "effects": [cv.get_item_details(i, False) for i in project.effects.all() if i.is_active]})
     if not request.method == "POST":
         return render(request, 'ballot_decider/participate.html', context)
     if request.method == 'POST' and request.is_ajax():

@@ -11,6 +11,9 @@ class BallotDeciderProject(cm.ParticipationProject):
 
     # display a feed of related quizzes and tools in the "back to basics" section of the ballot decider
     basics = models.ManyToManyField(cm.ParticipationItem)
+    basics_notes = models.TextField(blank=True, null=True)
+    effects = models.ManyToManyField(cm.ParticipationItem, related_name="+")
+    effects_notes = models.TextField(blank=True, null=True)
     points_of_view = models.ManyToManyField('PointOfView')
 
     tags = models.ManyToManyField(cm.Tag)

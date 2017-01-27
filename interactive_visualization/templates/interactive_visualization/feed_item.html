@@ -72,24 +72,33 @@ Find out more about our methodology <a href="{{ item.projectobj.methodology_url 
 
 var parsed_data_IV_{{ item.projectobj.id }} = d3.csv.parse(d3.select('pre#data_IV_{{ item.projectobj.id }}').text());
 console.log('parsed data', parsed_data_IV_{{ item.projectobj.id }})
-var bin_width_IV_{{ item.projectobj.id }}=5
+var bin_width_IV_{{ item.projectobj.id }}=5 // this value is overwritten
+var num_bins_IV = 10;
 var xfilter_IV_{{ item.projectobj.id }} = crossfilter(parsed_data_IV_{{ item.projectobj.id }});
+
 
 //// bar chart 1
 {% if item.projectobj.bar1_variable %}
+var xExtent = d3.extent(parsed_data_IV_{{ item.projectobj.id }}, function(d) { return +d["{{ item.projectobj.bar1_variable }}"]; });
+var min = xExtent[0];
+var max = xExtent[1];
+bin_width_IV_{{ item.projectobj.id }} = 1.0 * (max - min) / num_bins_IV;
+var xMin = min - bin_width_IV_{{ item.projectobj.id }}
+var xMax = max + bin_width_IV_{{ item.projectobj.id }}
+console.log(min, max, xMin, xMax, bin_width_IV_{{ item.projectobj.id }})
+
 var bar1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar1_variable }}"];}),
-    number_of_samples = bar1_dimension_{{ item.projectobj.id }}.group(function(d) { return bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
+    number_of_samples = bar1_dimension_{{ item.projectobj.id }}.group(function(d) { return 1.0 * bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
 
 var bar1_{{ item.projectobj.id }}_chart = dc.barChart("#bar1_{{ item.projectobj.id }}_div"); 
 bar1_{{ item.projectobj.id }}_chart
-    .width(300)
+    .width(350)
     .height(200)
     .dimension(bar1_dimension_{{ item.projectobj.id }})
     .group(number_of_samples)
     .turnOnControls(true)
-    .elasticX(true)
-    .x(d3.scale.linear())
-    .xAxisPadding(10)
+    .x(d3.scale.linear().domain([xMin, xMax]))
+    .xAxisPadding(bin_width_IV_{{ item.projectobj.id }})
     .xUnits(dc.units.fp.precision(bin_width_IV_{{ item.projectobj.id }}))
     .brushOn(true)
     .yAxisLabel("{{ item.projectobj.bar1_y_label }}")
@@ -98,19 +107,26 @@ bar1_{{ item.projectobj.id }}_chart
 
 //// bar chart 2
 {% if item.projectobj.bar2_variable %}
+var xExtent = d3.extent(parsed_data_IV_{{ item.projectobj.id }}, function(d) { return +d["{{ item.projectobj.bar2_variable }}"]; });
+var min = xExtent[0];
+var max = xExtent[1];
+bin_width_IV_{{ item.projectobj.id }} = 1.0 * (max - min) / num_bins_IV;
+var xMin = min - bin_width_IV_{{ item.projectobj.id }}
+var xMax = max + bin_width_IV_{{ item.projectobj.id }}
+console.log(min, max, xMin, xMax, bin_width_IV_{{ item.projectobj.id }})
+
 var bar2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar2_variable }}"];}),
     number_of_samples = bar2_dimension_{{ item.projectobj.id }}.group(function(d) { return bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
 
 var bar2_{{ item.projectobj.id }}_chart = dc.barChart("#bar2_{{ item.projectobj.id }}_div"); 
 bar2_{{ item.projectobj.id }}_chart
-    .width(300)
+    .width(350)
     .height(200)
     .dimension(bar2_dimension_{{ item.projectobj.id }})
     .group(number_of_samples)
     .turnOnControls(true)
-    .elasticX(true)
-    .x(d3.scale.linear())
-    .xAxisPadding(10)
+    .x(d3.scale.linear().domain([xMin, xMax]))
+    .xAxisPadding(bin_width_IV_{{ item.projectobj.id }})
     .xUnits(dc.units.fp.precision(bin_width_IV_{{ item.projectobj.id }}))
     .brushOn(true)
     .yAxisLabel("{{ item.projectobj.bar2_y_label }}")
@@ -124,7 +140,7 @@ var pie1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }
 
 var pie1_{{ item.projectobj.id }}_chart = dc.rowChart("#pie1_{{ item.projectobj.id }}_div");
 pie1_{{ item.projectobj.id }}_chart
-    .width(300)
+    .width(350)
     .height(200)
     .x(d3.scale.ordinal())
     .elasticX(true)
@@ -139,7 +155,7 @@ var pie2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }
 
 var pie2_{{ item.projectobj.id }}_chart = dc.rowChart("#pie2_{{ item.projectobj.id }}_div");
 pie2_{{ item.projectobj.id }}_chart
-    .width(300)
+    .width(350)
     .height(200)
     .x(d3.scale.ordinal())
     .elasticX(true)

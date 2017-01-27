@@ -17,9 +17,15 @@ class CreateProjectForm(forms.Form):
     election_date = forms.DateField(widget = wf.DatePickerJQueryWidget)
     election_website = forms.URLField()
     
-    participation_item_number_1 = forms.IntegerField(min_value = 0, required=False)
-    participation_item_number_2 = forms.IntegerField(min_value = 0, required=False)
-    participation_item_number_3 = forms.IntegerField(min_value = 0, required=False)
+    basics_notes = forms.CharField(widget = Textarea, required=False)
+    basics1 = forms.IntegerField(min_value = 0, required=False)
+    basics2 = forms.IntegerField(min_value = 0, required=False)
+    basics3 = forms.IntegerField(min_value = 0, required=False)
+
+    effects_notes = forms.CharField(widget = Textarea, required=False)
+    effects1 = forms.IntegerField(min_value = 0, required=False)
+    effects2 = forms.IntegerField(min_value = 0, required=False)
+    effects3 = forms.IntegerField(min_value = 0, required=False)
 
     pov_quote_1 = forms.CharField(widget=Textarea, required=False)
     pov_citation_url_1 = forms.URLField(required=False)
@@ -49,8 +55,8 @@ class CreateProjectForm(forms.Form):
                 raise forms.ValidationError("Each POV must either be left blank or filled in completely")
 
     # Ensure participation items are valid
-    def clean_participation_item_number_1(self):
-        data = self.cleaned_data['participation_item_number_1']
+    def clean_basics1(self):
+        data = self.cleaned_data['basics1']
         if data is None or data == "":
             return
         try:
@@ -59,8 +65,8 @@ class CreateProjectForm(forms.Form):
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
 
-    def clean_participation_item_number_2(self):
-        data = self.cleaned_data['participation_item_number_2']
+    def clean_basics2(self):
+        data = self.cleaned_data['basics2']
         if data is None or data == "":
             return
         try:
@@ -69,8 +75,8 @@ class CreateProjectForm(forms.Form):
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
 
-    def clean_participation_item_number_3(self):
-        data = self.cleaned_data['participation_item_number_3']
+    def clean_basics3(self):
+        data = self.cleaned_data['basics3']
         if data is None or data == "":
             return
         try:
@@ -78,3 +84,34 @@ class CreateProjectForm(forms.Form):
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
+
+    def clean_effects1(self):
+        data = self.cleaned_data['effects1']
+        if data is None or data == "":
+            return
+        try:
+            ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
+        except:
+            raise forms.ValidationError("There is no active participation item with that ID")
+        return data
+
+    def clean_effects2(self):
+        data = self.cleaned_data['effects2']
+        if data is None or data == "":
+            return
+        try:
+            ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
+        except:
+            raise forms.ValidationError("There is no active participation item with that ID")
+        return data
+
+    def clean_effects3(self):
+        data = self.cleaned_data['effects3']
+        if data is None or data == "":
+            return
+        try:
+            ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
+        except:
+            raise forms.ValidationError("There is no active participation item with that ID")
+        return data
+

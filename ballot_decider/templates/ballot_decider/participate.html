@@ -11,43 +11,25 @@
 <h4>Find out where to register and how to vote <a href="{{ ballot.election_website }}">here!</a></h4>
 
 <div class="panel-group" id="accordion">
+
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">
-	<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Tradeoff Questionnaire</a>
-      </h4>
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><h3 style="display: inline;">Background</h3><h4 style="display: inline;"> - Freshen up on your background knowledge before you decide.</h4></a>
+      </div>
     </div>
     <div id="collapse1" class="panel-collapse collapse">
       <div class="panel-body">
+	{% if ballot.basics_notes %}<p>{{ ballot.basics_notes }}</p>{% endif %}
 
+	{% for item in basics %}
 	<p>
-	  Eventually, we'll put a bunch of nifty widgets here.
-	  Just you wait!
-	</p>
-	
-      </div>
-    </div>
-  </div>
-
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-	<a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Back to Basics</a>
-      </h4>
-    </div>
-    <div id="collapse2" class="panel-collapse collapse">
-      <div class="panel-body">
-	
-	<p>
-	  Check up on your knowledge before you decide with these quiz questions and resources.
-	</p>
-
-	{% for item in items %}
 	{% if item.custom_template %}
 	{% include item.custom_template %}
 	{% else %}
 	{% include "core/feed_item.html" %}
 	{% endif %}
+	</p>
 	{% endfor %}
 
       </div>
@@ -56,9 +38,34 @@
 
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">
-	<a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Points of View</a>
-      </h4>
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><h3 style="display: inline;">Effects</h3><h4 style="display: inline;"> - What will the effects be if this measure passes?</h4></a>
+      </div>
+    </div>
+    <div id="collapse2" class="panel-collapse collapse">
+      <div class="panel-body">
+	{% if ballot.effects_notes %}<p>{{ ballot.effects_notes }}</p>{% endif %}
+
+	{% for item in effects %}
+	<p>
+	{% if item.custom_template %}
+	{% include item.custom_template %}
+	{% else %}
+	{% include "core/feed_item.html" %}
+	{% endif %}
+	</p>
+	{% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse3"><h3 style="display: inline;">Decision</h3><h4 style="display: inline;"> - Try out our decision tool to weigh the pros and cons!</h4></a>
+      </div>
     </div>
     <div id="collapse3" class="panel-collapse collapse">
       <div class="panel-body">
@@ -68,7 +75,10 @@
 
 	    <p>
 	      Here are some arguments for and against {{ ballot.name }}.
-	      How important are these points to you?
+	    </p>
+	    <p>
+	      Use the sliders to weigh how important each argument is to you, and click &ldquo;Decide!&rdquo; to get a suggestion.
+	      (Of course, this is only a suggestion, and you should make the decision however you want.)
 	    </p>
 	    
 	    {% for pov in ballot.points_of_view.all %}
