@@ -6,8 +6,8 @@ from core import models as cm
 class InteractiveVisualizationProject(cm.ParticipationProject):
     instructions_note = models.TextField()
 
-    methodology_url = models.URLField()
     methodology_note = models.TextField()
+    methodology_url = models.URLField()
 
     csv_data = models.TextField()
 
@@ -21,13 +21,13 @@ class InteractiveVisualizationProject(cm.ParticipationProject):
     pie1_variable = models.CharField(max_length=50, blank=True, null=True)
     pie1_title = models.CharField(max_length=50, blank=True, null=True)
 
+    pie2_variable = models.CharField(max_length=50, blank=True, null=True)
+    pie2_title = models.CharField(max_length=50, blank=True, null=True)
+
     bar1_variable = models.CharField(max_length=50, blank=True, null=True)
     bar1_title = models.CharField(max_length=50, blank=True, null=True)
     bar1_x_label = models.CharField(max_length=50, blank=True, null=True)
     bar1_y_label = models.CharField(max_length=50, blank=True, null=True)
-
-    pie2_variable = models.CharField(max_length=50, blank=True, null=True)
-    pie2_title = models.CharField(max_length=50, blank=True, null=True)
 
     bar2_variable = models.CharField(max_length=50, blank=True, null=True)
     bar2_title = models.CharField(max_length=50, blank=True, null=True)

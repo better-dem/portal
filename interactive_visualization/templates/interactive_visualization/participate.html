@@ -60,88 +60,120 @@
 {% endif %}
 
 <!-- No spaces around commas! This is important!! :( -->
-<pre id="data_interactive_visualization_{{ project.id }}" style="display: none;">
+<pre id="data_IV_{{ project.id }}" style="display: none;">
 {{ project.csv_data }}
 </pre>
 
 
 <script>
 
-{% if project.switch_variable %}
-var toggle_column_interactive_visualization_{{ project.id }}="{{ project.switch_variable }}";
-{% endif %}
+var parsed_data_IV_{{ project.id }} = d3.csv.parse(d3.select('pre#data_IV_{{ project.id }}').text());
+console.log('parsed data', parsed_data_IV_{{ project.id }})
+var bin_width_IV_{{ project.id }}=5
+var xfilter_IV_{{ project.id }} = crossfilter(parsed_data_IV_{{ project.id }});
 
-var parsed_data_interactive_visualization_{{ project.id }} = d3.csv.parse(d3.select('pre#data').text());
-console.log('parsed data', parsed_data)
+//// bar chart 1
+{% if project.bar1_variable %}
+var bar1_dimension_{{ project.id }} = xfilter_IV_{{ project.id }}.dimension(function(d) {return +d["{{ project.bar1_variable }}"];}),
+    number_of_samples = bar1_dimension_{{ project.id }}.group(function(d) { return bin_width_IV_{{ project.id }} * Math.floor(1.0 * d / bin_width_IV_{{ project.id }})});
 
-var bin_width_interactive_visualization_{{ project.id }}=5
-var xfilter_interactive_visualization_{{ project.id }} = crossfilter(parsed_data);
-
-
-
-var housing_costs = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return +d.Selected_Housing_Costs;}),
-    number_of_samples = housing_costs.group(function(d) { return bin_width_interactive_visualization_{{ project.id }} * Math.floor(1.0 * d / bin_width_interactive_visualization_{{ project.id }})});
-
-var housing_costs_as_a_percentage_of_income = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return 100.0 * +d.Selected_Housing_Costs / +d.Household_Income;}),
-    number_of_samples = housing_costs_as_a_percentage_of_income.group(function(d) { return bin_width_interactive_visualization_{{ project.id }} * Math.floor(1.0 * d / bin_width_interactive_visualization_{{ project.id }})});
-
-var chart3 = dc.barChart("#housing_costs_percentage_of_income"); 
-chart3
+var bar1_{{ project.id }}_chart = dc.barChart("#bar1_{{ project.id }}_div"); 
+bar1_{{ project.id }}_chart
     .width(300)
     .height(200)
-    .dimension(housing_costs_as_a_percentage_of_income)
+    .dimension(bar1_dimension_{{ project.id }})
     .group(number_of_samples)
     .turnOnControls(true)
     .elasticX(true)
     .x(d3.scale.linear())
     .xAxisPadding(10)
-    .xUnits(dc.units.fp.precision(bin_width_interactive_visualization_{{ project.id }}))
+    .xUnits(dc.units.fp.precision(bin_width_IV_{{ project.id }}))
     .brushOn(true)
-    .yAxisLabel("Number of households")
-    .xAxisLabel("% of household income towards housing")
+    .yAxisLabel("{{ project.bar1_y_label }}")
+    .xAxisLabel("{{ project.bar1_x_label }}")
+{% endif %}
 
+//// bar chart 2
+{% if project.bar2_variable %}
+var bar2_dimension_{{ project.id }} = xfilter_IV_{{ project.id }}.dimension(function(d) {return +d["{{ project.bar2_variable }}"];}),
+    number_of_samples = bar2_dimension_{{ project.id }}.group(function(d) { return bin_width_IV_{{ project.id }} * Math.floor(1.0 * d / bin_width_IV_{{ project.id }})});
 
+var bar2_{{ project.id }}_chart = dc.barChart("#bar2_{{ project.id }}_div"); 
+bar2_{{ project.id }}_chart
+    .width(300)
+    .height(200)
+    .dimension(bar2_dimension_{{ project.id }})
+    .group(number_of_samples)
+    .turnOnControls(true)
+    .elasticX(true)
+    .x(d3.scale.linear())
+    .xAxisPadding(10)
+    .xUnits(dc.units.fp.precision(bin_width_IV_{{ project.id }}))
+    .brushOn(true)
+    .yAxisLabel("{{ project.bar2_y_label }}")
+    .xAxisLabel("{{ project.bar2_x_label }}")
+{% endif %}
 
+//// pie chart 1 (for now, I'm actually using row charts instead of pie charts)
+{% if project.pie1_variable %}
+var pie1_dimension_{{ project.id }} = xfilter_IV_{{ project.id }}.dimension(function(d) {return d["{{ project.pie1_variable }}"];}),
+    number_of_samples = pie1_dimension_{{ project.id }}.group();
 
-var residence_type = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return d.Residence_Type;}),
-    number_of_samples = residence_type.group();
-
-var chart2 = dc.rowChart("#residence_types");
-chart2
+var pie1_{{ project.id }}_chart = dc.rowChart("#pie1_{{ project.id }}_div");
+pie1_{{ project.id }}_chart
     .width(300)
     .height(200)
     .x(d3.scale.ordinal())
     .elasticX(true)
-    .dimension(residence_type)
+    .dimension(pie1_dimension_{{ project.id }})
     .group(number_of_samples)
+{% endif %}
 
-chart3.render();
-chart2.render();
+//// pie chart 2 (for now, I'm actually using row charts instead of pie charts)
+{% if project.pie2_variable %}
+var pie2_dimension_{{ project.id }} = xfilter_IV_{{ project.id }}.dimension(function(d) {return d["{{ project.pie2_variable }}"];}),
+    number_of_samples = pie2_dimension_{{ project.id }}.group();
 
-// set up a data toggle using radio buttons
+var pie2_{{ project.id }}_chart = dc.rowChart("#pie2_{{ project.id }}_div");
+pie2_{{ project.id }}_chart
+    .width(300)
+    .height(200)
+    .x(d3.scale.ordinal())
+    .elasticX(true)
+    .dimension(pie2_dimension_{{ project.id }})
+    .group(number_of_samples)
+{% endif %}
 
-var dc_dimension = xfilter_interactive_visualization_{{ project.id }}.dimension(function(d) {return d[toggle_column];});
-var handle_dc_switch_toggle = function(elem){
+//// Render all charts
+{% if project.bar1_variable %}bar1_{{ project.id }}_chart.render(){% endif %}
+{% if project.bar2_variable %}bar2_{{ project.id }}_chart.render(){% endif %}
+{% if project.pie1_variable %}pie1_{{ project.id }}_chart.render(){% endif %}
+{% if project.pie2_variable %}pie2_{{ project.id }}_chart.render(){% endif %}
+
+//// set up a data toggle using radio buttons
+{% if project.switch_variable %}
+var toggl_dim_IV_{{ project.id }} = xfilter_IV_{{ project.id }}.dimension(function(d) {return d["{{ project.switch_variable }}"];});
+var handle_dc_switch_toggle_IV_{{ project.id }} = function(elem){
     var val = elem.value;
-    dc_dimension.filterAll()
-    dc_dimension.filter(function(d){return d == val;})
+    toggl_dim_IV_{{ project.id }}.filterAll()
+    toggl_dim_IV_{{ project.id }}.filter(function(d){return d == val;})
     dc.redrawAll();
 }
 
-var toggle_group = dc_dimension.group();
-console.log(toggle_group)
-console.log(toggle_group.all())
-var keys = toggle_group.all().map(function(x) {return x.key;})
-console.log("keys:", keys)
-elem = document.getElementById("dc_switch")
-for (var i = 0; i < keys.length; i++){
+var toggle_group_IV_{{ project.id }} = toggl_dim_IV_{{ project.id }}.group();
+var toggle_keys_IV_{{ project.id }} = toggle_group_IV_{{ project.id }}.all().map(function(x) {return x.key;})
+var switch_elem_IV_{{ project.id }} = document.getElementById("dc_switch_{{ project.id }}")
+for (var i = 0; i < toggle_keys_IV_{{ project.id }}.length; i++){
     var selected_str = ""
     if (i==0){
     selected_str = " checked='checked'"
-    handle_dc_switch_toggle({"value":keys[i]})
+    handle_dc_switch_toggle_IV_{{ project.id }}({"value":toggle_keys_IV_{{ project.id }}[i]})
     }
-    elem.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle(this);' name='optradio' value='"+keys[i]+"'"+ selected_str +">"+keys[i]+"</label></div>"
+    switch_elem_IV_{{ project.id }}.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle_IV_{{ project.id }}(this);' name='optradio' value='"+toggle_keys_IV_{{ project.id }}[i]+"'"+ selected_str +">"+toggle_keys_IV_{{ project.id }}[i]+"</label></div>"
 }
+{% endif %}
+
+//// Finalize charts: add axis labels and re-draw to work around dc.js issues
 
 // from the answer here: http://stackoverflow.com/questions/21114336/how-to-add-axis-labels-for-row-chart-using-dc-js-or-d3-js
 // it's pretty weird (and terrible) that dc.js doesn't have this already...
@@ -155,10 +187,8 @@ function addXAxis(chartToUpdate, displayText)
                 .attr("y", chartToUpdate.height())
                 .text(displayText);
 }
-{% if project.pie1_variable %}addXAxis(pie1_{{ project.id }}_chart.filterAll(), {{ project. }}){% endif %}
-{% if project.pie1_variable %}pie1_{{ project.id }}_chart.filterAll(){% endif %}
-addXAxis(chart2, "Number of Households");
-chart3.filterAll()
+{% if project.pie1_variable %}addXAxis(pie1_{{ project.id }}_chart, {{ project.pie1_title }}){% endif %}
+{% if project.pie2_variable %}addXAxis(pie2_{{ project.id }}_chart, {{ project.pie2_title }}){% endif %}
 
 // remove filters and redraw bar charts so they don't start out with a reset button 
 // (due to what I assume is a dc.js bug)
