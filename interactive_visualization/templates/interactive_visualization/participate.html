@@ -7,6 +7,8 @@
 <script type="text/javascript" src="{% static 'interactive_visualization/js/crossfilter.js' %}"></script>
 <script type="text/javascript" src="{% static 'interactive_visualization/js/dc.js' %}"></script>
 
+<h2>{{ project.name }}</h2>
+
 {% if project.switch_variable %}
 <p>
   <strong>{{ project.switch_title }}</strong>
@@ -58,6 +60,11 @@
   </div>
 </div>
 {% endif %}
+
+<p>
+<h4 >Methodology Note: </h4>{{ project.methodology_note }}<br>
+Find out more about our methodology <a href="{{ project.methodology_url }}">here</a>
+</p>
 
 <!-- No spaces around commas! This is important!! :( -->
 <pre id="data_IV_{{ project.id }}" style="display: none;">
@@ -187,8 +194,8 @@ function addXAxis(chartToUpdate, displayText)
                 .attr("y", chartToUpdate.height())
                 .text(displayText);
 }
-{% if project.pie1_variable %}addXAxis(pie1_{{ project.id }}_chart, {{ project.pie1_title }}){% endif %}
-{% if project.pie2_variable %}addXAxis(pie2_{{ project.id }}_chart, {{ project.pie2_title }}){% endif %}
+{% if project.pie1_variable %}addXAxis(pie1_{{ project.id }}_chart, "{{ project.pie1_title }}"){% endif %}
+{% if project.pie2_variable %}addXAxis(pie2_{{ project.id }}_chart, "{{ project.pie2_title }}"){% endif %}
 
 // remove filters and redraw bar charts so they don't start out with a reset button 
 // (due to what I assume is a dc.js bug)

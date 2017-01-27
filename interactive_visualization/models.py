@@ -34,6 +34,8 @@ class InteractiveVisualizationProject(cm.ParticipationProject):
     bar2_x_label = models.CharField(max_length=50, blank=True, null=True)
     bar2_y_label = models.CharField(max_length=50, blank=True, null=True)
 
+    tags = models.ManyToManyField(cm.Tag)
+
     def update_items(self):
         if InteractiveVisualizationItem.objects.filter(participation_project=self, is_active=True).count()==0:
             item = InteractiveVisualizationItem()

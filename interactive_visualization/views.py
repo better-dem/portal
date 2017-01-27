@@ -13,7 +13,8 @@ def new_project(request):
     if request.method == 'POST':
         form = CreateProjectForm(request.POST)
         if form.is_valid():
-            project = SingleQuizProject()
+            project = InteractiveVisualizationProject()
+            project.owner_profile = profile
             project.name = form.cleaned_data["visualization_title"]
             # first time through, create the project
             for key, val in form.cleaned_data.items():
