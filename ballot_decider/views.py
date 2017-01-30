@@ -49,15 +49,12 @@ def new_project(request):
                     pov.save()
                     project.points_of_view.add(pov)
 
-            t1 = cf.get_best_final_matching_tag(form.cleaned_data["tag1"])
-            if not t1 is None:
-                project.tags.add(t1)
-            t2 = cf.get_best_final_matching_tag(form.cleaned_data["tag2"])
-            if not t2 is None:
-                project.tags.add(t2)
-            t3 = cf.get_best_final_matching_tag(form.cleaned_data["tag3"])
-            if not t3 is None:
-                project.tags.add(t3)
+            # iterate through form adding tags
+            for key, val in form.cleaned_data.items():
+                if key.startswith("tag"):
+                    t = cf.get_best_final_matching_tag(val)
+                    if not t is None:
+                        project.tags.add(t)
             
             return render(request, 'core/thanks.html', {"action_description": "creating a new ballot decider project", "link": "/apps/ballot_decider/administer_project/"+str(project.id)})
         else:

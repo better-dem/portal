@@ -27,7 +27,7 @@ def new_project(request):
             # second time, add tags to the project
             for key, val in form.cleaned_data.items():
                 if key.startswith("tag"):
-                    t = cf.get_best_final_matching_tag(form.cleaned_data["tag1"])
+                    t = cf.get_best_final_matching_tag(form.cleaned_data[key])
                     if not t is None:
                         project.tags.add(t)
 
