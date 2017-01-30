@@ -29,15 +29,15 @@ class CreateProjectForm(forms.Form):
 
     pov_quote_1 = forms.CharField(widget=Textarea, required=False)
     pov_citation_url_1 = forms.URLField(required=False)
-    pov_favorability_1 = forms.FloatField(min_value=0.0, max_value=1.0, required = False)
+    pov_is_favorable_1 = forms.BooleanField(required = False)
 
     pov_quote_2 = forms.CharField(widget=Textarea, required=False)
     pov_citation_url_2 = forms.URLField(required=False)
-    pov_favorability_2 = forms.FloatField(min_value=0.0, max_value=1.0, required = False)
+    pov_is_favorable_2 = forms.BooleanField(required = False)
 
     pov_quote_3 = forms.CharField(widget=Textarea, required=False)
     pov_citation_url_3 = forms.URLField(required=False)
-    pov_favorability_3 = forms.FloatField(min_value=0.0, max_value=1.0, required = False)
+    pov_is_favorable_3 = forms.BooleanField(required = False)
 
     tag1 = cf.tag_aac.get_new_form_field(required=False)
     tag2 = cf.tag_aac.get_new_form_field(required=False)
@@ -50,9 +50,9 @@ class CreateProjectForm(forms.Form):
         for i in range(1,4):
             quote = cleaned_data.get("pov_quote_"+str(i))
             citation = cleaned_data.get("pov_citation_url_"+str(i))
-            favorability = cleaned_data.get("pov_favorability_"+str(i))
-            if any([quote, citation, favorability]) and not all([quote, citation, favorability]):
-                raise forms.ValidationError("Each POV must either be left blank or filled in completely")
+            is_favorable_defined = not (cleaned_data.get("pov_is_favorable_"+str(i)) is None)
+            if any([quote, citation, is_favorable_defined]) and not all([quote, citation, is_favorable_defined]):
+                raise forms.ValidationError("Each POV must either be left blank or filled in completely: " + str(i))
 
     # Ensure participation items are valid
     def clean_basics1(self):

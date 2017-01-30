@@ -86,9 +86,8 @@
 	      <div class="panel-body">
 		
 		<p style="display: inline;">
-		  {% if pov.favorability > 0 %}
+		  {% if pov.is_favorable %}
 		  <span class="glyphicon glyphicon-plus" aria-hidden="true" style="color:green; font-size: 24px;"></span>
-		  {% elif pov.favorability == 0 %}
 		  {% else %}
 		  <span class="glyphicon glyphicon-minus" aria-hidden="true" style="color:red; font-size: 24px;"></span>
 		  {% endif %}
@@ -121,9 +120,6 @@
 		<div class="no-decision" style="display: none;"><h2 class="text-muted"><span class="glyphicon glyphicon-question-sign"></span> No Decision</h2></div>
 		<div class="lean-no" style="display: none;"><h2 class="text-muted"><span class="glyphicon glyphicon-thumbs-down"></span> Lean No</h2></div>
 		<div class="strong-no" style="display: none;"><h2 class="text-danger"><span class="glyphicon glyphicon-thumbs-down"></span> Strong No</h2></div>
-	      </p>
-	      <p>
-		<h3>Explanation:</h3>
 	      </p>
 	      <p>
 		&ldquo;<span class="explanation"></span>&rdquo;

@@ -45,7 +45,7 @@ def new_project(request):
                     pov = PointOfView()
                     pov.quote = quote
                     pov.citation_url = form.cleaned_data["pov_citation_url_"+str(i)]
-                    pov.favorability = form.cleaned_data["pov_favorability_"+str(i)]
+                    pov.is_favorable = form.cleaned_data["pov_is_favorable_"+str(i)]
                     pov.save()
                     project.points_of_view.add(pov)
 
@@ -106,11 +106,11 @@ def participate(request, item_id):
             content["explanation"] = explanation
             if decision == 0:
                 content["reveal"].append("no-decision")
-            elif decision >= 50:
+            elif decision >= .15:
                 content["reveal"].append("strong-yes")
             elif decision > 0:
                 content["reveal"].append("lean-yes")
-            elif decision <= -50:
+            elif decision <= -.15:
                 content["reveal"].append("strong-no")
             elif decision < 0:
                 content["reveal"].append("lean-no")

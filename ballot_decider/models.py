@@ -29,8 +29,8 @@ class BallotDeciderProject(cm.ParticipationProject):
 
 class PointOfView(models.Model):
     quote = models.TextField()
-    citation_url = models.URLField()
-    favorability = models.FloatField() # restrict to be between 0 and 1 in the form?
+    citation_url = models.URLField(blank=True, null=True)
+    is_favorable = models.BooleanField()
 
 class BallotDeciderItem(cm.ParticipationItem):
     def get_inline_display(self):
@@ -52,15 +52,21 @@ class POVToolResponse(models.Model):
 
     def generate_decision(self):
         item_responses = self.povitemresponse_set.all()
-        scored_response_strings = {k.point_of_view.quote: k.point_of_view.favorability*k.score for k in item_responses}
-        pros = [k for k in item_responses if k.point_of_view.favorability > 0]
-        cons = [k for k in item_responses if k.point_of_view.favorability < 0]
+        scored_response_strings = dict()
+        for k in item_responses:
+            if k.point_of_view.is_favorable:
+                scored_response_strings[k.point_of_view.quote] = 1.0*k.score
+            else:
+                scored_response_strings[k.point_of_view.quote] = -1.0*k.score
+
+        pros = [k for k in item_responses if k.point_of_view.is_favorable]
+        cons = [k for k in item_responses if not k.point_of_view.is_favorable]
         sorted_pros = sorted([p.point_of_view.quote for p in pros], key=lambda x: abs(scored_response_strings[x]), reverse=True)
         sorted_cons = sorted([c.point_of_view.quote for c in cons], key=lambda x: abs(scored_response_strings[x]), reverse=True)
         if len(scored_response_strings) == 0:
             final_decision = 0
         else: 
-            final_decision = 1.0 * sum(scored_response_strings.values()) / len(scored_response_strings)
+            final_decision = 1.0 * sum(scored_response_strings.values()) / sum([abs(x) for x in scored_response_strings.values()])
 
         explanation = ""
         if final_decision > 0:
