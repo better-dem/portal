@@ -101,11 +101,6 @@ def edit_project(request, project_id):
             if not t3 is None:
                 new_tags.add(t3)
 
-            sys.stderr.write("new tags:"+str(new_tags)+"\n")
-            sys.stderr.write("current tags:"+str(current_tags)+"\n")
-            sys.stderr.write("difference:"+str(new_tags.symmetric_difference(current_tags))+"\n")
-            sys.stderr.flush()
-            
             if len(new_tags.symmetric_difference(current_tags)) > 0:
                 project.tags.clear()
                 project.tags.add(*new_tags)

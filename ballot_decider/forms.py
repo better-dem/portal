@@ -51,7 +51,7 @@ class CreateProjectForm(forms.Form):
             quote = cleaned_data.get("pov_quote_"+str(i))
             citation = cleaned_data.get("pov_citation_url_"+str(i))
             is_favorable_defined = not (cleaned_data.get("pov_is_favorable_"+str(i)) is None)
-            if any([quote, citation, is_favorable_defined]) and not all([quote, citation, is_favorable_defined]):
+            if any([quote, citation]) and not all([quote, citation, is_favorable_defined]):
                 raise forms.ValidationError("Each POV must either be left blank or filled in completely: " + str(i))
 
     # Ensure participation items are valid
@@ -114,4 +114,11 @@ class CreateProjectForm(forms.Form):
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
+
+class EditProjectForm(CreateProjectForm):
+    def __init__(self, project, *args, **kwargs):
+        super(CreateProjectForm, self).__init__(*args, **kwargs)
+        povs = project.points_of_view.all()
+        for pov in povs:
+            self.fields["delete_pov_"+str(pov.id)] = forms.BooleanField(help_text=str(pov.quote), required=False)
 

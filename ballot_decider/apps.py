@@ -7,7 +7,7 @@ from importlib import import_module
 
 class BallotDeciderConfig(AppConfig):
     name = 'ballot_decider'
-    are_projects_editable = False
+    are_projects_editable = True
     custom_feed_item_template = None
 
     def ready(self):
