@@ -21,7 +21,3 @@ class SingleQuizConfig(AppConfig):
         for c in item_classes:
             cm.register_participation_item_subclass(c)
         
-        from core import tasks as ct
-        project_classes = [cls for name, cls in models.__dict__.items() if isinstance(cls, type) and issubclass(cls, cm.ParticipationProject)]
-        for c in project_classes:
-            ct.register_participation_project_subclass(c)

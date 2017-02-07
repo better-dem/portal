@@ -7,6 +7,7 @@ import sys
 import core.models as cm
 import core.views as cv
 import core.forms as cf
+import core.tasks as ct
 import json
 
 def new_project(request):
@@ -44,6 +45,7 @@ def new_project(request):
             if not t3 is None:
                 project.tags.add(t3)
             
+            ct.finalize_project(project)
             return render(request, 'core/thanks.html', {"action_description": "creating a new single quiz", "link": "/apps/single_quiz/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})

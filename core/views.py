@@ -10,6 +10,7 @@ import core.tasks as tasks
 from core.forms import DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
 import sys
 from django.core.files.storage import default_storage
+from django.db import transaction
 
 def get_default_og_metadata(request, participation_item=None):
     ans = {
@@ -122,6 +123,7 @@ def update_profile_tags(request):
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     
 @ensure_csrf_cookie
+@transaction.atomic
 def app_view_relay(request, app_name, action_name, object_id):
     """
     The primary routing view for the major portal actions involving participation projects and items:

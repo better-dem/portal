@@ -4,6 +4,7 @@ from manual_news_article_curation.forms import CreateArticleForm
 from manual_news_article_curation.models import ManualNewsCurationProject, NewsArticleItem
 import core.views as cv
 import core.models as cm
+import core.tasks as ct
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -15,6 +16,7 @@ def new_project(request):
             project = form.save(commit=False)
             project.owner_profile = profile
             project.save()
+            ct.finalize_project(project)
             
             return render(request, 'core/thanks.html', {"action_description": "creating a new news article project", "link": "/apps/manual_news_article_curation/administer_project/"+str(project.id)})
         else:
