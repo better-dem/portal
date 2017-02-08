@@ -11,54 +11,49 @@
 </p>
 {% endif %}
 
-{% if project.bar1_variable %}
-<div class="row">
-  <div id="bar1_{{ project.id }}_div" style="margin-left: 15px;">
-    <h4>{{ project.bar1_title }}</h4>
+<div class="row" style="padding-left: 15px;">
+  {% if project.bar1_variable %}
+  <div id="bar1_{{ project.id }}_div">
+    <h4 style="display: inline;">{{ project.bar1_title }}</h4>
     <a class="reset" href="javascript:bar1_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if project.pie1_variable %}
-<div class="row">
-  <div id="pie1_{{ project.id }}_div" style="margin-left: 15px;">
-    <h4>{{ project.pie1_title }}</h4>
+  {% if project.pie1_variable %}
+  <div id="pie1_{{ project.id }}_div">
+    <h4 style="display: inline;">{{ project.pie1_title }}</h4>
     <a class="reset" href="javascript:pie1_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if project.bar2_variable %}
-<div class="row">
-  <div id="bar2_{{ project.id }}_div" style="margin-left: 15px;">
-    <h4>{{ project.bar2_title }}</h4>
+  {% if project.bar2_variable %}
+  <div id="bar2_{{ project.id }}_div">
+    <h4 style="display: inline;">{{ project.bar2_title }}</h4>
     <a class="reset" href="javascript:bar2_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if project.pie2_variable %}
-<div class="row">
-  <div id="pie2_{{ project.id }}_div" style="margin-left: 15px;">
-    <h4>{{ project.pie2_title }}</h4>
+  {% if project.pie2_variable %}
+  <div id="pie2_{{ project.id }}_div">
+    <h4 style="display: inline;">{{ project.pie2_title }}</h4>
     <a class="reset" href="javascript:pie2_{{ project.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
+  {% endif %}
 </div>
-{% endif %}
 
-<p>
-<h4>Methodology Note: </h4>{{ project.methodology_note }}<br>
-Find out more about our methodology <a href="{{ project.methodology_url }}">here</a>
-</p>
+<div style="padding-left: 15px;">
+  <h4>Methodology Note</h4>
+  {{ project.methodology_note }}<br>
+  Find out more about our methodology <a href="{{ project.methodology_url }}">here</a>
+</div>
 
 <!-- No spaces around commas! This is important!! :( -->
 <pre id="data_IV_{{ project.id }}" style="display: none;">
@@ -193,9 +188,20 @@ for (var i = 0; i < toggle_keys_IV_{{ project.id }}.length; i++){
 //// Finalize charts: add axis labels and re-draw to work around dc.js issues
 
 var resize_IV_charts_{{ project.id }} = function(){
-var width = d3.max([document.getElementById("IV_anchor_{{ project.id }}").parentNode.clientWidth - 30, 300]);
+var horizontal_space_available = document.getElementById("IV_anchor_{{ project.id }}").parentNode.clientWidth - 30;
+var num_charts = 0;
+{% if project.bar1_variable %}num_charts += 1;{% endif %}
+{% if project.bar2_variable %}num_charts += 1;{% endif %}
+{% if project.pie1_variable %}num_charts += 1;{% endif %}
+{% if project.pie2_variable %}num_charts += 1;{% endif %}
+var width = 300;
+if (horizontal_space_available > num_charts * 350){
+width = d3.min([Math.floor(horizontal_space_available / num_charts), 500]);
+} else {
+width = d3.min([Math.floor(horizontal_space_available), 500]);
+}
+
 var height = d3.max([Math.floor(width * 1.0/2), 200])
-console.log(width)
 {% if project.bar1_variable %}bar1_{{ project.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
 {% if project.bar2_variable %}bar2_{{ project.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
 {% if project.pie1_variable %}pie1_{{ project.id }}_chart.width(width).height(height).redraw();{% endif %}
@@ -215,5 +221,6 @@ resize_IV_charts_{{ project.id }}();
 dc.redrawAll()
 
 </script>
+
 
 {% endblock %}

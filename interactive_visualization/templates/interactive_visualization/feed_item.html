@@ -3,6 +3,7 @@
 {% endblock %}
 {% block custom_item_content %}
 
+
 <h3>{{ item.projectobj.name }}</h3>
 <div id="IV_anchor_{{ item.projectobj.id }}"></div>
 {% if item.projectobj.switch_variable %}
@@ -13,54 +14,49 @@
 </p>
 {% endif %}
 
-{% if item.projectobj.bar1_variable %}
-<div class="row">
-  <div id="bar1_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
-    <h4>{{ item.projectobj.bar1_title }}</h4>
+<div class="row" style="padding-left: 15px;">
+  {% if item.projectobj.bar1_variable %}
+  <div id="bar1_{{ item.projectobj.id }}_div">
+    <h4 style="display: inline;">{{ item.projectobj.bar1_title }}</h4>
     <a class="reset" href="javascript:bar1_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if item.projectobj.pie1_variable %}
-<div class="row">
-  <div id="pie1_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
-    <h4>{{ item.projectobj.pie1_title }}</h4>
+  {% if item.projectobj.pie1_variable %}
+  <div id="pie1_{{ item.projectobj.id }}_div">
+    <h4 style="display: inline;">{{ item.projectobj.pie1_title }}</h4>
     <a class="reset" href="javascript:pie1_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if item.projectobj.bar2_variable %}
-<div class="row">
-  <div id="bar2_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
-    <h4>{{ item.projectobj.bar2_title }}</h4>
+  {% if item.projectobj.bar2_variable %}
+  <div id="bar2_{{ item.projectobj.id }}_div">
+    <h4 style="display: inline;">{{ item.projectobj.bar2_title }}</h4>
     <a class="reset" href="javascript:bar2_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-{% if item.projectobj.pie2_variable %}
-<div class="row">
-  <div id="pie2_{{ item.projectobj.id }}_div" style="margin-left: 15px;">
-    <h4>{{ item.projectobj.pie2_title }}</h4>
+  {% if item.projectobj.pie2_variable %}
+  <div id="pie2_{{ item.projectobj.id }}_div">
+    <h4 style="display: inline;">{{ item.projectobj.pie2_title }}</h4>
     <a class="reset" href="javascript:pie2_{{ item.projectobj.id }}_chart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
 
     <div class="clearfix"></div>
   </div>
+  {% endif %}
 </div>
-{% endif %}
 
-<p>
-<h4>Methodology Note: </h4>{{ item.projectobj.methodology_note }}<br>
-Find out more about our methodology <a href="{{ item.projectobj.methodology_url }}">here</a>
-</p>
+<div style="padding-left: 15px;">
+  <h4>Methodology Note</h4>
+  {{ item.projectobj.methodology_note }}<br>
+  Find out more about our methodology <a href="{{ item.projectobj.methodology_url }}">here</a>
+</div>
 
 <!-- No spaces around commas! This is important!! :( -->
 <pre id="data_IV_{{ item.projectobj.id }}" style="display: none;">
@@ -195,9 +191,20 @@ for (var i = 0; i < toggle_keys_IV_{{ item.projectobj.id }}.length; i++){
 //// Finalize charts: add axis labels and re-draw to work around dc.js issues
 
 var resize_IV_charts_{{ item.projectobj.id }} = function(){
-var width = d3.max([document.getElementById("IV_anchor_{{ item.projectobj.id }}").parentNode.clientWidth - 30, 300]);
+var horizontal_space_available = document.getElementById("IV_anchor_{{ item.projectobj.id }}").parentNode.clientWidth - 30;
+var num_charts = 0;
+{% if item.projectobj.bar1_variable %}num_charts += 1;{% endif %}
+{% if item.projectobj.bar2_variable %}num_charts += 1;{% endif %}
+{% if item.projectobj.pie1_variable %}num_charts += 1;{% endif %}
+{% if item.projectobj.pie2_variable %}num_charts += 1;{% endif %}
+var width = 300;
+if (horizontal_space_available > num_charts * 350){
+width = d3.min([Math.floor(horizontal_space_available / num_charts), 500]);
+} else {
+width = d3.min([Math.floor(horizontal_space_available), 500]);
+}
+
 var height = d3.max([Math.floor(width * 1.0/2), 200])
-console.log(width)
 {% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
 {% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
 {% if item.projectobj.pie1_variable %}pie1_{{ item.projectobj.id }}_chart.width(width).height(height).redraw();{% endif %}
@@ -217,5 +224,6 @@ resize_IV_charts_{{ item.projectobj.id }}();
 dc.redrawAll()
 
 </script>
+
 
 {% endblock %}
