@@ -138,7 +138,7 @@
 // whenever items are shown, they need to be refreshed
 $(document).ready(function(){
 $("#collapse1").on("shown.bs.collapse", function(){
-{% for item in effects %}
+{% for item in basics %}
 if (typeof window["portal_item_refresh_{{ item.id }}"] == 'function'){
 window["portal_item_refresh_{{ item.id }}"]()
 }
@@ -146,7 +146,7 @@ window["portal_item_refresh_{{ item.id }}"]()
 });
 
 $("#collapse2").on("shown.bs.collapse", function(){
-{% for item in basics %}
+{% for item in effects %}
 if (typeof window["portal_item_refresh_{{ item.id }}"] == 'function'){
 window["portal_item_refresh_{{ item.id }}"]()
 }
