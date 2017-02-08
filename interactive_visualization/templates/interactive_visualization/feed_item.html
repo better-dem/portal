@@ -223,6 +223,11 @@ resize_IV_charts_{{ item.projectobj.id }}();
 resize_IV_charts_{{ item.projectobj.id }}();
 dc.redrawAll()
 
+// the portal interface for a page to refresh item widgets in the case of hiding / showing, etc.
+var portal_item_refresh_{{ item.id }} = function(){
+resize_IV_charts_{{ item.projectobj.id }}();
+}
+
 </script>
 
 

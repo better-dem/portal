@@ -60,7 +60,6 @@
     </div>
   </div>
 
-
   <div class="panel panel-default">
     <div class="panel-heading">
       <div class="panel-title">
@@ -135,5 +134,26 @@
 </div>
 
 <script src="{% static 'core/js/feed_ajax.js' %}"></script>
+<script type="text/javascript">
+// whenever items are shown, they need to be refreshed
+$(document).ready(function(){
+$("#collapse1").on("shown.bs.collapse", function(){
+{% for item in effects %}
+if (typeof window["portal_item_refresh_{{ item.id }}"] == 'function'){
+window["portal_item_refresh_{{ item.id }}"]()
+}
+{% endfor %}
+});
+
+$("#collapse2").on("shown.bs.collapse", function(){
+{% for item in basics %}
+if (typeof window["portal_item_refresh_{{ item.id }}"] == 'function'){
+window["portal_item_refresh_{{ item.id }}"]()
+}
+{% endfor %}
+});
+
+});
+</script>
 
 {% endblock %}
