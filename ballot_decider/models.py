@@ -29,7 +29,6 @@ class BallotDeciderProject(cm.ParticipationProject):
 
 class PointOfView(models.Model):
     quote = models.TextField()
-    citation_url = models.URLField(blank=True, null=True)
     is_favorable = models.BooleanField()
 
 class BallotDeciderItem(cm.ParticipationItem):

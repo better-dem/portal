@@ -18,7 +18,7 @@ urlpatterns = [
     url(r'^tags/$', views.tags, name="tags"),
     url(r'^update_tags/$', views.update_profile_tags, name="update_tags"),
     url(r'^apps/(?P<app_name>.+)/(?P<action_name>.+)/(?P<object_id>.+)$', views.app_view_relay, name="app_view_relay"),
-    url(forms.tag_aac.get_url_pattern(), forms.tag_aac.ajax_autocomplete_view, name="")
-
-    # url('', include('django.contrib.auth.urls')),
+    url(forms.tag_aac.get_url_pattern(), forms.tag_aac.ajax_autocomplete_view, name=""),
+    url(r'^create_shortcut$', views.create_shortcut, name="create_shortcut"),
+    url(r'^(?P<shortcut_str>.+)$', views.shortcut, name="shortcut")
 ]

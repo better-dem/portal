@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
 import core.tasks as tasks
-from core.forms import DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
+from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
 import sys
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -46,6 +46,43 @@ def test_geo(request):
     from django.contrib.gis import gdal
     return HttpResponse(str(gdal.HAS_GDAL))
 
+def shortcut(request, shortcut_str):
+    s = get_object_or_404(cm.Shortcut, shortcut_string=shortcut_str)
+    item = s.target_item
+    app = cm.get_app_for_model(item.get_inherited_instance().__class__)
+    link = "/apps/"+app.label+"/participate/"+str(item.pk)
+    return HttpResponseRedirect(link)
+
+@transaction.atomic
+def create_shortcut(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = CreateShortcutForm(request.POST)
+        if form.is_valid():
+            # delete any existing shortcuts with the same string
+            num_deleted = cm.Shortcut.objects.filter(shortcut_string=form.cleaned_data["shortcut_string"]).delete()
+            deleted_string = "this many existing shortcuts were deleted: "+str(num_deleted)
+            # create new shortcut
+            s = cm.Shortcut()
+            item = get_object_or_404(cm.ParticipationItem, id=form.cleaned_data["item_id"], is_active=True)
+            s.shortcut_string = form.cleaned_data["shortcut_string"]
+            s.target_item = item
+            s.save()
+            return render(request, "core/thanks.html", {"action_description": "creating this shortcut. "+deleted_string})
+        else:
+            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
+    else:
+        form = CreateShortcutForm()
+        return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
+
+
 def upload_dataset(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if is_default_user:
@@ -82,14 +119,11 @@ def show_profile(request):
 
     profile_apps = []
     for app in cm.get_registered_participation_apps():
-        profile_app = dict()
-        profile_app["label"] = app.label.replace("_", " ").title()
-        profile_app["existing_projects"] = []
         perm = cm.get_provider_permission(app)
-        
-        if not app.label+"."+perm.codename in permissions:
-            profile_app["label"] = profile_app["label"] + " -- No Permissions"
-        else:
+        if app.label+"."+perm.codename in permissions:
+            profile_app = dict()
+            profile_app["label"] = app.label.replace("_", " ").title()
+            profile_app["existing_projects"] = []
             profile_app["label"] = profile_app["label"]
             profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
             existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
@@ -99,9 +133,15 @@ def show_profile(request):
                 proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)
                 profile_app["existing_projects"].append(proj)
                 
-        profile_apps.append(profile_app)
+            profile_apps.append(profile_app)
 
-    return render(request, 'core/profile.html', {'profile_apps': profile_apps, 'tags': tags})
+    content = {'profile_apps': profile_apps, 'tags': tags}
+    # add "core" if the user has core permission
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if app.label+"."+perm.codename in permissions:
+        content["core"] = True
+    return render(request, 'core/profile.html', content)
 
 def update_profile_tags(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)

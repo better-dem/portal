@@ -45,7 +45,6 @@ def new_project(request):
                 if not quote is None and not quote=="":
                     pov = PointOfView()
                     pov.quote = quote
-                    pov.citation_url = form.cleaned_data["pov_citation_url_"+str(i)]
                     pov.is_favorable = form.cleaned_data["pov_is_favorable_"+str(i)]
                     pov.save()
                     project.points_of_view.add(pov)
@@ -113,7 +112,6 @@ def edit_project(request, project_id):
                 if not quote is None and not quote=="":
                     pov = PointOfView()
                     pov.quote = quote
-                    pov.citation_url = form.cleaned_data["pov_citation_url_"+str(i)]
                     pov.is_favorable = form.cleaned_data["pov_is_favorable_"+str(i)]
                     pov.save()
                     project.points_of_view.add(pov)
