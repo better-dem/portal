@@ -9,11 +9,12 @@ org_logos["challenge.gov"] = "manual_news_article_curation/img/challenge_full_lo
 
 class ManualNewsCurationProject(cm.ParticipationProject):
     url = models.URLField(blank=False)
-    img_url = models.URLField(blank=False)
+    screenshot_filename = models.FilePathField(max_length=500, blank=True)
     first_paragraph = models.TextField(blank=False)
+    tags = models.ManyToManyField(cm.Tag)
 
     def update_items(self):
-        if NewsArticleItem.objects.filter(participation_project=self).count() == 0:
+        if NewsArticleItem.objects.filter(participation_project=self, is_active=True).count() == 0:
             item = NewsArticleItem()
             item.name = self.name
             item.participation_project = self
@@ -26,6 +27,9 @@ class NewsArticleItem(cm.ParticipationItem):
         return self.participation_project.manualnewscurationproject.first_paragraph[:300]+"..."
 
     def set_display_image(self):
+        if not self.participation_project.screenshot_filename is None:
+            self.display_image_file = self.participation_project.screenshot_filename
+            return
         for org in org_logos:
             if org in self.participation_project.url:
                 self.display_image_file = org_logos[org]
@@ -33,5 +37,4 @@ class NewsArticleItem(cm.ParticipationItem):
         self.display_image_file = 'manual_news_article_curation/img/default.png'
 
     def set_relevant_tags(self):
-        # i should do some NLP or something...
-        self.tags.add(cm.get_usa())
+        self.tags.add(*self.participation_project.tags.all())

@@ -6,8 +6,8 @@ from importlib import import_module
 
 class ManualNewsArticleCurationConfig(AppConfig):
     name = 'manual_news_article_curation'
-    are_projects_editable = False
-    custom_feed_item_template = None
+    are_projects_editable = True
+    custom_feed_item_template = "manual_news_article_curation/feed_item.html"
 
     def ready(self):
         if module_has_submodule(self.module, "views"):
