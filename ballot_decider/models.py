@@ -48,6 +48,7 @@ class POVToolResponse(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
     participation_item = models.ForeignKey(BallotDeciderItem, on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
+    final_decision = models.FloatField(blank=True, null=True)
 
     def generate_decision(self):
         item_responses = self.povitemresponse_set.all()

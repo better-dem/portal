@@ -9,6 +9,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
 import sys, random, string
 from django.core.exceptions import ValidationError
+from django.db.models import Transform
 
 ### Start functions for accessing particpation app API
 def get_core_app():
@@ -227,3 +228,11 @@ def process_new_item(sender, instance, created, **kwargs):
 def register_participation_item_subclass(cls):
     post_save.connect(process_new_item, sender=cls)
 
+
+### Custom sql
+
+class AbsoluteValue(Transform):
+    lookup_name = 'abs'
+    function = 'ABS'
+
+models.FloatField.register_lookup(AbsoluteValue)

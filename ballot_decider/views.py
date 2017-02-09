@@ -9,6 +9,7 @@ import core.views as cv
 import core.forms as cf
 import core.tasks as ct
 import json
+import numpy as np
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -159,8 +160,43 @@ def edit_project(request, project_id):
 
 def administer_project(request, project_id):
     project = get_object_or_404(BallotDeciderProject, pk=project_id) 
-    items = BallotDeciderItem.objects.filter(participation_project=project)
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project})
+    items = BallotDeciderItem.objects.filter(participation_project=project, is_active=True).distinct()
+
+    item_details = []
+    for item in items:
+        current_item_detail = cv.get_item_details(item, True)
+        responses = POVToolResponse.objects.filter(participation_item=item).distinct()
+        num_responses = responses.count()
+        num_yes = responses.filter(final_decision__gt = 0).count()
+        num_no = responses.filter(final_decision__lt = 0).count()
+        num_undecided = responses.filter(final_decision = 0).count()
+        num_extreme = responses.filter(final_decision__abs__gt = .15).count()
+        current_item_detail["num_decisions"] = num_responses
+        current_item_detail["outcome"] = "Num Yes:"+str(num_yes)+", Num No:"+str(num_no)+", Num undecided:"+str(num_undecided)
+        if num_responses == 0:
+            current_item_detail["fraction_strong"] = 0.0
+        else:
+            current_item_detail["fraction_strong"] = 1.0 * num_extreme / responses.count()
+
+        pov_details = []
+        for pov in PointOfView.objects.filter(ballotdeciderproject=project).distinct():
+            current_pov_detail = dict()
+            current_pov_detail["quote"] = pov.quote
+            pov_item_responses = POVItemResponse.objects.filter(point_of_view=pov)
+            scores = [x.score for x in pov_item_responses]
+            current_pov_detail["num"] = len(scores)
+            current_pov_detail["avg"] = np.mean(scores)
+            current_pov_detail["stdev"] = np.std(scores)
+            pov_details.append(current_pov_detail)
+
+        current_item_detail["povs"] = pov_details
+        item_details.append(current_item_detail)
+
+    return render(request, 'ballot_decider/project_results.html', {"items": item_details, "project": project})
+
+
+
+
 
 def participate(request, item_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -190,6 +226,8 @@ def participate(request, item_id):
                     item_response.save()
 
             decision, explanation = submission.generate_decision()
+            submission.final_decision = decision
+            submission.save()
             
             content = dict()
             content["reveal"] = ["response"]
