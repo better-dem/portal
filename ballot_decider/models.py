@@ -63,7 +63,7 @@ class POVToolResponse(models.Model):
         cons = [k for k in item_responses if not k.point_of_view.is_favorable]
         sorted_pros = sorted([p.point_of_view.quote for p in pros], key=lambda x: abs(scored_response_strings[x]), reverse=True)
         sorted_cons = sorted([c.point_of_view.quote for c in cons], key=lambda x: abs(scored_response_strings[x]), reverse=True)
-        if len(scored_response_strings) == 0:
+        if len(scored_response_strings) == 0 or sum([abs(x) for x in scored_response_strings.values()]) == 0:
             final_decision = 0
         else: 
             final_decision = 1.0 * sum(scored_response_strings.values()) / sum([abs(x) for x in scored_response_strings.values()])
