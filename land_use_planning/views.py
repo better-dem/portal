@@ -7,6 +7,7 @@ import os
 import sys
 import core.models as cm
 import core.views as cv
+import core.tasks as ct
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
 
 def new_project(request):
@@ -30,6 +31,8 @@ def new_project(request):
                 var_name = goal.name + "_pref"
                 if form.cleaned_data[var_name]:
                     project.feedback_goals.add(goal)
+
+            ct.finalize_project(project)
             
             return render(request, 'core/thanks.html', {"action_description": "creating a new land use planning project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)})
         else:

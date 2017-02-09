@@ -8,6 +8,7 @@ import sys
 import core.views as cv
 import core.forms as cf
 import core.models as cm
+import core.tasks as ct
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -35,6 +36,8 @@ def new_project(request):
                 if st[0]+"_expenditure" in form.cleaned_data:
                     s.expected_expenditure = form.cleaned_data[st[0]+"_expenditure"]
                 s.save()
+
+            ct.finalize_project(project)
             
             return render(request, 'core/thanks.html', {"action_description": "creating a new city budget project", "link": "/apps/land_use_planning/administer_project/"+str(project.id)})
         else:

@@ -7,6 +7,9 @@
 
 <form action="{{ action_path }}" {% if enctype_data %}enctype="multipart/form-data"{% endif %} method="post">
     {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="alert alert-warning">{{ form.non_field_errors }}</div>
+    {% endif %}
     {% for field in form %}
     <p>
         {% if field.errors %}

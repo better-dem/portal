@@ -5,6 +5,7 @@ import sys
 import json
 import traceback
 from django.http import HttpResponse
+import datetime
 
 api_key = os.environ["GOOGLE_MAPS_API_KEY"]
 JQUERY="https://code.jquery.com/jquery-1.12.4.js" # this is already included in all BDN pages
@@ -23,8 +24,14 @@ class DatePickerJQueryWidget(forms.Widget):
     def render(self, name, value, *args, **kwargs):
         input_name = name
         input_id = kwargs['attrs']['id']
+        value_str = ""
+        if not value is None:
+            if isinstance(value, unicode):
+                value_str = value
+            elif isinstance(value, datetime.date):
+                value_str = str(value.month)+"/"+str(value.day)+"/"+str(value.year) 
         render_html = ""
-        render_html += "<input type='text' name='"+input_name+"' id='"+input_id+"' value='' />"
+        render_html += "<input type='text' name='"+input_name+"' id='"+input_id+"' value='"+value_str+"' />"
         render_html += "<script type=\"text/javascript\">"
         render_html += "$( function() {"
         render_html += "$( \"#"+input_id+"\" ).datepicker();"
@@ -34,6 +41,7 @@ class DatePickerJQueryWidget(forms.Widget):
 
     def __init__(self, *args, **kwargs):
         super(DatePickerJQueryWidget, self).__init__(*args, **kwargs)
+
         
 
 def validate_polygon(point_array):

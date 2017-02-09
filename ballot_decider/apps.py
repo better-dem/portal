@@ -7,7 +7,7 @@ from importlib import import_module
 
 class BallotDeciderConfig(AppConfig):
     name = 'ballot_decider'
-    are_projects_editable = False
+    are_projects_editable = True
     custom_feed_item_template = None
 
     def ready(self):
@@ -20,8 +20,3 @@ class BallotDeciderConfig(AppConfig):
         item_classes = [cls for name, cls in models.__dict__.items() if isinstance(cls, type) and issubclass(cls, cm.ParticipationItem)]
         for c in item_classes:
             cm.register_participation_item_subclass(c)
-        
-        from core import tasks as ct
-        project_classes = [cls for name, cls in models.__dict__.items() if isinstance(cls, type) and issubclass(cls, cm.ParticipationProject)]
-        for c in project_classes:
-            ct.register_participation_project_subclass(c)

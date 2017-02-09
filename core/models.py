@@ -8,6 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.apps import apps
 import sys, random, string
+from django.core.exceptions import ValidationError
+from django.db.models import Transform
 
 ### Start functions for accessing particpation app API
 def get_core_app():
@@ -191,6 +193,19 @@ class Event(models.Model):
     path = models.CharField(max_length=500, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+
+def validate_shortcut_string(s):
+    if "/" in s or "." in s:
+        raise ValidationError("shortcut cannot contain slashes or periods")
+    if not all([char.isalpha() or char.isdigit() or char in ["_", "-"] for char in s]):
+        raise ValidationError("shortcuts must be letters, numbers, underscores or dashes")
+    if not s.lower() == s:
+        raise ValidationError("shortcut must be all lowercase")
+
+class Shortcut(models.Model):
+    shortcut_string = models.CharField(max_length=500, unique=True, validators=[validate_shortcut_string])
+    target_item = models.ForeignKey(ParticipationItem)
+
 ### Signal handling
 
 def create_user_profile(sender, instance, created, **kwargs):
@@ -213,3 +228,11 @@ def process_new_item(sender, instance, created, **kwargs):
 def register_participation_item_subclass(cls):
     post_save.connect(process_new_item, sender=cls)
 
+
+### Custom sql
+
+class AbsoluteValue(Transform):
+    lookup_name = 'abs'
+    function = 'ABS'
+
+models.FloatField.register_lookup(AbsoluteValue)

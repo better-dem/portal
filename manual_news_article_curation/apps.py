@@ -6,8 +6,8 @@ from importlib import import_module
 
 class ManualNewsArticleCurationConfig(AppConfig):
     name = 'manual_news_article_curation'
-    are_projects_editable = False
-    custom_feed_item_template = None
+    are_projects_editable = True
+    custom_feed_item_template = "manual_news_article_curation/feed_item.html"
 
     def ready(self):
         if module_has_submodule(self.module, "views"):
@@ -20,7 +20,3 @@ class ManualNewsArticleCurationConfig(AppConfig):
         for c in item_classes:
             cm.register_participation_item_subclass(c)
         
-        from core import tasks as ct
-        project_classes = [cls for name, cls in models.__dict__.items() if isinstance(cls, type) and issubclass(cls, cm.ParticipationProject)]
-        for c in project_classes:
-            ct.register_participation_project_subclass(c)

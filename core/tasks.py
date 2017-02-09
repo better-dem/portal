@@ -7,15 +7,13 @@ from django.core.files.storage import default_storage
 import itertools
 from django.db.models.signals import post_save
 from django.contrib.gis.geos import Point        
+from django.db import transaction
 
-# signals to trigger tasks
-def process_new_project(sender, instance, created, **kwargs):
-    if created:
-        # start bg task to create items for project
-        item_update.delay(instance.id)
-
-def register_participation_project_subclass(cls):
-    post_save.connect(process_new_project, sender=cls)
+def finalize_project(project):
+    """
+    update items and recommendations for a new or newly-edited project
+    """
+    transaction.on_commit(lambda: item_update.delay(project.pk))
 
 ### Begin: Tasks for loading data files & updating the database
 

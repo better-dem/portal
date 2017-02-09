@@ -1,13 +1,28 @@
 from django import forms
 from s3direct.widgets import S3DirectWidget
 from widgets import forms as wf
-from core.models import Tag
+from core import models as cm
+
 
 class UploadGeoTagset(forms.Form):
     small_test = forms.BooleanField(required=False)
     format_id = forms.CharField(max_length=30)
     data_file = forms.URLField(widget=S3DirectWidget(dest="data_upload"))
 
+class CreateShortcutForm(forms.Form):
+    item_id = forms.IntegerField()
+    shortcut_string = forms.CharField(max_length=500, validators=[cm.validate_shortcut_string])
+
+    def clean_item_id(self):
+        data = self.cleaned_data['item_id']
+        if data is None or data == "":
+            return
+        try:
+            ref = cm.ParticipationItem.objects.get(id=data, is_active=True)
+        except:
+            raise forms.ValidationError("There is no active participation item with that ID")
+        return data
+    
 
 # create aac in advance
 # form is imported by urls, 
@@ -25,9 +40,9 @@ def pre_process_query(q):
 def get_matching_tags(q):
     name, detail = pre_process_query(q)
     if not detail is None:
-        return Tag.objects.filter(name__istartswith=name).filter(detail__istartswith=detail)
+        return cm.Tag.objects.filter(name__istartswith=name).filter(detail__istartswith=detail)
     else:
-        return Tag.objects.filter(name__istartswith=name)
+        return cm.Tag.objects.filter(name__istartswith=name)
 
 def get_best_final_matching_tag(q):
     if len(q) == 0:

@@ -1,0 +1,26 @@
+{% extends "core/project_admin_base.html" %}
+{% block item_detail %}
+
+<h2>Decision Tool Usage Results</h2>
+<h3>Overall Usage</h3>
+<p>
+  <ul>
+    <li><b>Num decisions:</b> {{ item.num_decisions }}</li>
+    <li><b>Decision outcome:</b> {{ item.outcome }}</li>
+    <li><b>Fraction of strong decisions:</b> {{ item.fraction_strong }}</li>
+  </ul>
+</p>
+
+<h3>Point of View Responses</h3>
+{% for pov in item.povs %}
+<p>
+  {{ pov.quote }}
+  <ul>
+    <li><b>Num responses:</b> {{ pov.num }}</li>
+    <li><b>Average importance:</b> {{ pov.avg }}</li>
+    <li><b>Stdev importance:</b> {{ pov.stdev }}</li>
+  </ul>
+</p>
+{% endfor %}
+
+{% endblock %}

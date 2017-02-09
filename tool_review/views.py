@@ -8,6 +8,7 @@ import sys
 import core.models as cm
 import core.views as cv
 import core.forms as cf
+import core.tasks as ct
 from urlparse import urlsplit
 
 def new_project(request):
@@ -41,6 +42,8 @@ def new_project(request):
             if not t3 is None:
                 project.tags.add(t3)
             
+            ct.finalize_project(project)
+                
             return render(request, 'core/thanks.html', {"action_description": "creating a new tool review", "link": "/apps/tool_review/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
@@ -54,7 +57,6 @@ def propagate_project_changes(project, change_set):
         sys.stderr.flush()
         # de-activate all existing items and re-create items for this project
         ToolReviewItem.objects.filter(participation_project=project, is_active=True).update(is_active=False)
-        project.update_items()
 
 def edit_project(request, project_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -101,18 +103,13 @@ def edit_project(request, project_id):
             if not t3 is None:
                 new_tags.add(t3)
 
-            sys.stderr.write("new tags:"+str(new_tags)+"\n")
-            sys.stderr.write("current tags:"+str(current_tags)+"\n")
-            sys.stderr.write("difference:"+str(new_tags.symmetric_difference(current_tags))+"\n")
-            sys.stderr.flush()
-            
             if len(new_tags.symmetric_difference(current_tags)) > 0:
                 project.tags.clear()
                 project.tags.add(*new_tags)
                 changes.add("tags")
 
             propagate_project_changes(project, changes)
-
+            ct.finalize_project(project)
             return render(request, 'core/thanks.html', {"action_description": "editing your tool review", "link": "/apps/tool_review/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})

@@ -11,43 +11,25 @@
 <h4>Find out where to register and how to vote <a href="{{ ballot.election_website }}">here!</a></h4>
 
 <div class="panel-group" id="accordion">
+
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">
-	<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">Tradeoff Questionnaire</a>
-      </h4>
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><h3 style="display: inline;">Background</h3><h4 style="display: inline;"> - Freshen up on your background knowledge before you decide.</h4></a>
+      </div>
     </div>
     <div id="collapse1" class="panel-collapse collapse">
       <div class="panel-body">
+	{% if ballot.basics_notes %}<p>{{ ballot.basics_notes }}</p>{% endif %}
 
+	{% for item in basics %}
 	<p>
-	  Eventually, we'll put a bunch of nifty widgets here.
-	  Just you wait!
-	</p>
-	
-      </div>
-    </div>
-  </div>
-
-  <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-	<a data-toggle="collapse" data-parent="#accordion" href="#collapse2">Back to Basics</a>
-      </h4>
-    </div>
-    <div id="collapse2" class="panel-collapse collapse">
-      <div class="panel-body">
-	
-	<p>
-	  Check up on your knowledge before you decide with these quiz questions and resources.
-	</p>
-
-	{% for item in items %}
 	{% if item.custom_template %}
 	{% include item.custom_template %}
 	{% else %}
 	{% include "core/feed_item.html" %}
 	{% endif %}
+	</p>
 	{% endfor %}
 
       </div>
@@ -56,39 +38,94 @@
 
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h4 class="panel-title">
-	<a data-toggle="collapse" data-parent="#accordion" href="#collapse3">Points of View</a>
-      </h4>
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><h3 style="display: inline;">Effects</h3><h4 style="display: inline;"> - What will the effects be if this measure passes?</h4></a>
+      </div>
+    </div>
+    <div id="collapse2" class="panel-collapse collapse">
+      <div class="panel-body">
+	{% if ballot.effects_notes %}<p>{{ ballot.effects_notes }}</p>{% endif %}
+
+	{% for item in effects %}
+	<p>
+	{% if item.custom_template %}
+	{% include item.custom_template %}
+	{% else %}
+	{% include "core/feed_item.html" %}
+	{% endif %}
+	</p>
+	{% endfor %}
+
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse3"><h3 style="display: inline;">Decision</h3><h4 style="display: inline;"> - Try out our decision tool to weigh the pros and cons!</h4></a>
+      </div>
     </div>
     <div id="collapse3" class="panel-collapse collapse">
       <div class="panel-body">
 
-	<p>
-	  Some people took the time to voice their opinion on {{ ballot.name }}.
-	  How does your point of view agree or differ from theirs?
-	</p>
+	<div id="pros_and_cons_result">
+	  <div class="ajax_form">
 
-	{% for pov in ballot.points_of_view.all %}
-	<div class="panel panel-info">
-	  <div class="panel-body">
-
-	    <p style="display: inline;">
-	      <h1 style="display: inline; vertical-align: bottom;"> &ldquo; </h1>
-	      {{ pov.quote }} 
-	      <h1 style="display: inline; vertical-align: top;"> &rdquo;</h1>
+	    <p>
+	      Here are some arguments for and against {{ ballot.name }}.
+	    </p>
+	    <p>
+	      Use the sliders to weigh how important each argument is to you, and click &ldquo;Decide!&rdquo; to get a suggestion.
+	      (Of course, this is only a suggestion, and you should make the decision however you want.)
 	    </p>
 	    
-	    <p>
-	      Do you agree?
-	    </p>
+	    {% for pov in ballot.points_of_view.all %}
+	    <div class="panel panel-info">
+	      <div class="panel-body">
+		
+		<p style="display: inline;">
+		  {% if pov.is_favorable %}
+		  <span class="glyphicon glyphicon-plus" aria-hidden="true" style="color:green; font-size: 24px;"></span>
+		  {% else %}
+		  <span class="glyphicon glyphicon-minus" aria-hidden="true" style="color:red; font-size: 24px;"></span>
+		  {% endif %}
+		  &ldquo;
+		  {{ pov.quote }} 
+		  &rdquo;
+		</p>
+		
+		<p>
+		  How important is this point for your decision?<br>
+		  <div style="display: inline-block; margin: 20px;"><b>Not at all<br>important</b></div><div style="display: inline-block;"><input type="range" style="max-width: 300px; display: inline;" id="pov_weight_{{ pov.id }}" value="0" max="100" min="0"></div><div style="display: inline-block; margin: 20px;"><b>Very<br>important</b></div>
+		</p>
+		
+	      </div>
+	      <div class="panel-footer panel-info">
+		Follow our sources <a href = "{{ pov.citation_url }}">here!</a>
+	      </div>
+	    </div>
+	    
+	    {% endfor %}
 
+	    <div class="btn btn-primary portal_ajax_submit" role="button" data-target-element="{% for pov in ballot.points_of_view.all %}pov_weight_{{ pov.id }},{% endfor %}" data-result-element="pros_and_cons_result">Decide!</div>
 	  </div>
-	  <div class="panel-footer panel-info">
-	    Follow our sources <a href = "{{ pov.citation_url }}">here!</a>
+	  
+	  <div class="response" style="display: none;">
+	    <div class="jumbotron">
+	      <p>
+		<div class="strong-yes" style="display: none;"><h2 class="text-success"><span class="glyphicon glyphicon-thumbs-up"></span> Strong Yes</h2></div>
+		<div class="lean-yes" style="display: none;"><h2 class="text-muted"><span class="glyphicon glyphicon-thumbs-up"></span> Lean Yes</h2></div>
+		<div class="no-decision" style="display: none;"><h2 class="text-muted"><span class="glyphicon glyphicon-question-sign"></span> No Decision</h2></div>
+		<div class="lean-no" style="display: none;"><h2 class="text-muted"><span class="glyphicon glyphicon-thumbs-down"></span> Lean No</h2></div>
+		<div class="strong-no" style="display: none;"><h2 class="text-danger"><span class="glyphicon glyphicon-thumbs-down"></span> Strong No</h2></div>
+	      </p>
+	      <p>
+		&ldquo;<span class="explanation"></span>&rdquo;
+	      </p>
+	    </div>
 	  </div>
 	</div>
-
-	{% endfor %}
 
       </div>
     </div>
@@ -97,5 +134,26 @@
 </div>
 
 <script src="{% static 'core/js/feed_ajax.js' %}"></script>
+<script type="text/javascript">
+// whenever items are shown, they need to be refreshed
+$(document).ready(function(){
+$("#collapse1").on("shown.bs.collapse", function(){
+{% for item in basics %}
+if (typeof window["portal_item_refresh_{{ item.id }}"] == 'function'){
+window["portal_item_refresh_{{ item.id }}"]()
+}
+{% endfor %}
+});
+
+$("#collapse2").on("shown.bs.collapse", function(){
+{% for item in effects %}
+if (typeof window["portal_item_refresh_{{ item.id }}"] == 'function'){
+window["portal_item_refresh_{{ item.id }}"]()
+}
+{% endfor %}
+});
+
+});
+</script>
 
 {% endblock %}
