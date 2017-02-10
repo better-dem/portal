@@ -7,11 +7,13 @@
 <h3>{{ item.projectobj.name }}</h3>
 <div id="IV_anchor_{{ item.projectobj.id }}"></div>
 {% if item.projectobj.switch_variable %}
-<p>
+<div style="padding-bottom: 10px;">
   <h4>{{ item.projectobj.switch_title }}</h4>
+  <div style="padding-bottom: 5px;">
   {{ item.projectobj.switch_note }}
+  </div>
   <div id="dc_switch_{{ item.projectobj.id }}"></div>
-</p>
+</div>
 {% endif %}
 
 <div class="row" style="padding-left: 15px;">
@@ -169,6 +171,10 @@ pie2_{{ item.projectobj.id }}_chart
 {% if item.projectobj.switch_variable %}
 var toggl_dim_IV_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.switch_variable }}"];});
 var handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){
+    $('.dc_switch_IV_{{ item.projectobj.id }}').removeClass("btn-info");
+    $('.dc_switch_IV_{{ item.projectobj.id }}').addClass("btn-default");
+    $(elem).removeClass("btn-default");
+    $(elem).addClass("btn-info");
     var val = elem.value;
     toggl_dim_IV_{{ item.projectobj.id }}.filterAll()
     toggl_dim_IV_{{ item.projectobj.id }}.filter(function(d){return d == val;})
@@ -179,12 +185,12 @@ var toggle_group_IV_{{ item.projectobj.id }} = toggl_dim_IV_{{ item.projectobj.i
 var toggle_keys_IV_{{ item.projectobj.id }} = toggle_group_IV_{{ item.projectobj.id }}.all().map(function(x) {return x.key;})
 var switch_elem_IV_{{ item.projectobj.id }} = document.getElementById("dc_switch_{{ item.projectobj.id }}")
 for (var i = 0; i < toggle_keys_IV_{{ item.projectobj.id }}.length; i++){
-    var selected_str = ""
+    var selected_str = "btn-default"
     if (i==0){
-    selected_str = " checked='checked'"
+    selected_str = "btn-info"
     handle_dc_switch_toggle_IV_{{ item.projectobj.id }}({"value":toggle_keys_IV_{{ item.projectobj.id }}[i]})
     }
-    switch_elem_IV_{{ item.projectobj.id }}.innerHTML += "<div class='radio-inline'><label><input type='radio' onclick='handle_dc_switch_toggle_IV_{{ item.projectobj.id }}(this);' name='optradio' value='"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"'"+ selected_str +">"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"</label></div>"
+    switch_elem_IV_{{ item.projectobj.id }}.innerHTML += "<input type='button' class='dc_switch_IV_{{ item.projectobj.id }} btn "+selected_str+"' onclick='handle_dc_switch_toggle_IV_{{ item.projectobj.id }}(this);' name='optradio' value='"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"'>"
 }
 {% endif %}
 
