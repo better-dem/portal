@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<h2>Portal Activity Overview</h2>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">Basic Stats</div>
+    <div class="panel-body">
+
+      <table class="table">
+	<thead><th>Measure</th><th>Value</th></thead>
+	<tbody>
+	  <tr><td>Number of Users</td><td>{{ num_users }}</td></tr>	    
+	  <tr><td>Number of Active Projects</td><td>{{ num_projects }}</td></tr>	    
+	  <tr><td>Number of Active Items</td><td>{{ num_items }}</td></tr>	    
+	  <tr><td>Number of Tags</td><td>{{ num_tags }}</td></tr>	    
+	  <tr><td>Number of Item Visits</td><td>{{ num_visits }}</td></tr>	    
+	</tbody>
+      </table>
+
+    </div>
+</div>
+
+
+{% endblock %}

@@ -78,5 +78,6 @@ class DeleteProjectConfirmationForm(forms.Form):
 
 class IssueReportForm(forms.Form):
     event_id = forms.IntegerField(min_value=0, label="", widget=forms.widgets.HiddenInput, required=True)
+    issue_title = forms.CharField(max_length = 100)
     issue_type = forms.ChoiceField(label = "What type of issue are you reporting?", choices=(("PC", "Propaganda, campaigning, or biased content"), ("BR", "Bug or website error"), ("IA", "Inaccurate content"), ("FR", "Request a feature"), ))
     description = forms.CharField(widget=forms.widgets.Textarea)

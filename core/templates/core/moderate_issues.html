@@ -1,0 +1,49 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<h2>Issue Report Moderator Page</h2>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">Issue Reports</div>
+    <div class="panel-body">
+
+      <table class="table">
+	<thead><th>Issue Title</th><th>Issue Type</th><th>Event Path</th><th>Timestamp</th></thead>
+	<tbody>
+	  {% for issue in recent_issues %}
+	  <tr><td>{{ issue.0 }}</td><td>{{ issue.1 }}</td><td>{{ issue.2 }}</td><td class="timestamp">{{ issue.3 }}</td></tr>	    
+	  {% endfor %}
+	</tbody>
+      </table>
+
+    </div>
+</div>
+
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">Events</div>
+    <div class="panel-body">
+
+      <table class="table">
+	<thead><th>Event Path</th><th>Timestamp</th></thead>
+	<tbody>
+	  {% for event in recent_events %}
+	  <tr><td>{{ event.0 }}</td><td class="timestamp">{{ event.1 }}</td></tr>	    
+	  {% endfor %}
+	</tbody>
+      </table>
+
+    </div>
+</div>
+
+<script>
+  $('.timestamp').each(function(){
+    var d = new Date($(this).text());
+    $(this).text(d.toLocaleDateString() + ", " + d.toLocaleFormat("%r (%Z)"));
+  })
+</script>
+
+
+{% endblock %}

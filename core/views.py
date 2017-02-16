@@ -2,7 +2,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
-from django.db.models import F
+from django.db.models import F, Sum
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
@@ -268,39 +268,28 @@ def get_item_details(item, get_activity=False):
     return ans
 
 def tags(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+    reports = []
     all_tags = cm.Tag.objects.all()
-    first_ten = all_tags[:10]
-    ans = ""
-    ans += "Number of tags: "+str(all_tags.distinct().count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in first_ten])+"<br>"
-
+    reports.append({"label": "Tags", "num": all_tags.distinct().count(), "top10": all_tags[:10]})
     cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY)
-    ans += "<br>"
-    ans += "Number of cities:"+str(cities.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in cities[:10]])+"<br>"
-
+    reports.append({"label": "Cities", "num": cities.distinct().count(), "top10": cities[:10]})
     states = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.STATE_OR_PROVINCE)
-    ans += "<br>"
-    ans += "Number of states:"+str(states.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in states[:10]])+"<br>"
-
+    reports.append({"label": "States", "num": states.distinct().count(), "top10": states[:10]})
     countries = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.COUNTRY)
-    ans += "<br>"
-    ans += "Number of countries:"+str(countries.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in countries[:10]])+"<br>"
-
+    reports.append({"label": "Countries", "num": countries.distinct().count(), "top10": countries[:10]})
     other = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.OTHER)
-    ans += "<br>"
-    ans += "Number of other types of geo-tag:"+str(other.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in other[:10]])+"<br>"
-
+    reports.append({"label": "Other", "num": other.distinct().count(), "top10": other[:10]})
     unk = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.UNKNOWN)
-    ans += "<br>"
-    ans += "Number of unknown geo-tags:"+str(unk.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in unk[:10]])+"<br>"
-    return HttpResponse(ans)
+    reports.append({"label": "Unknown", "num": unk.distinct().count(), "top10": unk[:10]})
 
+    return render(request, 'core/tags.html', {'reports': reports})
 
+@transaction.atomic
 def event_from_request(request):
     """
     create a cm.Event object from the request and return its ID
@@ -326,11 +315,19 @@ def nonpartisanship(request):
     context = get_default_og_metadata(request)
     return render(request, 'core/coming_soon.html', context)
 
+@transaction.atomic
 def report_issues(request, *args, **kwargs):
     if request.method == 'POST':
         form = IssueReportForm(request.POST)
         if form.is_valid():
-            return HttpResponse("Thank you for submitting this issue")
+            issue = cm.IssueReport()
+            event = get_object_or_404(cm.Event, id=form.cleaned_data["event_id"])
+            issue.event = event
+            issue.title = form.cleaned_data["issue_title"]
+            issue.description = form.cleaned_data["description"]
+            issue.issue_type = form.cleaned_data["issue_type"]
+            issue.save()
+            return render(request, "core/thanks.html", {"action_description": "submitting this issue report"})
         else:
             if not "event_id" in form.cleaned_data:
                 return HttpResponse(status=500)
@@ -339,4 +336,32 @@ def report_issues(request, *args, **kwargs):
         event_id = event_from_request(request)
         form = IssueReportForm(initial={"event_id":event_id})
         return render(request, 'core/generic_form.html', {"title": "Report an Issue", 'form': form, 'action_path' : request.path})
+
+
+def moderate_issues(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+    recent_events = cm.Event.objects.order_by('-timestamp')[:100]
+    recent_events = [(str(i.path), str(i.timestamp)) for i in recent_events]
+    recent_issues = cm.IssueReport.objects.order_by('-event__timestamp')[:100]
+    recent_issues = [(str(i.title), str(i.issue_type), str(i.event.path), str(i.event.timestamp)) for i in recent_issues]
+    return render(request, 'core/moderate_issues.html', {"recent_issues": recent_issues, "recent_events": recent_events})
+
+def portal_stats(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+    num_users = cm.UserProfile.objects.count()
+    num_projects = cm.ParticipationProject.objects.filter(is_active=True).count()
+    num_items = cm.ParticipationItem.objects.filter(is_active=True).count()
+    num_tags = cm.Tag.objects.count()
+    num_visits = cm.ParticipationItem.objects.aggregate(Sum('visits'))["visits__sum"]
+
+    return render(request, 'core/portal_stats.html', {"num_users": num_users, "num_projects": num_projects, "num_items": num_items, "num_tags": num_tags, "num_visits": num_visits})
+
 
