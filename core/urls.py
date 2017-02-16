@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^nonpartisanship/$', views.nonpartisanship, name="nonpartisanship"),
     url(r'^report_issues/$', views.report_issues, name="report_issues"),
     url(r'^report_issues/apps/(?P<app_name>.+)/(?P<action_name>.+)/(?P<object_id>.+)$', views.report_issues, name="report_issues"),
+    url(r'^moderate_issues/$', views.moderate_issues, name="moderate_issues"),
     url(r'^accounts/', include('registration.backends.hmac.urls')),
     url(r'^accounts/profile/$', views.show_profile, name="profile"),
     url(r'^$', views.splash_if_anon, name="home"),

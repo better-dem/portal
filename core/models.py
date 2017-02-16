@@ -193,6 +193,11 @@ class Event(models.Model):
     path = models.CharField(max_length=500, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+class IssueReport(models.Model):
+    event = models.ForeignKey(Event)
+    title = models.CharField(max_length = 100)
+    description = models.TextField()
+    issue_type = models.CharField(max_length=2, choices=(("PC", "Propaganda, campaigning, or biased content"), ("BR", "Bug or website error"), ("IA", "Inaccurate content"), ("FR", "Request a feature"), ))
 
 def validate_shortcut_string(s):
     if "/" in s or "." in s:
