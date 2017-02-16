@@ -268,37 +268,26 @@ def get_item_details(item, get_activity=False):
     return ans
 
 def tags(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+    reports = []
     all_tags = cm.Tag.objects.all()
-    first_ten = all_tags[:10]
-    ans = ""
-    ans += "Number of tags: "+str(all_tags.distinct().count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in first_ten])+"<br>"
-
+    reports.append({"label": "Tags", "num": all_tags.distinct().count(), "top10": all_tags[:10]})
     cities = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.CITY)
-    ans += "<br>"
-    ans += "Number of cities:"+str(cities.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in cities[:10]])+"<br>"
-
+    reports.append({"label": "Cities", "num": cities.distinct().count(), "top10": cities[:10]})
     states = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.STATE_OR_PROVINCE)
-    ans += "<br>"
-    ans += "Number of states:"+str(states.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in states[:10]])+"<br>"
-
+    reports.append({"label": "States", "num": states.distinct().count(), "top10": states[:10]})
     countries = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.COUNTRY)
-    ans += "<br>"
-    ans += "Number of countries:"+str(countries.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in countries[:10]])+"<br>"
-
+    reports.append({"label": "Countries", "num": countries.distinct().count(), "top10": countries[:10]})
     other = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.OTHER)
-    ans += "<br>"
-    ans += "Number of other types of geo-tag:"+str(other.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in other[:10]])+"<br>"
-
+    reports.append({"label": "Other", "num": other.distinct().count(), "top10": other[:10]})
     unk = cm.GeoTag.objects.filter(feature_type=cm.GeoTag.UNKNOWN)
-    ans += "<br>"
-    ans += "Number of unknown geo-tags:"+str(unk.count())+"<br>"
-    ans += "<br>".join([i.get_name() for i in unk[:10]])+"<br>"
-    return HttpResponse(ans)
+    reports.append({"label": "Unknown", "num": unk.distinct().count(), "top10": unk[:10]})
+
+    return render(request, 'core/tags.html', {'reports': reports})
 
 @transaction.atomic
 def event_from_request(request):
