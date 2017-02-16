@@ -2,7 +2,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
-from django.db.models import F
+from django.db.models import F, Sum
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
@@ -360,4 +360,19 @@ def moderate_issues(request):
     recent_issues = cm.IssueReport.objects.order_by('-event__timestamp')[:100]
     recent_issues = [(str(i.title), str(i.issue_type), str(i.event.path), str(i.event.timestamp)) for i in recent_issues]
     return render(request, 'core/moderate_issues.html', {"recent_issues": recent_issues, "recent_events": recent_events})
+
+def portal_stats(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+    num_users = cm.UserProfile.objects.count()
+    num_projects = cm.ParticipationProject.objects.filter(is_active=True).count()
+    num_items = cm.ParticipationItem.objects.filter(is_active=True).count()
+    num_tags = cm.Tag.objects.count()
+    num_visits = cm.ParticipationItem.objects.aggregate(Sum('visits'))["visits__sum"]
+
+    return render(request, 'core/portal_stats.html', {"num_users": num_users, "num_projects": num_projects, "num_items": num_items, "num_tags": num_tags, "num_visits": num_visits})
+
 
