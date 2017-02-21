@@ -34,4 +34,15 @@
      js.src = "//connect.facebook.net/en_US/sdk.js";
      fjs.parentNode.insertBefore(js, fjs);
    }(document, 'script', 'facebook-jssdk'));
+
+  var share_og = function(action, obj, href){
+  FB.ui({
+  method: 'share_open_graph',
+  href: href,
+  action_type: action,
+  action_properties: JSON.stringify({
+  object:obj,
+  })
+  }, function(response){});
+  };
 </script>
