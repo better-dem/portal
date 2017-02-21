@@ -8,6 +8,7 @@ import core.tasks as ct
 import core.forms as cf
 import sys
 from urlparse import urlsplit
+import os
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -97,7 +98,7 @@ def edit_project(request, project_id):
 def administer_project(request, project_id):
     project = get_object_or_404(ManualNewsCurationProject, pk=project_id)
     items = NewsArticleItem.objects.filter(participation_project=project)
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project":project})
+    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project":project, 'site': os.environ["SITE"]})
 
 def participate(request, item_id):
     item = get_object_or_404(NewsArticleItem, pk=item_id)

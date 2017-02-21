@@ -8,6 +8,7 @@ import core.views as cv
 import core.forms as cf
 import core.tasks as ct
 import json
+import os
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -111,4 +112,4 @@ def participate(request, item_id):
 def administer_project(request, project_id):
     project = get_object_or_404(InteractiveVisualizationProject, pk=project_id) 
     items = InteractiveVisualizationItem.objects.filter(participation_project=project)
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project})
+    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project, 'site': os.environ["SITE"]})

@@ -35,9 +35,10 @@
      fjs.parentNode.insertBefore(js, fjs);
    }(document, 'script', 'facebook-jssdk'));
 
-  var share_og = function(action, obj, href){
+  var share_og = function(action, obj, href, story){
   FB.ui({
   method: 'share_open_graph',
+  story: story,
   href: href,
   action_type: action,
   action_properties: JSON.stringify({

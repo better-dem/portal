@@ -11,6 +11,7 @@ from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, Upload
 import sys
 from django.core.files.storage import default_storage
 from django.db import transaction
+import os
 
 def get_default_og_metadata(request, participation_item=None):
     ans = {
@@ -215,7 +216,7 @@ def app_view_relay(request, app_name, action_name, object_id):
                     form = DeleteProjectConfirmationForm()
                     items = cm.ParticipationItem.objects.filter(participation_project=project, is_active=True)
                     items = [get_item_details(i, True) for i in items]
-                    return render(request, 'core/delete_project_confirmation.html', {'form': form, 'action_path' : request.path, "items": items})
+                    return render(request, 'core/delete_project_confirmation.html', {'form': form, 'action_path' : request.path, "items": items, 'site': os.environ["SITE"]})
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "delete a project"})
 
@@ -245,7 +246,7 @@ def feed(request):
     recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
     items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches) if i.is_active]
     tasks.feed_update_by_user_profile.delay(profile.id)
-    context = {'items': items, 'num_tags_followed': num_tags_followed}
+    context = {'items': items, 'num_tags_followed': num_tags_followed, 'site': os.environ["SITE"]}
     context.update(get_default_og_metadata(request))
     return render(request, 'core/feed.html', context)
 
