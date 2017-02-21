@@ -22,7 +22,7 @@
     <div class="panel-footer">
       {% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}
       <a style="float: right; padding-left: 10px;" href="/report_issues{{ item.link }}" data-toggle="tooltip" title="Report a problem with this item"><span class="glyphicon glyphicon-ban-circle"></span></a>
-      <a style="float: right; padding-left: 10px;" data-toggle="tooltip" title="Share this item on Facebook" onclick="FB.ui({method: 'share', display: 'popup', action_type: 'games.celebrate', action_properties: JSON.stringify({object: '{{ item.link }}',}), href: '{{ item.link }}',}, function(response){});"> <span class="glyphicon glyphicon-share" ></span>
+      <a style="float: right; padding-left: 10px;" data-toggle="tooltip" title="Share this item on Facebook" onclick="FB.ui({method: 'share', display: 'popup', action_type: og.likes', action_properties: JSON.stringify({object: '{{ item.link }}',}), href: '{{ item.link }}',}, function(response){});"> <span class="glyphicon glyphicon-share" ></span>
       </a>
       <div class="clearfix"></div>
     </div>
