@@ -19,5 +19,11 @@
 	  </div>
 	</span>
     </div>
-    <div class="panel-footer">{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}<a style="float: right;" href="/report_issues{{ item.link }}" data-toggle="tooltip" title="Report a problem with this item"><span class="glyphicon glyphicon-ban-circle"></span></a><div class="clearfix"></div></div>
+    <div class="panel-footer">
+      {% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}
+      <a style="float: right; padding-left: 10px;" href="/report_issues{{ item.link }}" data-toggle="tooltip" title="Report a problem with this item"><span class="glyphicon glyphicon-ban-circle"></span></a>
+      <a style="float: right; padding-left: 10px;" data-toggle="tooltip" title="Share this item on Facebook" onclick="FB.ui({method: 'share', display: 'popup', quote: '{{ item.label }}', href: 'http://better-dem-portal-staging.herokuapp.com/',}, function(response){});"> <span class="glyphicon glyphicon-share" ></span>
+      </a>
+      <div class="clearfix"></div>
+    </div>
 </div>
