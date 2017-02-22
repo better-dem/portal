@@ -89,7 +89,7 @@ def administer_project(request, project_id):
         current_item_detail["num_responses"] = num_responses
         item_details.append(current_item_detail)
 
-    return render(request, 'city_budgeting/project_results.html', {"items": item_details, "project":project})
+    return render(request, 'city_budgeting/project_results.html', {"items": item_details, "project":project, 'site': os.environ["SITE"]})
 
 
 def participate(request, item_id):

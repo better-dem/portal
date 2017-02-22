@@ -56,7 +56,7 @@ def new_project(request):
 def administer_project(request, project_id):
     project = get_object_or_404(SingleQuizProject, pk=project_id) 
     items = SingleQuizItem.objects.filter(participation_project=project)
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project})
+    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project, 'site': os.environ["SITE"]})
 
 def participate(request, item_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)

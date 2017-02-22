@@ -192,7 +192,7 @@ def administer_project(request, project_id):
         current_item_detail["povs"] = pov_details
         item_details.append(current_item_detail)
 
-    return render(request, 'ballot_decider/project_results.html', {"items": item_details, "project": project})
+    return render(request, 'ballot_decider/project_results.html', {"items": item_details, "project": project, 'site': os.environ["SITE"]})
 
 
 
@@ -203,8 +203,7 @@ def participate(request, item_id):
     item = BallotDeciderItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.ballotdeciderproject
-    context.update({"ballot": project, "basics": [cv.get_item_details(i, False) for i in project.basics.all() if i.is_active], \
-                "effects": [cv.get_item_details(i, False) for i in project.effects.all() if i.is_active]})
+    context.update({"ballot": project, "basics": [cv.get_item_details(i, False) for i in project.basics.all() if i.is_active], "effects": [cv.get_item_details(i, False) for i in project.effects.all() if i.is_active], 'site': os.environ["SITE"]})
     if not request.method == "POST":
         return render(request, 'ballot_decider/participate.html', context)
     if request.method == 'POST' and request.is_ajax():

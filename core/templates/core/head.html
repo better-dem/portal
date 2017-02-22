@@ -17,3 +17,29 @@
 <script type="text/javascript" src="{% static 'core/js/d3.js' %}"></script>
 <script type="text/javascript" src="{% static 'core/js/crossfilter.js' %}"></script>
 <script type="text/javascript" src="{% static 'core/js/dc.js' %}"></script>
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '118733658649222',
+      xfbml      : true,
+      version    : 'v2.8'
+    });
+    FB.AppEvents.logPageView();
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+  var share_og = function(href, quote){
+  FB.ui({
+  method: 'share',
+  quote: quote,
+  href: href
+  }, function(response){});
+  };
+</script>
