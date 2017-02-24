@@ -1,0 +1,65 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<h2>Donate to Better Democracy Network</h2>
+
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>What your donation does</h4></div>
+    <div class="panel-body">
+
+      <p>
+	Your support allows us to maintain this site, to create new tools and educational material, and to push the envelope changing the way we interact with our government.
+      </p>
+      
+      <p>
+	Some of the things your contribution goes toward are:
+	<ul>
+	  <li>Maintenance costs for this website</li>
+	  <li>Licensing fees for data sets and research materials</li>
+	  <li>Operational expenses</li>
+	</ul>
+      </p>
+
+      <p>
+	Currently, we are an all-volunteer organization.
+	In the future, we plan to hire staff at reasonable salaries.
+	See our compensation policy <a target="_blank" href="https://drive.google.com/open?id=1Y_FAjXmDUB5MWbzzqm9I1gNzNAalc5uPHmeoLKadJJM">here</a>.
+      </p>
+
+      <p>
+	Better Democracy Network is a Washington State nonprofit corporation, located in Kirkland, WA.
+	We are <i><b>not</b></i> a federally tax-exempt 501(3)c nonprofit, though we plan to apply for this in the coming months.
+	This charity currently is registered with the secretary's office under the charitable solicitations act, registration number 40128.
+	Find out more <a target="_blank" href="https://www.sos.wa.gov/charities/search-app.aspx#/detail-charity/40128">here</a>.
+      </p>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>Choose your contribution level</h4></div>
+    <div class="panel-body">
+
+
+{% for amt in suggested_amounts %}
+<form action="/donate/" method="POST" style="display: inline;">
+  {% csrf_token %}
+  <input type="hidden" name="donation_amount" value="{{ amt }}" />
+  <script
+    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+    data-key="{{ stripe_publishable_api_key }}"
+    data-amount="{{ amt }}"
+    data-panel-label="Donate {% templatetag openvariable %}amount{% templatetag closevariable %}"
+    data-label="Donate ${% widthratio amt 100 1 %}"
+    data-name="Better Democracy Network"
+    data-description="Widget"
+    data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+    data-locale="auto">
+  </script>
+</form>
+{% endfor %}
+
+    </div>
+</div>
+
+
+{% endblock %}

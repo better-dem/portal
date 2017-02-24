@@ -3,7 +3,6 @@ from s3direct.widgets import S3DirectWidget
 from widgets import forms as wf
 from core import models as cm
 
-
 class UploadGeoTagset(forms.Form):
     small_test = forms.BooleanField(required=False)
     format_id = forms.CharField(max_length=30)
@@ -81,3 +80,7 @@ class IssueReportForm(forms.Form):
     issue_title = forms.CharField(max_length = 100)
     issue_type = forms.ChoiceField(label = "What type of issue are you reporting?", choices=(("PC", "Propaganda, campaigning, or biased content"), ("BR", "Bug or website error"), ("IA", "Inaccurate content"), ("FR", "Request a feature"), ))
     description = forms.CharField(widget=forms.widgets.Textarea)
+
+class StripePaymentForm(forms.Form):
+    stripeToken = forms.CharField(max_length=500)
+    donation_amount=forms.CharField(max_length=10)

@@ -7,11 +7,13 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
 import core.tasks as tasks
-from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
+from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
 import sys
 from django.core.files.storage import default_storage
 from django.db import transaction
 import os
+import stripe
+stripe.api_key = os.environ["STRIPE_API_KEY"]
 
 def get_default_og_metadata(request, participation_item=None):
     ans = {
@@ -308,6 +310,27 @@ def event_from_request(request):
 
 def donate(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+
+    if request.method == 'POST':
+        form = StripePaymentForm(request.POST)
+        if form.is_valid():
+            token = form.cleaned_data["stripeToken"]
+            amt = int(form.cleaned_data["donation_amount"])
+            try:
+                charge = stripe.Charge.create(amount=amt, currency="usd", description="Better Democracy Portal donation",source=token)
+                sys.stderr.write(str(charge)+"\n")
+                sys.stderr.flush()
+                return render(request, "core/thanks.html", {"action_description": "your generous contribution"})
+            except Exception as e:
+                sys.stderr.write(str(e)+"\n")
+                sys.stderr.flush()
+                return HttpResponse(status=500)
+        else:
+            return HttpResponse(status=500)
+    else:
+        return render(request, 'core/donate.html', {"stripe_publishable_api_key": os.environ["STRIPE_PUBLISHABLE_KEY"], "suggested_amounts": [500, 1000, 2000, 5000, 10000]})
+
+
     context = get_default_og_metadata(request)
     return render(request, 'core/coming_soon.html', context)
 
