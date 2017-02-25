@@ -84,3 +84,5 @@ class IssueReportForm(forms.Form):
 class StripePaymentForm(forms.Form):
     stripeToken = forms.CharField(max_length=500)
     donation_amount=forms.CharField(max_length=10)
+    recurring=forms.CharField(max_length=10)
+

@@ -8,13 +8,13 @@
     <div class="panel-body">
 
       <p>
-	Your support allows us to maintain this site, to create new tools and educational material, and to push the envelope changing the way we interact with our government.
+	Your support allows us to develop and run this site, to create new tools and educational material, and to push the envelope changing the way we interact with our government.
       </p>
       
       <p>
 	Some of the things your contribution goes toward are:
 	<ul>
-	  <li>Maintenance costs for this website</li>
+	  <li>Development and maintenance costs for this website</li>
 	  <li>Licensing fees for data sets and research materials</li>
 	  <li>Operational expenses</li>
 	</ul>
@@ -33,33 +33,78 @@
 	Find out more <a target="_blank" href="https://www.sos.wa.gov/charities/search-app.aspx#/detail-charity/40128">here</a>.
       </p>
     </div>
-</div>
-
-<div class="panel panel-default">
-    <div class="panel-heading"><h4>Choose your contribution level</h4></div>
-    <div class="panel-body">
 
 
-{% for amt in suggested_amounts %}
-<form action="/donate/" method="POST" style="display: inline;">
-  {% csrf_token %}
-  <input type="hidden" name="donation_amount" value="{{ amt }}" />
-  <script
-    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-    data-key="{{ stripe_publishable_api_key }}"
-    data-amount="{{ amt }}"
-    data-panel-label="Donate {% templatetag openvariable %}amount{% templatetag closevariable %}"
-    data-label="Donate ${% widthratio amt 100 1 %}"
-    data-name="Better Democracy Network"
-    data-description="Widget"
-    data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
-    data-locale="auto">
-  </script>
-</form>
-{% endfor %}
+    <div style="padding: 15px;" class="panel-group" id="accordion">
 
+      <div class="panel panel-default">
+	<div class="panel-heading">
+	  <div class="panel-title">
+	    <a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><h4><span class="glyphicon glyphicon-chevron-right"></span> Make a recurring monthly donation</h4></a>
+	  </div>
+	</div>
+	<div class="panel-collapse collapse" id="collapse1">
+	  <div class="panel-body">
+
+	    {% with "500 1000 2000 5000 10000" as list %}
+	    {% for amt in list.split %}
+	    <form action="/donate/" method="POST" style="padding: 5px;">
+	      {% csrf_token %}
+	      <input type="hidden" name="donation_amount" value="{{ amt }}" />
+	      <input type="hidden" name="recurring" value="True" />
+	      <script
+		 src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+		 data-key="{{ stripe_publishable_api_key }}"
+		 data-amount="{{ amt }}"
+		 data-panel-label="Donate {% templatetag openvariable %}amount{% templatetag closevariable %} monthly"
+		 data-label="Donate ${% widthratio amt 100 1 %} monthly"
+		 data-name="Better Democracy Network"
+		 data-description="Widget"
+		 data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+		 data-locale="auto">
+	      </script>
+	    </form>
+	    {% endfor %}
+	    {% endwith %}
+	  </div>
+	</div>
+      </div>
+
+
+      <div class="panel panel-default">
+	<div class="panel-heading">
+	  <div class="panel-title">
+	    <a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><h4><span class="glyphicon glyphicon-chevron-right"></span> Make a one-time donation</h4></a>
+	  </div>
+	</div>
+	<div class="panel-collapse collapse" id="collapse2">
+	  <div class="panel-body">
+
+	    {% with "500 1000 2000 5000 10000" as list %}
+	    {% for amt in list.split %}
+	    <form action="/donate/" method="POST" style="padding: 5px;">
+	      {% csrf_token %}
+	      <input type="hidden" name="donation_amount" value="{{ amt }}" />
+	      <input type="hidden" name="recurring" value="False" />
+	      <script
+		 src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+		 data-key="{{ stripe_publishable_api_key }}"
+		 data-amount="{{ amt }}"
+		 data-panel-label="Donate {% templatetag openvariable %}amount{% templatetag closevariable %}"
+		 data-label="Donate ${% widthratio amt 100 1 %}"
+		 data-name="Better Democracy Network"
+		 data-description="Widget"
+		 data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+		 data-locale="auto">
+	      </script>
+	    </form>
+	    {% endfor %}
+	    {% endwith %}
+	  </div>
+	</div>
+      </div>
     </div>
-</div>
 
+</div>
 
 {% endblock %}

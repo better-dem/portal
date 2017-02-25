@@ -316,19 +316,30 @@ def donate(request):
         if form.is_valid():
             token = form.cleaned_data["stripeToken"]
             amt = int(form.cleaned_data["donation_amount"])
-            try:
-                charge = stripe.Charge.create(amount=amt, currency="usd", description="Better Democracy Portal donation",source=token)
-                sys.stderr.write(str(charge)+"\n")
-                sys.stderr.flush()
-                return render(request, "core/thanks.html", {"action_description": "your generous contribution"})
-            except Exception as e:
-                sys.stderr.write(str(e)+"\n")
-                sys.stderr.flush()
-                return HttpResponse(status=500)
+            recurring = bool(form.cleaned_data["recurring"])
+            customer = stripe.Customer.create(source=token)
+
+            donation = cm.Donation()
+            donation.userprofile = profile
+            donation.amount = amt / 100.0
+            donation.stripe_customer_id = customer.id
+
+            if not recurring:
+                charge = stripe.Charge.create(amount=amt, currency="usd", description="Better Democracy Portal one-time donation",source=token)
+                donation.stripe_full_response = charge
+
+            else:
+                plan_id = "sustaining_"+str(amt/100) # plan id from stripe
+                resp = stripe.Subscription.create(customer=customer.id, plan=plan_id)
+                donation.stripe_full_response = resp
+
+            donation.save()
+            return render(request, "core/thanks.html", {"action_description": "your generous contribution. Please check your email for a receipt"})
+
         else:
             return HttpResponse(status=500)
     else:
-        return render(request, 'core/donate.html', {"stripe_publishable_api_key": os.environ["STRIPE_PUBLISHABLE_KEY"], "suggested_amounts": [500, 1000, 2000, 5000, 10000]})
+        return render(request, 'core/donate.html', {"stripe_publishable_api_key": os.environ["STRIPE_PUBLISHABLE_KEY"]})
 
 
     context = get_default_og_metadata(request)
