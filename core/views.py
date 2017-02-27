@@ -316,12 +316,12 @@ def donate(request):
         if form.is_valid():
             token = form.cleaned_data["stripeToken"]
             amt = int(form.cleaned_data["donation_amount"])
-            recurring = bool(form.cleaned_data["recurring"])
+            recurring = form.cleaned_data["recurring"] =="True"
             customer = stripe.Customer.create(source=token)
 
             donation = cm.Donation()
             donation.userprofile = profile
-            donation.amount = amt / 100.0
+            donation.amount = amt / 100.0 # convert to dollars
             donation.stripe_customer_id = customer.id
 
             if not recurring:

@@ -3,6 +3,8 @@
 {% load staticfiles %}
 <h2>Donate to Better Democracy Network</h2>
 
+<script src="https://checkout.stripe.com/checkout.js"></script>
+
 <div class="panel panel-default">
     <div class="panel-heading"><h4>What your donation does</h4></div>
     <div class="panel-body">
@@ -32,79 +34,87 @@
 	This charity currently is registered with the secretary's office under the charitable solicitations act, registration number 40128.
 	Find out more <a target="_blank" href="https://www.sos.wa.gov/charities/search-app.aspx#/detail-charity/40128">here</a>.
       </p>
-    </div>
-
-
-    <div style="padding: 15px;" class="panel-group" id="accordion">
-
-      <div class="panel panel-default">
-	<div class="panel-heading">
-	  <div class="panel-title">
-	    <a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><h4><span class="glyphicon glyphicon-chevron-right"></span> Make a recurring monthly donation</h4></a>
-	  </div>
-	</div>
-	<div class="panel-collapse collapse" id="collapse1">
-	  <div class="panel-body">
-
-	    {% with "500 1000 2000 5000 10000" as list %}
-	    {% for amt in list.split %}
-	    <form action="/donate/" method="POST" style="padding: 5px;">
-	      {% csrf_token %}
-	      <input type="hidden" name="donation_amount" value="{{ amt }}" />
-	      <input type="hidden" name="recurring" value="True" />
-	      <script
-		 src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-		 data-key="{{ stripe_publishable_api_key }}"
-		 data-amount="{{ amt }}"
-		 data-panel-label="Donate {% templatetag openvariable %}amount{% templatetag closevariable %} monthly"
-		 data-label="Donate ${% widthratio amt 100 1 %} monthly"
-		 data-name="Better Democracy Network"
-		 data-description="Widget"
-		 data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
-		 data-locale="auto">
-	      </script>
-	    </form>
-	    {% endfor %}
-	    {% endwith %}
-	  </div>
-	</div>
-      </div>
 
 
       <div class="panel panel-default">
-	<div class="panel-heading">
-	  <div class="panel-title">
-	    <a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><h4><span class="glyphicon glyphicon-chevron-right"></span> Make a one-time donation</h4></a>
-	  </div>
-	</div>
-	<div class="panel-collapse collapse" id="collapse2">
+	  <div class="panel-heading"><h4>Donate</h4></div>
 	  <div class="panel-body">
+	      <p>
+		  <h4>Donation Amount</h4>
+		  <select id="amt">
+		      {% with "50000 20000 10000 5000 2000 1000 500" as list %}
+		      {% for amt in list.split %}
+		      <option value="{{ amt }}">${% widthratio amt 100 1 %}</option>
+		      {% endfor %}
+		      {% endwith %}
+		  </select>
+	      </p>
 
-	    {% with "500 1000 2000 5000 10000" as list %}
-	    {% for amt in list.split %}
-	    <form action="/donate/" method="POST" style="padding: 5px;">
-	      {% csrf_token %}
-	      <input type="hidden" name="donation_amount" value="{{ amt }}" />
-	      <input type="hidden" name="recurring" value="False" />
-	      <script
-		 src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-		 data-key="{{ stripe_publishable_api_key }}"
-		 data-amount="{{ amt }}"
-		 data-panel-label="Donate {% templatetag openvariable %}amount{% templatetag closevariable %}"
-		 data-label="Donate ${% widthratio amt 100 1 %}"
-		 data-name="Better Democracy Network"
-		 data-description="Widget"
-		 data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
-		 data-locale="auto">
-	      </script>
-	    </form>
-	    {% endfor %}
-	    {% endwith %}
+	      <div style="height: 5px;"></div>
+	      <p>
+		  <h4>Frequency</h4>
+		  <div class="checkbox">
+		      <label><input type="checkbox" id ="cb">Make this a monthly recurring donation</label>
+		  </div>
+	      </p>
+
+	      <div style="height: 10px;"></div>
+	      <p>
+		  <button type="button" class="btn btn-primary" id="customButton">Donate</button>
+	      </p>
+
 	  </div>
-	</div>
       </div>
-    </div>
 
+    </div>
 </div>
+
+
+<script>
+var handler = StripeCheckout.configure({
+  key: '{{ stripe_publishable_api_key }}',
+  image: "{% static "/core/img/portal_logo_small.png" %}",
+  locale: 'auto',
+  token: function(tok) {
+    var donation_amount = $("#amt").val();
+    var recurring = "False";
+    if ($("#cb").is(':checked')){
+	recurring = "True";
+    }
+
+    $('<form action="/donate/" method="POST"/>')
+        .append($("{% csrf_token %}"))
+        .append($('<input type="hidden" name="donation_amount" value="' + donation_amount + '" />'))
+        .append($('<input type="hidden" name="recurring" value="' + recurring + '" />'))
+        .append($('<input type="hidden" name="stripeToken" value="' + tok.id + '" />'))
+        .appendTo($(document.body)) //it has to be added somewhere into the <body>
+        .submit();
+  }
+});
+
+document.getElementById('customButton').addEventListener('click', function(e) {
+  // Open Checkout with further options:
+  var donation_amount = $("#amt").val();
+  var donation_string = $("#amt :selected").text();
+  var desc = "Donation";
+  if ($("#cb").is(':checked')){
+     desc = "Recurring donation";
+  }
+
+  handler.open({
+    name: 'Better Democracy Network',
+    description: desc+ " for "+donation_string,
+    amount: donation_amount,
+    zipCode: true,
+    panelLabel: "{% templatetag openvariable %}amount{% templatetag closevariable %} "+desc
+  });
+  e.preventDefault();
+});
+
+// Close Checkout on page navigation:
+window.addEventListener('popstate', function() {
+  handler.close();
+});
+</script>
 
 {% endblock %}
