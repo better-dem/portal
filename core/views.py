@@ -325,7 +325,7 @@ def donate(request):
             donation.stripe_customer_id = customer.id
 
             if not recurring:
-                charge = stripe.Charge.create(amount=amt, currency="usd", description="Better Democracy Portal one-time donation",source=token)
+                charge = stripe.Charge.create(amount=amt, currency="usd", description="Better Democracy Portal one-time donation", customer=customer.id)
                 donation.stripe_full_response = charge
 
             else:
