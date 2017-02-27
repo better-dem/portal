@@ -147,6 +147,14 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
 
+class Donation(models.Model):
+    userprofile = models.ForeignKey(UserProfile, blank=True, null=True, on_delete = models.SET_NULL)
+    amount = models.FloatField()
+    is_recurring = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    stripe_customer_id = models.CharField(max_length=100)
+    stripe_full_response = models.TextField() # json object returned by stripe    
+
 class FeedMatch(models.Model):
     participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
     user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)

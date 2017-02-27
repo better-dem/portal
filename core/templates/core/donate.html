@@ -1,0 +1,120 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<h2>Donate to Better Democracy Network</h2>
+
+<script src="https://checkout.stripe.com/checkout.js"></script>
+
+<div class="panel panel-default">
+    <div class="panel-heading"><h4>What your donation does</h4></div>
+    <div class="panel-body">
+
+      <p>
+	Your support allows us to develop and run this site, to create new tools and educational material, and to push the envelope changing the way we interact with our government.
+      </p>
+      
+      <p>
+	Some of the things your contribution goes toward are:
+	<ul>
+	  <li>Development and maintenance costs for this website</li>
+	  <li>Licensing fees for data sets and research materials</li>
+	  <li>Operational expenses</li>
+	</ul>
+      </p>
+
+      <p>
+	Currently, we are an all-volunteer organization.
+	In the future, we plan to hire staff at reasonable salaries.
+	See our compensation policy <a target="_blank" href="https://drive.google.com/open?id=1Y_FAjXmDUB5MWbzzqm9I1gNzNAalc5uPHmeoLKadJJM">here</a>.
+      </p>
+
+      <p>
+	Better Democracy Network is a Washington State nonprofit corporation, located in Kirkland, WA.
+	We are <i><b>not</b></i> a federally tax-exempt 501(3)c nonprofit, though we plan to apply for this in the coming months.
+	This charity currently is registered with the secretary's office under the charitable solicitations act, registration number 40128.
+	Find out more <a target="_blank" href="https://www.sos.wa.gov/charities/search-app.aspx#/detail-charity/40128">here</a>.
+      </p>
+
+
+      <div class="panel panel-default">
+	  <div class="panel-heading"><h4>Donate</h4></div>
+	  <div class="panel-body">
+	      <p>
+		  <h4>Donation Amount</h4>
+		  <select id="amt">
+		      {% with "50000 20000 10000 5000 2000 1000 500" as list %}
+		      {% for amt in list.split %}
+		      <option value="{{ amt }}">${% widthratio amt 100 1 %}</option>
+		      {% endfor %}
+		      {% endwith %}
+		  </select>
+	      </p>
+
+	      <div style="height: 5px;"></div>
+	      <p>
+		  <h4>Frequency</h4>
+		  <div class="checkbox">
+		      <label><input type="checkbox" id ="cb">Make this a monthly recurring donation</label>
+		  </div>
+	      </p>
+
+	      <div style="height: 10px;"></div>
+	      <p>
+		  <button type="button" class="btn btn-primary" id="customButton">Donate</button>
+	      </p>
+
+	  </div>
+      </div>
+
+    </div>
+</div>
+
+
+<script>
+var handler = StripeCheckout.configure({
+  key: '{{ stripe_publishable_api_key }}',
+  image: "{% static "/core/img/portal_logo_small.png" %}",
+  locale: 'auto',
+  token: function(tok) {
+    var donation_amount = $("#amt").val();
+    var recurring = "False";
+    if ($("#cb").is(':checked')){
+	recurring = "True";
+    }
+
+    $('<form action="/donate/" method="POST"/>')
+        .append($("{% csrf_token %}"))
+        .append($('<input type="hidden" name="donation_amount" value="' + donation_amount + '" />'))
+        .append($('<input type="hidden" name="recurring" value="' + recurring + '" />'))
+        .append($('<input type="hidden" name="stripeToken" value="' + tok.id + '" />'))
+        .appendTo($(document.body)) //it has to be added somewhere into the <body>
+        .submit();
+  }
+});
+
+document.getElementById('customButton').addEventListener('click', function(e) {
+  // Open Checkout with further options:
+  var donation_amount = $("#amt").val();
+  var donation_string = $("#amt :selected").text();
+  var desc = "Donation";
+  if ($("#cb").is(':checked')){
+     desc = "Recurring donation";
+  }
+
+  handler.open({
+    name: 'Better Democracy Network',
+    description: desc+ " for "+donation_string,
+    amount: donation_amount,
+    zipCode: true,
+    panelLabel: "{% templatetag openvariable %}amount{% templatetag closevariable %} "+desc
+  });
+  e.preventDefault();
+});
+
+// Close Checkout on page navigation:
+window.addEventListener('popstate', function() {
+  handler.close();
+});
+</script>
+
+{% endblock %}

@@ -7,11 +7,13 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
 import core.tasks as tasks
-from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag
+from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
 import sys
 from django.core.files.storage import default_storage
 from django.db import transaction
 import os
+import stripe
+stripe.api_key = os.environ["STRIPE_API_KEY"]
 
 def get_default_og_metadata(request, participation_item=None):
     ans = {
@@ -308,6 +310,38 @@ def event_from_request(request):
 
 def donate(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+
+    if request.method == 'POST':
+        form = StripePaymentForm(request.POST)
+        if form.is_valid():
+            token = form.cleaned_data["stripeToken"]
+            amt = int(form.cleaned_data["donation_amount"])
+            recurring = form.cleaned_data["recurring"] =="True"
+            customer = stripe.Customer.create(source=token)
+
+            donation = cm.Donation()
+            donation.userprofile = profile
+            donation.amount = amt / 100.0 # convert to dollars
+            donation.stripe_customer_id = customer.id
+
+            if not recurring:
+                charge = stripe.Charge.create(amount=amt, currency="usd", description="Better Democracy Portal one-time donation", customer=customer.id)
+                donation.stripe_full_response = charge
+
+            else:
+                plan_id = "sustaining_"+str(amt/100) # plan id from stripe
+                resp = stripe.Subscription.create(customer=customer.id, plan=plan_id)
+                donation.stripe_full_response = resp
+
+            donation.save()
+            return render(request, "core/thanks.html", {"action_description": "your generous contribution. Please check your email for a receipt"})
+
+        else:
+            return HttpResponse(status=500)
+    else:
+        return render(request, 'core/donate.html', {"stripe_publishable_api_key": os.environ["STRIPE_PUBLISHABLE_KEY"]})
+
+
     context = get_default_og_metadata(request)
     return render(request, 'core/coming_soon.html', context)
 
