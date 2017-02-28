@@ -317,7 +317,8 @@ def donate(request):
             token = form.cleaned_data["stripeToken"]
             amt = int(form.cleaned_data["donation_amount"])
             recurring = form.cleaned_data["recurring"] =="True"
-            customer = stripe.Customer.create(source=token)
+            email = form.cleaned_data["email"]
+            customer = stripe.Customer.create(source=token, email=email)
 
             donation = cm.Donation()
             donation.userprofile = profile

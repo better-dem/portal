@@ -87,6 +87,7 @@ var handler = StripeCheckout.configure({
         .append($('<input type="hidden" name="donation_amount" value="' + donation_amount + '" />'))
         .append($('<input type="hidden" name="recurring" value="' + recurring + '" />'))
         .append($('<input type="hidden" name="stripeToken" value="' + tok.id + '" />'))
+        .append($('<input type="hidden" name="email" value="' + tok.email + '" />'))
         .appendTo($(document.body)) //it has to be added somewhere into the <body>
         .submit();
   }
