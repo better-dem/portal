@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<div style="height: 15px;"></div>
+
+<div class="panel panel-default">
+  <div class="panel-heading"><h4>{{ title }}</h4></div>
+  <div class="panel-body">
+
+      <p>
+	{{ message }}
+      </p>
+      
+      <div class="panel panel-default">
+	<div class="panel-heading"><h4>Our contact email</h4></div>
+	<div class="panel-body">
+	  
+	  <p>
+	    <a href="mailto:{{ email }}?subject={{ subject }}">{{ email }}</a>
+	  </p>
+	  
+	</div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}

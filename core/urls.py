@@ -6,6 +6,7 @@ from . import forms
 
 urlpatterns = [
     url(r'^donate/$', views.donate, name="donate"),
+    url(r'^volunteer/$', views.volunteer, name="volunteer"),
     url(r'^nonpartisanship/$', views.nonpartisanship, name="nonpartisanship"),
     url(r'^report_issues/$', views.report_issues, name="report_issues"),
     url(r'^report_issues/apps/(?P<app_name>.+)/(?P<action_name>.+)/(?P<object_id>.+)$', views.report_issues, name="report_issues"),
