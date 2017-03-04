@@ -60,36 +60,68 @@
   Find out more about our methodology <a href="{{ item.projectobj.methodology_url }}">here</a>
 </div>
 
-<!-- No spaces around commas! This is important!! :( -->
-<pre id="data_IV_{{ item.projectobj.id }}" style="display: none;">
-{{ item.projectobj.csv_data }}
-</pre>
-
-
 <script>
 
-var parsed_data_IV_{{ item.projectobj.id }} = d3.csv.parse(d3.select('pre#data_IV_{{ item.projectobj.id }}').text());
-console.log('parsed data', parsed_data_IV_{{ item.projectobj.id }})
-var bin_width_IV_{{ item.projectobj.id }}=5 // this value is overwritten
-var num_bins_IV = 10;
-var xfilter_IV_{{ item.projectobj.id }} = crossfilter(parsed_data_IV_{{ item.projectobj.id }});
+// declare charts as globals
+var iv_data_loaded_{{ item.projectobj.id }}_chart = false;
+{% if item.projectobj.bar1_variable %}var bar1_{{ item.projectobj.id }}_chart = null;{% endif %}
+{% if item.projectobj.bar2_variable %}var bar2_{{ item.projectobj.id }}_chart = null;{% endif %}
+{% if item.projectobj.pie1_variable %}var pie1_{{ item.projectobj.id }}_chart = null;{% endif %}
+{% if item.projectobj.pie2_variable %}var pie2_{{ item.projectobj.id }}_chart = null;{% endif %}
+
+var resize_IV_charts_{{ item.projectobj.id }} = function(){
+     if (!iv_data_loaded_{{ item.projectobj.id }}_chart){
+	 return;
+     }
+
+     var horizontal_space_available = document.getElementById("IV_anchor_{{ item.projectobj.id }}").parentNode.clientWidth - 30;
+     var num_charts = 0;
+     {% if item.projectobj.bar1_variable %}num_charts += 1;{% endif %}
+     {% if item.projectobj.bar2_variable %}num_charts += 1;{% endif %}
+     {% if item.projectobj.pie1_variable %}num_charts += 1;{% endif %}
+     {% if item.projectobj.pie2_variable %}num_charts += 1;{% endif %}
+     var width = 300;
+     if (horizontal_space_available > num_charts * 350){
+	 width = d3.min([Math.floor(horizontal_space_available / num_charts), 500]);
+     } else {
+	 width = d3.min([Math.floor(horizontal_space_available), 500]);
+     }
+     
+     var height = d3.max([Math.floor(width * 1.0/2), 200])
+     {% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
+     {% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
+     {% if item.projectobj.pie1_variable %}pie1_{{ item.projectobj.id }}_chart.width(width).height(height).redraw();{% endif %}
+     {% if item.projectobj.pie2_variable %}pie2_{{ item.projectobj.id }}_chart.width(width).height(height).redraw();{% endif %}
+ };
+ 
+$( window ).resize(function() {
+     resize_IV_charts_{{ item.projectobj.id }}();
+});
 
 
-//// bar chart 1
-{% if item.projectobj.bar1_variable %}
-var xExtent = d3.extent(parsed_data_IV_{{ item.projectobj.id }}, function(d) { return +d["{{ item.projectobj.bar1_variable }}"]; });
-var min = xExtent[0];
-var max = xExtent[1];
-bin_width_IV_{{ item.projectobj.id }} = 1.0 * (max - min) / num_bins_IV;
-var xMin = min - bin_width_IV_{{ item.projectobj.id }}
-var xMax = max + bin_width_IV_{{ item.projectobj.id }}
-console.log(min, max, xMin, xMax, bin_width_IV_{{ item.projectobj.id }})
 
-var bar1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar1_variable }}"];}),
-    number_of_samples = bar1_dimension_{{ item.projectobj.id }}.group(function(d) { return 1.0 * bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
+// No spaces around commas! This is important!! :( 
+d3.csv("/apps/interactive_visualization/customActionCsvData/{{ item.itemobj.id }}", function(parsed_data_IV_{{ item.projectobj.id }}){
+     console.log('parsed data', parsed_data_IV_{{ item.projectobj.id }})
+     var bin_width_IV_{{ item.projectobj.id }}=5 // this value is overwritten
+     var num_bins_IV = 10;
+     var xfilter_IV_{{ item.projectobj.id }} = crossfilter(parsed_data_IV_{{ item.projectobj.id }});
 
-var bar1_{{ item.projectobj.id }}_chart = dc.barChart("#bar1_{{ item.projectobj.id }}_div"); 
-bar1_{{ item.projectobj.id }}_chart
+     //// bar chart 1
+     {% if item.projectobj.bar1_variable %}
+     var xExtent = d3.extent(parsed_data_IV_{{ item.projectobj.id }}, function(d) { return +d["{{ item.projectobj.bar1_variable }}"]; });
+     var min = xExtent[0];
+     var max = xExtent[1];
+     bin_width_IV_{{ item.projectobj.id }} = 1.0 * (max - min) / num_bins_IV;
+     var xMin = min - bin_width_IV_{{ item.projectobj.id }}
+     var xMax = max + bin_width_IV_{{ item.projectobj.id }}
+     console.log(min, max, xMin, xMax, bin_width_IV_{{ item.projectobj.id }})
+
+     var bar1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar1_variable }}"];}),
+	 number_of_samples = bar1_dimension_{{ item.projectobj.id }}.group(function(d) { return 1.0 * bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
+
+     bar1_{{ item.projectobj.id }}_chart = dc.barChart("#bar1_{{ item.projectobj.id }}_div"); 
+     bar1_{{ item.projectobj.id }}_chart
     .width(350)
     .height(200)
     .dimension(bar1_dimension_{{ item.projectobj.id }})
@@ -102,23 +134,23 @@ bar1_{{ item.projectobj.id }}_chart
     .brushOn(true)
     .yAxisLabel("{{ item.projectobj.bar1_y_label }}")
     .xAxisLabel("{{ item.projectobj.bar1_x_label }}")
-{% endif %}
+     {% endif %}
 
-//// bar chart 2
-{% if item.projectobj.bar2_variable %}
-var xExtent = d3.extent(parsed_data_IV_{{ item.projectobj.id }}, function(d) { return +d["{{ item.projectobj.bar2_variable }}"]; });
-var min = xExtent[0];
-var max = xExtent[1];
-bin_width_IV_{{ item.projectobj.id }} = 1.0 * (max - min) / num_bins_IV;
-var xMin = min - bin_width_IV_{{ item.projectobj.id }}
-var xMax = max + bin_width_IV_{{ item.projectobj.id }}
-console.log(min, max, xMin, xMax, bin_width_IV_{{ item.projectobj.id }})
+     //// bar chart 2
+     {% if item.projectobj.bar2_variable %}
+     var xExtent = d3.extent(parsed_data_IV_{{ item.projectobj.id }}, function(d) { return +d["{{ item.projectobj.bar2_variable }}"]; });
+     var min = xExtent[0];
+     var max = xExtent[1];
+     bin_width_IV_{{ item.projectobj.id }} = 1.0 * (max - min) / num_bins_IV;
+     var xMin = min - bin_width_IV_{{ item.projectobj.id }}
+     var xMax = max + bin_width_IV_{{ item.projectobj.id }}
+     console.log(min, max, xMin, xMax, bin_width_IV_{{ item.projectobj.id }})
 
-var bar2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar2_variable }}"];}),
-    number_of_samples = bar2_dimension_{{ item.projectobj.id }}.group(function(d) { return bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
+     var bar2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return +d["{{ item.projectobj.bar2_variable }}"];}),
+	 number_of_samples = bar2_dimension_{{ item.projectobj.id }}.group(function(d) { return bin_width_IV_{{ item.projectobj.id }} * Math.floor(1.0 * d / bin_width_IV_{{ item.projectobj.id }})});
 
-var bar2_{{ item.projectobj.id }}_chart = dc.barChart("#bar2_{{ item.projectobj.id }}_div"); 
-bar2_{{ item.projectobj.id }}_chart
+     bar2_{{ item.projectobj.id }}_chart = dc.barChart("#bar2_{{ item.projectobj.id }}_div"); 
+     bar2_{{ item.projectobj.id }}_chart
     .width(350)
     .height(200)
     .dimension(bar2_dimension_{{ item.projectobj.id }})
@@ -131,103 +163,79 @@ bar2_{{ item.projectobj.id }}_chart
     .brushOn(true)
     .yAxisLabel("{{ item.projectobj.bar2_y_label }}")
     .xAxisLabel("{{ item.projectobj.bar2_x_label }}")
-{% endif %}
+     {% endif %}
 
-//// pie chart 1 (for now, I'm actually using row charts instead of pie charts)
-{% if item.projectobj.pie1_variable %}
-var pie1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.pie1_variable }}"];}),
-    number_of_samples = pie1_dimension_{{ item.projectobj.id }}.group();
+     //// pie chart 1 (for now, I'm actually using row charts instead of pie charts)
+     {% if item.projectobj.pie1_variable %}
+     var pie1_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.pie1_variable }}"];}),
+	 number_of_samples = pie1_dimension_{{ item.projectobj.id }}.group();
 
-var pie1_{{ item.projectobj.id }}_chart = dc.pieChart("#pie1_{{ item.projectobj.id }}_div");
-pie1_{{ item.projectobj.id }}_chart
+     pie1_{{ item.projectobj.id }}_chart = dc.pieChart("#pie1_{{ item.projectobj.id }}_div");
+     pie1_{{ item.projectobj.id }}_chart
     .width(350)
     .height(200)
     .dimension(pie1_dimension_{{ item.projectobj.id }})
     .group(number_of_samples)
     .legend(dc.legend());
-{% endif %}
+     {% endif %}
 
-//// pie chart 2 (for now, I'm actually using row charts instead of pie charts)
-{% if item.projectobj.pie2_variable %}
-var pie2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.pie2_variable }}"];}),
-    number_of_samples = pie2_dimension_{{ item.projectobj.id }}.group();
+     //// pie chart 2 (for now, I'm actually using row charts instead of pie charts)
+     {% if item.projectobj.pie2_variable %}
+     var pie2_dimension_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.pie2_variable }}"];}),
+	 number_of_samples = pie2_dimension_{{ item.projectobj.id }}.group();
 
-var pie2_{{ item.projectobj.id }}_chart = dc.pieChart("#pie2_{{ item.projectobj.id }}_div");
-pie2_{{ item.projectobj.id }}_chart
+     pie2_{{ item.projectobj.id }}_chart = dc.pieChart("#pie2_{{ item.projectobj.id }}_div");
+     pie2_{{ item.projectobj.id }}_chart
     .width(350)
     .height(200)
     .dimension(pie2_dimension_{{ item.projectobj.id }})
     .group(number_of_samples)
     .legend(dc.legend());
-{% endif %}
+     {% endif %}
 
-//// Render all charts
-{% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.render(){% endif %}
-{% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.render(){% endif %}
-{% if item.projectobj.pie1_variable %}pie1_{{ item.projectobj.id }}_chart.render(){% endif %}
-{% if item.projectobj.pie2_variable %}pie2_{{ item.projectobj.id }}_chart.render(){% endif %}
+     //// Render all charts
+     {% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.render(){% endif %}
+     {% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.render(){% endif %}
+     {% if item.projectobj.pie1_variable %}pie1_{{ item.projectobj.id }}_chart.render(){% endif %}
+     {% if item.projectobj.pie2_variable %}pie2_{{ item.projectobj.id }}_chart.render(){% endif %}
 
-//// set up a data toggle using radio buttons
-{% if item.projectobj.switch_variable %}
-var toggl_dim_IV_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.switch_variable }}"];});
-var handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){
-    $('.dc_switch_IV_{{ item.projectobj.id }}').removeClass("btn-info");
-    $('.dc_switch_IV_{{ item.projectobj.id }}').addClass("btn-default");
-    $(elem).removeClass("btn-default");
-    $(elem).addClass("btn-info");
-    var val = elem.value;
-    toggl_dim_IV_{{ item.projectobj.id }}.filterAll()
-    toggl_dim_IV_{{ item.projectobj.id }}.filter(function(d){return d == val;})
-    dc.redrawAll();
-}
+     //// set up a data toggle using radio buttons
+     {% if item.projectobj.switch_variable %}
+     var toggl_dim_IV_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.switch_variable }}"];});
+     var handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){
+	 $('.dc_switch_IV_{{ item.projectobj.id }}').removeClass("btn-info");
+	 $('.dc_switch_IV_{{ item.projectobj.id }}').addClass("btn-default");
+	 $(elem).removeClass("btn-default");
+	 $(elem).addClass("btn-info");
+	 var val = elem.value;
+	 toggl_dim_IV_{{ item.projectobj.id }}.filterAll()
+	 toggl_dim_IV_{{ item.projectobj.id }}.filter(function(d){return d == val;})
+	 dc.redrawAll();
+     }
 
-var toggle_group_IV_{{ item.projectobj.id }} = toggl_dim_IV_{{ item.projectobj.id }}.group();
-var toggle_keys_IV_{{ item.projectobj.id }} = toggle_group_IV_{{ item.projectobj.id }}.all().map(function(x) {return x.key;})
-var switch_elem_IV_{{ item.projectobj.id }} = document.getElementById("dc_switch_{{ item.projectobj.id }}")
-for (var i = 0; i < toggle_keys_IV_{{ item.projectobj.id }}.length; i++){
-    var selected_str = "btn-default"
-    if (i==0){
-    selected_str = "btn-info"
-    handle_dc_switch_toggle_IV_{{ item.projectobj.id }}({"value":toggle_keys_IV_{{ item.projectobj.id }}[i]})
-    }
-    switch_elem_IV_{{ item.projectobj.id }}.innerHTML += "<input type='button' class='dc_switch_IV_{{ item.projectobj.id }} btn "+selected_str+"' onclick='handle_dc_switch_toggle_IV_{{ item.projectobj.id }}(this);' name='optradio' value='"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"'>"
-}
-{% endif %}
+     var toggle_group_IV_{{ item.projectobj.id }} = toggl_dim_IV_{{ item.projectobj.id }}.group();
+     var toggle_keys_IV_{{ item.projectobj.id }} = toggle_group_IV_{{ item.projectobj.id }}.all().map(function(x) {return x.key;})
+     var switch_elem_IV_{{ item.projectobj.id }} = document.getElementById("dc_switch_{{ item.projectobj.id }}")
+     for (var i = 0; i < toggle_keys_IV_{{ item.projectobj.id }}.length; i++){
+	 var selected_str = "btn-default"
+	 if (i==0){
+	     selected_str = "btn-info"
+	     handle_dc_switch_toggle_IV_{{ item.projectobj.id }}({"value":toggle_keys_IV_{{ item.projectobj.id }}[i]})
+	 }
+	 switch_elem_IV_{{ item.projectobj.id }}.innerHTML += "<input type='button' class='dc_switch_IV_{{ item.projectobj.id }} btn "+selected_str+"' onclick='handle_dc_switch_toggle_IV_{{ item.projectobj.id }}(this);' name='optradio' value='"+toggle_keys_IV_{{ item.projectobj.id }}[i]+"'>"
+     }
+     {% endif %}
 
-//// Finalize charts: add axis labels and re-draw to work around dc.js issues
+     // remove filters and redraw bar charts so they don't start out with a reset button 
+     // (due to what I assume is a dc.js bug)
+     {% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.filterAll(){% endif %}
+     {% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.filterAll(){% endif %}
 
-var resize_IV_charts_{{ item.projectobj.id }} = function(){
-var horizontal_space_available = document.getElementById("IV_anchor_{{ item.projectobj.id }}").parentNode.clientWidth - 30;
-var num_charts = 0;
-{% if item.projectobj.bar1_variable %}num_charts += 1;{% endif %}
-{% if item.projectobj.bar2_variable %}num_charts += 1;{% endif %}
-{% if item.projectobj.pie1_variable %}num_charts += 1;{% endif %}
-{% if item.projectobj.pie2_variable %}num_charts += 1;{% endif %}
-var width = 300;
-if (horizontal_space_available > num_charts * 350){
-width = d3.min([Math.floor(horizontal_space_available / num_charts), 500]);
-} else {
-width = d3.min([Math.floor(horizontal_space_available), 500]);
-}
-
-var height = d3.max([Math.floor(width * 1.0/2), 200])
-{% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
-{% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.width(width).height(height).rescale().redraw();{% endif %}
-{% if item.projectobj.pie1_variable %}pie1_{{ item.projectobj.id }}_chart.width(width).height(height).redraw();{% endif %}
-{% if item.projectobj.pie2_variable %}pie2_{{ item.projectobj.id }}_chart.width(width).height(height).redraw();{% endif %}
-}
-
-$( window ).resize(function() {
-resize_IV_charts_{{ item.projectobj.id }}();
+     iv_data_loaded_{{ item.projectobj.id }}_chart = true;
+     resize_IV_charts_{{ item.projectobj.id }}();
+     dc.redrawAll()
 });
 
-
-// remove filters and redraw bar charts so they don't start out with a reset button 
-// (due to what I assume is a dc.js bug)
-{% if item.projectobj.bar1_variable %}bar1_{{ item.projectobj.id }}_chart.filterAll(){% endif %}
-{% if item.projectobj.bar2_variable %}bar2_{{ item.projectobj.id }}_chart.filterAll(){% endif %}
-resize_IV_charts_{{ item.projectobj.id }}();
-dc.redrawAll()
 
 // the portal interface for a page to refresh item widgets in the case of hiding / showing, etc.
 var portal_item_refresh_{{ item.id }} = function(){

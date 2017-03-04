@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse
+from django.template import Template, Context
 from interactive_visualization.models import InteractiveVisualizationProject, InteractiveVisualizationItem
 from interactive_visualization.forms import CreateProjectForm
 import sys
@@ -108,6 +109,16 @@ def participate(request, item_id):
     project = item.participation_project.interactivevisualizationproject
     context["project"] = project
     return render(request, 'interactive_visualization/participate.html', context)
+
+# use camel case because we don't allow underscores in custom
+def customActionCsvData(request, item_id):
+    item = get_object_or_404(InteractiveVisualizationItem, pk=item_id, is_active=True)
+    csv_data = item.participation_project.interactivevisualizationproject.csv_data
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+    t = Template("{{ data }}")
+    response.write(t.render(Context({"data": csv_data})))
+    return response
 
 def administer_project(request, project_id):
     project = get_object_or_404(InteractiveVisualizationProject, pk=project_id) 

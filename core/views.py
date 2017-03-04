@@ -231,6 +231,9 @@ def app_view_relay(request, app_name, action_name, object_id):
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "delete a project"})
 
+        elif action_name.startswith("customAction") and action_name.isalpha() and len(action_name) < 50 and action_name in app.views_module.__dict__:
+            return app.views_module.__dict__[action_name](request, object_id) 
+            
         else:
             raise Exception("invalid action:" + str(action_name))
 
