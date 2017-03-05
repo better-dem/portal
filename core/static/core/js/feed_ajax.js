@@ -1,8 +1,6 @@
 // feed_ajax.js
 // functions supporting ajax functionality from the portal participation feed
 
-alert('dum')
-
 // csrf django setup
 function getCookie(name) {
     console.log("Checking for CSRF cookie")

@@ -174,12 +174,12 @@ AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
 STATICFILES_STORAGE = 'core.cached_s3_storage.CachedS3BotoStorage'
 AWS_S3_HOST="s3-us-west-1.amazonaws.com"
 STATIC_URL = "https://"+AWS_STORAGE_BUCKET_NAME+"."+AWS_S3_HOST+"/"
+AWS_QUERYSTRING_AUTH = False    # there are to be no private files served from the bucket. 
 
 ### storages option which should be able to allow indefinite caching of never-stale static files
 AWS_S3_OBJECT_PARAMETERS = {
-    'Cache-Control': 'max-age=30',
+    'Cache-Control': 'max-age=31536000', # 1 year, though it could be infinite
 }
-
 
 # django_compression settings
 COMPRESS_ENABLED = True
