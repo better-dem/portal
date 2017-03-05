@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # use the storages app
     'storages',
-    's3direct'
+    's3direct',
+    'compressor'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -65,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.static'
             ],
             'debug': DEBUG,
         },
@@ -161,14 +163,30 @@ S3DIRECT_DESTINATIONS = {
     }
 }
 
-# S3 static file storage with django-storages
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+# S3 static file storage with django-storages and django_compression
+
+STATICFILES_FINDERS = ['django.contrib.staticfiles.finders.FileSystemFinder', 'django.contrib.staticfiles.finders.AppDirectoriesFinder','compressor.finders.CompressorFinder']
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+DEFAULT_FILE_STORAGE = 'core.cached_s3_storage.CachedS3BotoStorage'
 AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
 AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
 AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
-STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+STATICFILES_STORAGE = 'core.cached_s3_storage.CachedS3BotoStorage'
 AWS_S3_HOST="s3-us-west-1.amazonaws.com"
 STATIC_URL = "https://"+AWS_STORAGE_BUCKET_NAME+"."+AWS_S3_HOST+"/"
+AWS_QUERYSTRING_AUTH = False    # there are to be no private files served from the bucket. 
+
+### storages option which should be able to allow indefinite caching of never-stale static files
+AWS_S3_OBJECT_PARAMETERS = {
+    'Cache-Control': 'max-age=31536000', # 1 year, though it could be infinite
+}
+
+# django_compression settings
+COMPRESS_ENABLED = True
+COMPRESS_OFFLINE = True
+COMPRESS_URL = STATIC_URL
+COMPRESS_STORAGE = 'core.cached_s3_storage.CachedS3BotoStorage'
+COMPRESS_ROOT = STATIC_ROOT
 
 ### Settings for django registration
 ACCOUNT_ACTIVATION_DAYS=7
