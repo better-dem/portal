@@ -69,6 +69,8 @@ var iv_data_loaded_{{ item.projectobj.id }}_chart = false;
 {% if item.projectobj.pie1_variable %}var pie1_{{ item.projectobj.id }}_chart = null;{% endif %}
 {% if item.projectobj.pie2_variable %}var pie2_{{ item.projectobj.id }}_chart = null;{% endif %}
 
+var handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){}
+
 var resize_IV_charts_{{ item.projectobj.id }} = function(){
      if (!iv_data_loaded_{{ item.projectobj.id }}_chart){
 	 return;
@@ -202,7 +204,7 @@ d3.csv("/apps/interactive_visualization/customActionCsvData/{{ item.itemobj.id }
      //// set up a data toggle using radio buttons
      {% if item.projectobj.switch_variable %}
      var toggl_dim_IV_{{ item.projectobj.id }} = xfilter_IV_{{ item.projectobj.id }}.dimension(function(d) {return d["{{ item.projectobj.switch_variable }}"];});
-     var handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){
+     handle_dc_switch_toggle_IV_{{ item.projectobj.id }} = function(elem){
 	 $('.dc_switch_IV_{{ item.projectobj.id }}').removeClass("btn-info");
 	 $('.dc_switch_IV_{{ item.projectobj.id }}').addClass("btn-default");
 	 $(elem).removeClass("btn-default");
