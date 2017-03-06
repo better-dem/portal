@@ -1,9 +1,10 @@
 <hr>
 <h3>More like this</h3>
-<div id="recommendations">
+<div class="item-mini-container">
 {% for rec in "0123456789"%}
-    <span style="display: inline-block; width: 150px; height=400px; vertical-align:top; margin: 10px;" id="recommendation_{{ rec }}"></span>
+    <span id="recommendation_{{ rec }}"></span>
 {% endfor %}
+    <span class="item-mini"><div><h4><a href="/feed/">More...</a></h4></div></span>
 </div>
 
 <script>

@@ -17,7 +17,40 @@ body {
 }
 
 /* to prevent buttons from getting really long */
-/* if they do, they can drag the nav bar off screen fro small devices */
+/* if they do, they can drag the nav bar off screen from small devices */
 .btn {
     white-space: normal;
+}
+
+.item-mini-container {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+
+.item-mini {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block; 
+    width: 163px; 
+    /* height: 400px;  */
+    vertical-align:top; 
+    margin: 10px;
+}
+
+.item-mini img {
+    height: 150px;
+    width: 150px;
+    display: block;
+    margin: auto;
+}
+
+.item-mini:hover {
+    background-color: #CCCCCC;
 }

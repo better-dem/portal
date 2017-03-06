@@ -142,8 +142,10 @@ var display_item_mini = function(item_id, element_id){
 	var img_url = response_content["img_url"];
 	var title = response_content["title"];
 	var elem = document.getElementById(element_id);
-	elem.innerHTML = "<p><img height=\"150\" width=\"150\" src=\""+img_url+"\"></p><p><a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a></p>";
+	elem.innerHTML = "<a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
 	$("#mini_item_link_"+element_id).text(title)
+	$("#mini_item_link_"+element_id).prepend("<img src=\""+img_url+"\">")
+	$(elem).addClass('item-mini');
     }
     submit_ajax_form("/item_info/"+item_id+"/", "", cb);
 }
