@@ -132,5 +132,22 @@ var ajax_form_setup = function(){
     };
 }
 
-ajax_form_setup()
+//// feed updating methods
+var display_item_mini = function(item_id, element_id){
+    var cb = function(response_content, status){
+	console.log("ajax form response. status:"+status);
+	console.log("ajax form response. response_content:"+response_content);
+	console.log(JSON.stringify(response_content));
+	var link = response_content["link"];
+	var img_url = response_content["img_url"];
+	var title = response_content["title"];
+	var elem = document.getElementById(element_id);
+	elem.innerHTML = "<p><img height=\"150\" width=\"150\" src=\""+img_url+"\"></p><p><a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a></p>";
+	$("#mini_item_link_"+element_id).text(title)
+    }
+    submit_ajax_form("/item_info/"+item_id+"/", "", cb);
+}
+
+$(document).ready(ajax_form_setup);
+
 

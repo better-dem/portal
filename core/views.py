@@ -4,7 +4,7 @@ from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F, Sum
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseRedirect
 import core.models as cm
 import core.tasks as tasks
 from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
@@ -13,6 +13,8 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 import os
 import stripe
+import random
+from django.conf import settings
 stripe.api_key = os.environ["STRIPE_API_KEY"]
 
 def get_default_og_metadata(request, participation_item=None):
@@ -407,3 +409,25 @@ def portal_stats(request):
     return render(request, 'core/portal_stats.html', {"num_users": num_users, "num_projects": num_projects, "num_items": num_items, "num_tags": num_tags, "num_visits": num_visits})
 
 
+def item_info(request, item_id):
+    if not request.is_ajax() or not request.method == "POST":
+        return HttpResponse(status=500)
+    item = get_object_or_404(cm.ParticipationItem, pk=item_id)
+    ans = {"img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name}
+    return JsonResponse(ans)
+
+def recommend_related(request, item_id):
+    if not request.is_ajax() or not request.method == "POST":
+        return HttpResponse(status=500)
+    item = get_object_or_404(cm.ParticipationItem, pk=item_id)
+    candidates = []
+    for t in item.tags.all():
+        recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
+        candidates.extend([i for i in recent_items if not i.pk == item.pk])
+
+    if len(candidates) == 0:
+        pass
+
+    recommendations = random.sample(candidates, min(10, len(candidates)))
+    content = {"recommendations": [r.id for r in recommendations]}
+    return JsonResponse(content)

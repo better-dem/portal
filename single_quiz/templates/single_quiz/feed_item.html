@@ -3,7 +3,7 @@
         
 <div id="single_quiz_result_{{ item.id }}">
   <div class="single_quiz_ajax_form">
-    <h4><label for="id_choice">{{ item.itemobj.name }}</label></h4>
+    <div>{{ item.itemobj.name }}</div>
     <select id="single_quiz_{{ item.id }}">
       {% if item.projectobj.option1 %}  <option value="1">{{ item.projectobj.option1 }}</option>{% endif %}
       {% if item.projectobj.option2 %}  <option value="2">{{ item.projectobj.option2 }}</option>{% endif %}
