@@ -108,6 +108,7 @@ def participate(request, item_id):
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.interactivevisualizationproject
     context["project"] = project
+    context["item"] = item
     return render(request, 'interactive_visualization/participate.html', context)
 
 # use camel case because we don't allow underscores in custom

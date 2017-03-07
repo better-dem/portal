@@ -9,6 +9,7 @@ class InteractiveVisualizationConfig(AppConfig):
     name = 'interactive_visualization'
     are_projects_editable = True
     custom_feed_item_template = "interactive_visualization/feed_item.html"
+    external_link=False
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

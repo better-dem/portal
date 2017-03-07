@@ -130,7 +130,6 @@
 
 </div>
 
-<script src="{% static 'core/js/feed_ajax.js' %}"></script>
 <script type="text/javascript">
 // whenever items are shown, they need to be refreshed
 $(document).ready(function(){
@@ -153,4 +152,5 @@ window["portal_item_refresh_{{ item.id }}"]()
 });
 </script>
 
+{% include "core/item_recommendations.html" %}
 {% endblock %}

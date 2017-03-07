@@ -7,6 +7,7 @@ class CityBudgetingConfig(AppConfig):
     name = 'city_budgeting'
     are_projects_editable = False
     custom_feed_item_template = None
+    external_link=False
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

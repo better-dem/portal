@@ -8,6 +8,7 @@ class ManualNewsArticleCurationConfig(AppConfig):
     name = 'manual_news_article_curation'
     are_projects_editable = True
     custom_feed_item_template = "manual_news_article_curation/feed_item.html"
+    external_link=True
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

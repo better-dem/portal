@@ -1,0 +1,22 @@
+<hr>
+<h3>More like this</h3>
+<div class="item-mini-container">
+{% for rec in "0123456789"%}
+    <span id="recommendation_{{ rec }}"></span>
+{% endfor %}
+    <span class="item-mini"><div><h4><a href="/feed/">More...</a></h4></div></span>
+</div>
+
+<script>
+ submit_ajax_form("/recommend_related/{{ item.id }}/", "", function(content, status){
+     console.log(JSON.stringify(content));
+     var item_recommendations = content["recommendations"]
+     console.log("recommended items", item_recommendations);
+     for (i = 0; i < item_recommendations.length && i < 10; i++){
+	 console.log("here")
+	 var eid = "recommendation_"+(i);
+	 display_item_mini(item_recommendations[i], eid);
+     }
+});
+</script>
+

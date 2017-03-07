@@ -140,7 +140,7 @@ def participate(request, item_id):
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.toolreviewproject
 
-    context.update({"review": project})
+    context.update({"review": project, 'item': item})
     return render(request, 'tool_review/participate.html', context)
 
 

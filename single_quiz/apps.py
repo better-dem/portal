@@ -9,6 +9,7 @@ class SingleQuizConfig(AppConfig):
     name = 'single_quiz'
     are_projects_editable = False
     custom_feed_item_template = "single_quiz/feed_item.html"
+    external_link=False
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

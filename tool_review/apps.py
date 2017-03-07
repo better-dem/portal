@@ -9,6 +9,7 @@ class ToolReviewConfig(AppConfig):
     name = 'tool_review'
     are_projects_editable = True
     custom_feed_item_template = None
+    external_link=False
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

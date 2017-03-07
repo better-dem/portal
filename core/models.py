@@ -118,6 +118,10 @@ class ParticipationItem(models.Model):
     tags = models.ManyToManyField('Tag')
     is_active = models.BooleanField(default=True)
 
+    def participate_link(self):
+        app = get_app_for_model(self.get_inherited_instance().__class__)
+        return "/apps/"+app.label+"/participate/"+str(self.id)
+
     def get_inherited_instance(self):
         ans = self
         for t in [get_item_subclass_test(app) for app in get_registered_participation_apps()]:
