@@ -415,7 +415,6 @@ def item_info(request, item_id):
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     external_link = getattr(app, "external_link")
-    sys.stderr.write("external link?{}".format(external_link))
     ans = {"img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name, "external_link": external_link}
     return JsonResponse(ans)
 
@@ -424,11 +423,12 @@ def recommend_related(request, item_id):
         return HttpResponse(status=500)
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
     candidates = []
+    recommendations = []
     for t in item.tags.all():
         recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
         candidates.extend([i for i in recent_items if not i.pk == item.pk])
 
-    if len(candidates) == 0:
+    if len(candidates) < 3:
         t = cm.get_usa()
         recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
         candidates.extend([i for i in recent_items if not i.pk == item.pk])
