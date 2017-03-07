@@ -141,6 +141,9 @@ var display_item_mini = function(item_id, element_id){
 	var link = response_content["link"];
 	var img_url = response_content["img_url"];
 	var title = response_content["title"];
+	if (title.length > 30){
+	    title = title.substring(0,30)+"..."
+	}
 	var new_tab = response_content["external_link"];
 	var elem = document.getElementById(element_id);
 	if (new_tab){
