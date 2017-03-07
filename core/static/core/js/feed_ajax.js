@@ -141,8 +141,13 @@ var display_item_mini = function(item_id, element_id){
 	var link = response_content["link"];
 	var img_url = response_content["img_url"];
 	var title = response_content["title"];
+	var new_tab = response_content["external_link"];
 	var elem = document.getElementById(element_id);
-	elem.innerHTML = "<a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
+	if (new_tab){
+	    elem.innerHTML = "<a target=\"_blank\" id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
+	} else {
+	    elem.innerHTML = "<a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
+	}
 	$("#mini_item_link_"+element_id).text(title)
 	$("#mini_item_link_"+element_id).prepend("<img src=\""+img_url+"\">")
 	$(elem).addClass('item-mini');
