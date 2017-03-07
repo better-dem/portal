@@ -129,12 +129,12 @@ def participate(request, item_id):
             context.update({"action_description": "responding to the land use planning project: "+title})
             return render(request, 'core/thanks.html', context)
         else:
-            context.update({'form': form, 'action_path' : request.path, 'title' : title})
-            return render(request, 'core/generic_form.html', context)
+            context.update({'form': form, 'action_path' : request.path, 'title' : title, 'item':item})
+            return render(request, 'core/generic_form_participate.html', context)
     else:
         form = ItemResponseForm(project)
-        context.update({'form': form, 'action_path' : request.path, 'title' : title})
-        return render(request, 'core/generic_form.html', context)
+        context.update({'form': form, 'action_path' : request.path, 'title' : title, 'item': item})
+        return render(request, 'core/generic_form_participate.html', context)
 
 
 

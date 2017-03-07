@@ -148,12 +148,12 @@ def participate(request, item_id):
             context.update({"action_description": "taking "+title, "score": score, "rank": rank_str, "question_summaries": question_summaries})
             return render(request, 'city_budgeting/thanks.html', context)
         else:
-            context.update({'form': form, 'action_path' : request.path, 'title' : title})
-            return render(request, 'core/generic_form.html', context)
+            context.update({'form': form, 'action_path' : request.path, 'title' : title, 'item':item})
+            return render(request, 'core/generic_form_participate.html', context)
     else:
         form = QuizResponseForm(item)
-        context.update({'form': form, 'action_path' : request.path, 'title' : title})
-        return render(request, 'core/generic_form.html', context)
+        context.update({'form': form, 'action_path' : request.path, 'title' : title, 'item':item})
+        return render(request, 'core/generic_form_participate.html', context)
 
 
 

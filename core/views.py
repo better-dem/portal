@@ -426,7 +426,9 @@ def recommend_related(request, item_id):
         candidates.extend([i for i in recent_items if not i.pk == item.pk])
 
     if len(candidates) == 0:
-        pass
+        t = cm.get_usa()
+        recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
+        candidates.extend([i for i in recent_items if not i.pk == item.pk])
 
     recommendations = random.sample(candidates, min(10, len(candidates)))
     content = {"recommendations": [r.id for r in recommendations]}

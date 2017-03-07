@@ -95,7 +95,7 @@ def participate(request, item_id):
                     content.update({'action_description': "responding to this mini-quiz", "ans_correct": False, "source": project.citation_url})
                     return render(request, 'single_quiz/thanks.html', content)
         else:
-            return render(request, 'single_quiz/participate.html', {'form': form, 'action_path': request.path, "form_title": project.question_text, 'item':item})
+            return render(request, 'core/generic_form_participate.html', {'form': form, 'action_path': request.path, "form_title": project.question_text, 'item':item})
     else:
         form = ParticipateForm(item)
-        return render(request, 'single_quiz/participate.html', {'form': form, 'action_path': request.path, "form_title": project.question_text, "item":item})
+        return render(request, 'core/generic_form_participate.html', {'form': form, 'action_path': request.path, "form_title": project.question_text, "item":item})
