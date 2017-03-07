@@ -126,8 +126,8 @@ def participate(request, item_id):
                         qr.option_index = int(form.cleaned_data[key])
                         qr.save()
                         
-            context.update({"action_description": "responding to the land use planning project: "+title})
-            return render(request, 'core/thanks.html', context)
+            context.update({"action_description": "responding to the land use planning project: "+title, "item": item})
+            return render(request, 'core/thanks_participate.html', context)
         else:
             context.update({'form': form, 'action_path' : request.path, 'title' : title, 'item':item})
             return render(request, 'core/generic_form_participate.html', context)

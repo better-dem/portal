@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% block content %}
+<p>
+Thank you for {{ action_description }}.
+</p>
+
+{% if unregistered %}
+<p>
+Please <a href="/accounts/register">register</a> to use our full features and get updates.
+</p>
+{% endif %}
+
+{% block thanks_detail %}
+{% endblock %}
+
+{% if item_link %}
+<p>
+You can administer this project <a href={{ item_link }}>here</a>.
+</p>
+{% endif %}
+
+<p>
+<a href="/feed">Go back to the feed</a>.
+</p>
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}
