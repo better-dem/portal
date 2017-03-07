@@ -413,13 +413,15 @@ def item_info(request, item_id):
     if not request.is_ajax() or not request.method == "POST":
         return HttpResponse(status=500)
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
-    ans = {"img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name}
+    external_link = "external_link" in app.__dict__ and app.external_link
+    ans = {"img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name, "link_is_external": external_link}
     return JsonResponse(ans)
 
 def recommend_related(request, item_id):
     if not request.is_ajax() or not request.method == "POST":
         return HttpResponse(status=500)
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
+    app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     candidates = []
     for t in item.tags.all():
         recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
