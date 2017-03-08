@@ -204,6 +204,10 @@ def app_view_relay(request, app_name, action_name, object_id):
             cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=object_id).update(has_been_visited=True) 
             return app.views_module.participate(request, object_id) 
 
+        elif action_name == "overview":
+            # object id is irrelevant
+            return app.views_module.overview(request) 
+
         elif action_name == "delete_project":
             if has_app_perm:
                 project = get_object_or_404(cm.ParticipationProject, pk=object_id, is_active=True, owner_profile=profile)
