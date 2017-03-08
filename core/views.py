@@ -4,7 +4,7 @@ from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F, Sum
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponseServerError
 import core.models as cm
 import core.tasks as tasks
 from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
@@ -179,7 +179,7 @@ def app_view_relay(request, app_name, action_name, object_id):
 
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if not app_name in [app.label for app in cm.get_registered_participation_apps()]:
-        raise Exception("app not registered or does not exist:" + str(app_name))
+        raise Exception("no such app")
     else:
         app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
         perm = cm.get_provider_permission(app)
