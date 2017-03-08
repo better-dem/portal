@@ -56,8 +56,8 @@
 	  <th><input type="text" id="name_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by name.."></th>
 	  <th><input type="text" id="description_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by description.."></th>
 	  <th><input type="text" id="tags_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by tags.."></th>
-	  <th><select id="tool_category_filter_input" onchange="filter_table()"><option value="">All</option>{% for cat in tool_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}</select></th>
-	  <th><select id="project_category_filter_input" onchange="filter_table()"><option value="">All</option>{% for cat in project_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}</select></th>
+	  <th><select id="tool_category_filter_input" style="width:100px;" onchange="filter_table()"><option value="">All</option>{% for cat in tool_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}</select></th>
+	  <th><select id="project_category_filter_input"  style="width:100px;" onchange="filter_table()"><option value="">All</option>{% for cat in project_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}</select></th>
 	  <th></th>
 	</tr>
 	{% for item in items %}
