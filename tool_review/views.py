@@ -143,4 +143,6 @@ def participate(request, item_id):
     context.update({"review": project, 'item': item})
     return render(request, 'tool_review/participate.html', context)
 
-
+def overview(request):
+    items = ToolReviewItem.objects.all()[:100]
+    return render(request, 'tool_review/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"]})

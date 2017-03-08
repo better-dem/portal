@@ -9,12 +9,6 @@
 {% if og_description %}<meta property="og:description" content="{{ og_description }}" />{% endif %}
 {% if og_image %}<meta property="og:image" content="{{ og_image }}" />{% else %}<meta property="og:image" content="{% static 'core/img/portal_logo.png' %}" />{% endif %}
 
-{% comment "static tag below doesn't work, compress requires paths to be the same offline and online" %}
-<script type="text/javascript" src="{% static 'core/js/d3.js' %}"></script>
-... etc.
-<!-- the following works because I've added django.template.context_processors.static to settings file-->
-{% endcomment %}
-
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 {% compress css %}
 <link rel="stylesheet" href="{{ STATIC_URL }}core/css/style.css">
