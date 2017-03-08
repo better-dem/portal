@@ -4,7 +4,14 @@
 
 
 <h2>{{ review.name }}</h2>
+<p>
 <a href="{{ review.url }}">Visit {{ review.name }} here!</a>
+</p>
+
+<table class="table">
+  <tr><td>Tool Category</td><td> {{ review.get_tool_category_display }}</td></tr>
+  <tr><td>Project Category</td><td> {{ review.get_project_category_display }}</td></tr>
+</table>
 
 {% if review.youtube_video_id %}
 <p>
