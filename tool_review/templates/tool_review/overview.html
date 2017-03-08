@@ -8,7 +8,6 @@
       <style>
 	.filter_input {
 	width: 100%; /* Full-width */
-	font-size: 12px;
 	padding: 2px 2px 2px 2px; /* Add some padding */
 	border: 1px solid #ddd; /* Add a grey border */
 	}
@@ -17,7 +16,6 @@
 	border-collapse: collapse; /* Collapse borders */
 	width: 100%; /* Full-width */
 	border: 1px solid #ddd; /* Add a grey border */
-	font-size: 18px; /* Increase font-size */
 	}
 
 	#filterable_table th, #filterable_table td {
@@ -50,12 +48,16 @@
 	  <th>Name</th>
 	  <th>Description</th>
 	  <th>Tags</th>
+	  <th>Tool Category</th>
+	  <th>Project Category</th>
 	  <th style="width: 150px;">Screenshot</th>
 	</tr>
 	<tr class="filters">
-	  <th><input type="text" id="name_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter tools by name.."></th>
-	  <th><input type="text" id="description_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter tools by description.."></th>
-	  <th><input type="text" id="tags_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter tools by tags.."></th>
+	  <th><input type="text" id="name_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by name.."></th>
+	  <th><input type="text" id="description_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by description.."></th>
+	  <th><input type="text" id="tags_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by tags.."></th>
+	  <th><select id="tool_category_filter_input" onchange="filter_table()"><option value="">All</option>{% for cat in tool_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}</select></th>
+	  <th><select id="project_category_filter_input" onchange="filter_table()"><option value="">All</option>{% for cat in project_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}</select></th>
 	  <th></th>
 	</tr>
 	{% for item in items %}
@@ -63,6 +65,8 @@
 	  <td><a href="{{ item.link }}">{{ item.label }}</a></td>
 	  <td>{{ item.display }}</td>
 	  <td>{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}</td>
+	  <td>{{ item.projectobj.get_tool_category_display }}</td>
+	  <td>{{ item.projectobj.get_project_category_display }}</td>
 	  <td>
 	    {% if item.display_image_file %}
 	    <span>
@@ -77,12 +81,14 @@
 
 {% compress js %}
 <script>
-  var filters = {"name": "", "description": "", "tags":""}
+  var filters = {"name": "", "description": "", "tags":"", "tool_category": "", "project_category": ""}
 
   function filter_table() {
   filters["name"] = document.getElementById("name_filter_input").value.toUpperCase();
   filters["description"] = document.getElementById("description_filter_input").value.toUpperCase();
   filters["tags"] = document.getElementById("tags_filter_input").value.toUpperCase();
+  filters["tool_category"] = document.getElementById("tool_category_filter_input").value.toUpperCase();
+  filters["project_category"] = document.getElementById("project_category_filter_input").value.toUpperCase();
 
   var table = document.getElementById("filterable_table");
   var tr = table.getElementsByTagName("tr");
@@ -92,10 +98,14 @@
         td_name = tr[i].getElementsByTagName("td")[0];
         td_description = tr[i].getElementsByTagName("td")[1];
         td_tags = tr[i].getElementsByTagName("td")[2];
-        if (td_name && td_description && td_tags) {
+        td_tool_category = tr[i].getElementsByTagName("td")[3];
+        td_project_category = tr[i].getElementsByTagName("td")[4];
+        if (td_name && td_description && td_tags && td_tool_category && td_project_category) {
             if (td_name.textContent.toUpperCase().indexOf(filters["name"]) > -1 && 
                 td_description.textContent.toUpperCase().indexOf(filters["description"]) > -1 &&
-                td_tags.textContent.toUpperCase().indexOf(filters["tags"]) > -1) {
+                td_tags.textContent.toUpperCase().indexOf(filters["tags"]) > -1 &&
+                td_tool_category.textContent.toUpperCase().indexOf(filters["tool_category"]) > -1 &&
+                td_project_category.textContent.toUpperCase().indexOf(filters["project_category"]) > -1){
                 included_rows.push(i);
             }
         }

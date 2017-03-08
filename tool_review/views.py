@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
-from tool_review.models import ToolReviewProject, ToolReviewItem
+from tool_review.models import ToolReviewProject, ToolReviewItem, TOOL_CATEGORIES, PROJECT_CATEGORIES
 from .forms import CreateProjectForm, EditProjectForm
 from django.db.models import Count
 import os
@@ -20,6 +20,8 @@ def new_project(request):
             project = ToolReviewProject()
             project.name = form.cleaned_data["tool_name"]
             project.url = form.cleaned_data["tool_url"]
+            project.tool_category = form.cleaned_data["tool_category"]
+            project.project_category = form.cleaned_data["project_category"]
             screenshot_url = form.cleaned_data["screenshot"]
             path_with_bucket_and_leading_slash = urlsplit(screenshot_url)[2]
             path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
@@ -66,15 +68,17 @@ def edit_project(request, project_id):
         form = EditProjectForm(request.POST)
         changes = set()
         if form.is_valid():
-            if not project.name == form.cleaned_data["tool_name"]:
-                project.name = form.cleaned_data["tool_name"]
-                changes.add("name")
+            for k in ["tool_name", "tool_url"]:
+                if not project.__dict__[k.split("_")[1]] == form.cleaned_data[k]:
+                    project.__dict__[k.split("_")[1]] = form.cleaned_data[k]
+                    changes.add(k.split("_")[1])
 
-            if not project.url == form.cleaned_data["tool_url"]:
-                project.url = form.cleaned_data["tool_url"]
-                changes.add("url")
+            for k in ["tool_category", "project_category", "summary"]:
+                if not project.__dict__[k] == form.cleaned_data[k]:
+                    project.__dict__[k] = form.cleaned_data[k]
+                    changes.add(k)
 
-            # ignore screenshot, too hard
+            # currently we don't support updating screenshot, too much work
 
             if "youtube_video_id" in form.cleaned_data and \
                ( project.youtube_video_id is None or \
@@ -84,11 +88,6 @@ def edit_project(request, project_id):
             elif not project.youtube_video_id is None and not "youtube_video_id" in form.cleaned_data:
                 del project.youtube_video_id
                 changes.add("video")
-
-            if not project.summary == form.cleaned_data["summary"]:
-                project.summary = form.cleaned_data["summary"]
-                changes.add("summary")
-
             project.save()
 
             current_tags = set(project.tags.all())
@@ -115,7 +114,7 @@ def edit_project(request, project_id):
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
 
     else:
-        data = {"tool_name": project.name, "tool_url": project.url, "summary": project.summary}
+        data = {"tool_name": project.name, "tool_url": project.url, "summary": project.summary, "tool_category": project.tool_category, "project_category": project.project_category}
         if not project.youtube_video_id is None:
             data["youtube_video_id"] = project.youtube_video_id
         current_tags = list(project.tags.all())
@@ -145,4 +144,4 @@ def participate(request, item_id):
 
 def overview(request):
     items = ToolReviewItem.objects.all()[:100]
-    return render(request, 'tool_review/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"]})
+    return render(request, 'tool_review/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"], "tool_categories": [x[1] for x in TOOL_CATEGORIES], "project_categories": [x[1] for x in PROJECT_CATEGORIES]})
