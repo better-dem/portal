@@ -4,6 +4,7 @@ from django.forms.widgets import Textarea, DateInput, NumberInput
 from core import forms as cf
 from core import models as cm
 from widgets import forms as wf
+from .models import Fallacy
 
 class ParticipateForm(forms.Form):
     def __init__(self, item, *args, **kwargs):
@@ -19,24 +20,24 @@ class CreateProjectForm(forms.Form):
     quote1 = forms.CharField(widget=Textarea, required=False)
     speaker_name1 = forms.CharField(max_length=500, required=False)
     reference1 = forms.URLField(required = False)
-    screenshot_filename1 = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
-    fallacy1 = forms.IntegerField(min_value = 0, required=False)
+    screenshot_filename1 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+    fallacy1 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
     fallacy_association_explanation1 = forms.CharField(widget = Textarea, required=False)
     fallacy_association_improvement1 = forms.CharField(widget = Textarea, required=False)
 
     quote2 = forms.CharField(widget=Textarea, required=False)
     speaker_name2 = forms.CharField(max_length=500, required=False)
     reference2 = forms.URLField(required = False)
-    screenshot_filename2 = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
-    fallacy2 = forms.IntegerField(min_value = 0, required=False)
+    screenshot_filename2 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+    fallacy2 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
     fallacy_association_explanation2 = forms.CharField(widget = Textarea, required=False)
     fallacy_association_improvement2 = forms.CharField(widget = Textarea, required=False)
 
     quote3 = forms.CharField(widget=Textarea, required=False)
     speaker_name3 = forms.CharField(max_length=500, required=False)
     reference3 = forms.URLField(required = False)
-    screenshot_filename3 = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
-    fallacy3 = forms.IntegerField(min_value = 0, required=False)
+    screenshot_filename3 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+    fallacy3 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
     fallacy_association_explanation3 = forms.CharField(widget = Textarea, required=False)
     fallacy_association_improvement3 = forms.CharField(widget = Textarea, required=False)
 
@@ -63,7 +64,7 @@ class CreateProjectForm(forms.Form):
 class EditProjectForm(CreateProjectForm):
     def __init__(self, project, *args, **kwargs):
         super(CreateProjectForm, self).__init__(*args, **kwargs)
-        povs = project.points_of_view.all()
-        for pov in povs:
-            self.fields["delete_pov_"+str(pov.id)] = forms.BooleanField(help_text=str(pov.quote), required=False)
+        quotes = project.quotes.all()
+        for q in quotes:
+            self.fields["delete_quote_"+str(pov.id)] = forms.BooleanField(help_text=str(quote.quote_string), required=False)
 

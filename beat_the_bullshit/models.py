@@ -5,6 +5,7 @@ import core.models as cm
 
 class BeatTheBullshitProject(cm.ParticipationProject):
     topic_overview = models.TextField()
+    tags = models.ManyToManyField(cm.Tag)
 
     def update_items(self):
         if BeatTheBullshitItem.objects.filter(participation_project=self, is_active=True).count()==0:
@@ -33,9 +34,14 @@ class Quote(models.Model):
     project = models.ForeignKey('BeatTheBullshitProject', on_delete=models.CASCADE)
 
 class Fallacy(models.Model):
+    name = models.CharField(max_length = 500)
     description = models.TextField()
+    example_context = models.TextField() # the context statement to which the example is a reply
     example = models.TextField() # an example phrase which commits this fallacy
     improvement = models.TextField() # an alternative way of phrasing the example
+
+    def __unicode__(self):
+        return self.name
     
 class QuoteFallacyAssociation(models.Model):
     quote = models.ForeignKey('Quote', on_delete=models.CASCADE)

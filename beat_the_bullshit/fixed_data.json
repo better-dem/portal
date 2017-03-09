@@ -1,0 +1,24 @@
+[
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 1,
+    "fields": {
+        "name": "Red Herring",
+        "description": "distracting from the argument at hand",
+	"example_context": "I hope the Republicans cut income tax because taxes unjustly restrict personal freedom.",
+	"example": "It's the Republicans who sent us into Iraq in the first place.",
+	"improvement": "I think taxes allow the government to provide services which raise the standard of living and give more people freedom to pursue what makes them happy."
+    }
+},
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 2,
+    "fields": {
+        "name": "Cherry Picking",
+        "description": "selecting extreme examples to make a point",
+	"example_context": "Why should I drive instead of flying?",
+	"example": "Flying is so dangerous! That Malaysian Airlines flight crashed and hundreds of passengers died.",
+	"improvement": "Driving is more than 70 times more likely than flying to lead to fatal accidents per mile travelled, so you should fly if safety is your priority."
+    }
+}
+]

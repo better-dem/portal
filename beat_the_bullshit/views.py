@@ -24,18 +24,21 @@ def new_project(request):
 
             for i in range(1,4):
                 q_string = form.cleaned_data.get("quote"+str(i), None)
-                if not q_string is None and not quote=="":
+                if not q_string is None and not q_string=="":
                     q = Quote()
                     q.quote_string = q_string
                     q.speaker_name = form.cleaned_data["speaker_name"+str(i)]
                     q.reference = form.cleaned_data["reference"+str(i)]
                     q.screenshot_filename = form.cleaned_data["screenshot_filename"+str(i)]
-
-                    pov = PointOfView()
-                    pov.quote = quote
-                    pov.is_favorable = form.cleaned_data["pov_is_favorable_"+str(i)]
-                    pov.save()
-                    project.points_of_view.add(pov)
+                    q.project = project;
+                    q.save()
+                    
+                    qfa = QuoteFallacyAssociation()
+                    qfa.quote = q
+                    qfa.fallacy = form.cleaned_data["fallacy"+str(i)]
+                    qfa.explanation = form.cleaned_data["fallacy_association_explanation"+str(i)]
+                    qfa.improvement = form.cleaned_data["fallacy_association_improvement"+str(i)]
+                    qfa.save()
 
             # iterate through form adding tags
             for key, val in form.cleaned_data.items():
@@ -67,7 +70,7 @@ def propagate_project_changes(project, change_set):
 def edit_project(request, project_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     project = get_object_or_404(BeatTheBullshitProject, pk=project_id) 
-    basic_fields = {"name": "measure_name", "ballot_text": "ballot_text", "election_date": "election_date", "election_website": "election_website", "basics_notes": "basics_notes", "effects_notes": "effects_notes"}
+    basic_fields = {"name": "name", "topic_overview": "topic_overview"}
 
     if request.method == 'POST':
         form = EditProjectForm(project, request.POST)
@@ -91,14 +94,14 @@ def edit_project(request, project_id):
                     project.points_of_view.add(pov)
                     changes.add("povs")
             
-            # Allow deleting POVs
+            # Allow deleting quotes
             for key, val in form.cleaned_data.items():
-                if key.startswith("delete_pov_") and val:
-                    changes.add("del_povs")
-                    pov_id = int(key.replace("delete_pov_", ""))
-                    assert(project.points_of_view.filter(id=pov_id).exists())
-                    project.points_of_view.filter(id=pov_id).delete()
-                    PointOfView.objects.filter(id=pov_id).delete()
+                if key.startswith("delete_quote_") and val:
+                    changes.add("del_quotes")
+                    quote_id = int(key.replace("delete_quote_", ""))
+                    assert(project.quotes.filter(id=quote_id).exists())
+                    project.quotes.filter(id=quote_id).delete()
+                    Quote.objects.filter(id=quote_id).delete()
 
             current_tags = set(project.tags.all())
             new_tags = set()
@@ -116,7 +119,7 @@ def edit_project(request, project_id):
             propagate_project_changes(project, changes)
             ct.finalize_project(project)
 
-            return render(request, 'core/thanks.html', {"action_description": "editing your ballot decider", "link": "/apps/ballot_decider/administer_project/"+str(project.id)})
+            return render(request, 'core/thanks.html', {"action_description": "editing your beat-the-bullshit project", "link": "/apps/beat_the_bullshit/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
 
