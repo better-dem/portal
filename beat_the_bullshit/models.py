@@ -49,3 +49,9 @@ class QuoteFallacyAssociation(models.Model):
     explanation = models.TextField()
     improvement = models.TextField() # an alternative way of phrasing the quote to avoid the fallacy
     
+class QuoteFallacyQuizItemResponse(models.Model):
+    user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
+    participation_item = models.ForeignKey(BeatTheBullshitItem, on_delete = models.CASCADE)
+    creation_time = models.DateTimeField(auto_now_add=True)
+    choice = models.ForeignKey(Fallacy, on_delete = models.SET_NULL, null=True)
+

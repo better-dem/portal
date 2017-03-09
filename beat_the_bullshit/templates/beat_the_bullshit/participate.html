@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>{{ project.name }}</h2>
+<p>
+{{ project.topic_overview }}
+</p>
+
+{% for quote in project.quote_set.all %}
+<div class="panel panel-default">
+    <div class="panel-body">
+      <span>
+	<img src="{% static quote.screenshot_filename %}" width="150" height="150"/>
+      </span>
+      <span>
+	<b style="font-size:2em">&ldquo;</b> <i>{{ quote.quote_string }}</i> <b style="font-size:2em">&rdquo;</b>
+	- {{ quote.speaker_name }}
+	<p>Follow our <a href="{{ quote.reference }}">reference</a></p>
+      </span>
+    </div>
+</div>
+{% endfor %}
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}
