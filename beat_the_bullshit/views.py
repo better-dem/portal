@@ -17,16 +17,20 @@ def new_project(request):
         form = CreateProjectForm(request.POST)
         if form.is_valid():
             project = BeatTheBullshitProject()
-            project.name = form.cleaned_data["measure_name"]
+            project.name = form.cleaned_data["name"]
             project.owner_profile = profile
-            project.ballot_text = form.cleaned_data["ballot_text"]
-            project.election_date = form.cleaned_data["election_date"]
-            project.election_website = form.cleaned_data["election_website"]
+            project.topic_overview = form.cleaned_data["topic_overview"]
             project.save()
 
             for i in range(1,4):
-                quote = form.cleaned_data.get("quote_"+str(i), None)
-                if not quote is None and not quote=="":
+                q_string = form.cleaned_data.get("quote"+str(i), None)
+                if not q_string is None and not quote=="":
+                    q = Quote()
+                    q.quote_string = q_string
+                    q.speaker_name = form.cleaned_data["speaker_name"+str(i)]
+                    q.reference = form.cleaned_data["reference"+str(i)]
+                    q.screenshot_filename = form.cleaned_data["screenshot_filename"+str(i)]
+
                     pov = PointOfView()
                     pov.quote = quote
                     pov.is_favorable = form.cleaned_data["pov_is_favorable_"+str(i)]

@@ -1,4 +1,5 @@
 from django import forms
+from s3direct.widgets import S3DirectWidget
 from django.forms.widgets import Textarea, DateInput, NumberInput
 from core import forms as cf
 from core import models as cm
@@ -12,19 +13,32 @@ class ParticipateForm(forms.Form):
             self.fields["pov_weight_"+str(pov.id)] = forms.IntegerField(widget = NumberInput(attrs={'type': 'range', 'step': '1'}))
 
 class CreateProjectForm(forms.Form):
-    measure_name = forms.CharField()
-    ballot_text = forms.CharField(widget = Textarea)
-    election_date = forms.DateField(widget = wf.DatePickerJQueryWidget)
-    election_website = forms.URLField()
+    name = forms.CharField()
+    topic_overview = forms.CharField(widget = Textarea)
 
-    pov_quote_1 = forms.CharField(widget=Textarea, required=False)
-    pov_is_favorable_1 = forms.BooleanField(required = False)
+    quote1 = forms.CharField(widget=Textarea, required=False)
+    speaker_name1 = forms.CharField(max_length=500, required=False)
+    reference1 = forms.URLField(required = False)
+    screenshot_filename1 = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
+    fallacy1 = forms.IntegerField(min_value = 0, required=False)
+    fallacy_association_explanation1 = forms.CharField(widget = Textarea, required=False)
+    fallacy_association_improvement1 = forms.CharField(widget = Textarea, required=False)
 
-    pov_quote_2 = forms.CharField(widget=Textarea, required=False)
-    pov_is_favorable_2 = forms.BooleanField(required = False)
+    quote2 = forms.CharField(widget=Textarea, required=False)
+    speaker_name2 = forms.CharField(max_length=500, required=False)
+    reference2 = forms.URLField(required = False)
+    screenshot_filename2 = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
+    fallacy2 = forms.IntegerField(min_value = 0, required=False)
+    fallacy_association_explanation2 = forms.CharField(widget = Textarea, required=False)
+    fallacy_association_improvement2 = forms.CharField(widget = Textarea, required=False)
 
-    pov_quote_3 = forms.CharField(widget=Textarea, required=False)
-    pov_is_favorable_3 = forms.BooleanField(required = False)
+    quote3 = forms.CharField(widget=Textarea, required=False)
+    speaker_name3 = forms.CharField(max_length=500, required=False)
+    reference3 = forms.URLField(required = False)
+    screenshot_filename3 = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
+    fallacy3 = forms.IntegerField(min_value = 0, required=False)
+    fallacy_association_explanation3 = forms.CharField(widget = Textarea, required=False)
+    fallacy_association_improvement3 = forms.CharField(widget = Textarea, required=False)
 
     tag1 = cf.tag_aac.get_new_form_field(required=False)
     tag2 = cf.tag_aac.get_new_form_field(required=False)
@@ -35,10 +49,16 @@ class CreateProjectForm(forms.Form):
 
         # ensure pov's are completely filled in or not at all
         for i in range(1,4):
-            quote = cleaned_data.get("pov_quote_"+str(i))
-            is_favorable_defined = not (cleaned_data.get("pov_is_favorable_"+str(i)) is None)
-            if any([quote]) and not all([quote, is_favorable_defined]):
-                raise forms.ValidationError("Each POV must either be left blank or filled in completely: " + str(i))
+            quote = cleaned_data.get("quote"+str(i))
+            speaker = cleaned_data.get("speaker_name"+str(i))
+            ref = cleaned_data.get("speaker_name"+str(i))
+            scsht = cleaned_data.get("speaker_name"+str(i))
+            fall = cleaned_data.get("speaker_name"+str(i))
+            fae = cleaned_data.get("speaker_name"+str(i))
+            fai = cleaned_data.get("speaker_name"+str(i))
+            quote_vars = [quote, speaker, ref, scsht, fall, fae, fai] 
+            if any(quote_vars) and not all(quote_vars):
+                raise forms.ValidationError("Each quote must either be left blank or filled in completely: " + str(i))
 
 class EditProjectForm(CreateProjectForm):
     def __init__(self, project, *args, **kwargs):
