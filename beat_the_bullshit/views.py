@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from beat_the_bullshit.models import BeatTheBullshitProject, BeatTheBullshitItem, Quote, Fallacy, QuoteFallacyAssociation
-from .forms import CreateProjectForm, ParticipateForm, EditProjectForm
+from beat_the_bullshit.models import BeatTheBullshitProject, BeatTheBullshitItem, Quote, Fallacy, QuoteFallacyAssociation, QuoteFallacyQuizItemResponse
+from .forms import CreateProjectForm, EditProjectForm
 import os
 import sys
 import core.models as cm
@@ -150,48 +150,34 @@ def participate(request, item_id):
     item = BeatTheBullshitItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.beatthebullshitproject
-    context.update({"project": project, 'site': os.environ["SITE"], "item": item})
+    context.update({"project": project, 'site': os.environ["SITE"], "item": item, "fallacies": Fallacy.objects.all()})
     if not request.method == "POST":
         return render(request, 'beat_the_bullshit/participate.html', context)
     if request.method == 'POST' and request.is_ajax():
         submission_data = json.loads(request.body.strip())
-        form = ParticipateForm(item, submission_data)
-        if form.is_valid():
-            submission = POVToolResponse()
-            submission.user_profile = profile
-            submission.participation_item = item
-            submission.save()
-            for k in form.cleaned_data.keys():
-                if "pov_weight" in k:
-                    pov_id = int(k.replace("pov_weight_", ""))
-                    pov = PointOfView.objects.get(id=pov_id)
-                    item_response = POVItemResponse()
-                    item_response.point_of_view = pov
-                    item_response.score = int(form.cleaned_data[k])
-                    item_response.tool_response = submission
-                    item_response.save()
+        sys.stderr.write(str(submission_data))
+        sys.stderr.flush()
+        if "type" in submission_data and submission_data["type"] == "quote_fallacy_quiz_item_submit":
+            qid = submission_data["quote_id"]
+            quote = get_object_or_404(Quote, pk=qid, project=project)
+            fid = submission_data["fallacy_id"]
+            fallacy = get_object_or_404(Fallacy, pk=fid)
+            response = QuoteFallacyQuizItemResponse()
+            response.user_profile = profile
+            response.participation_item = item
+            response.choice = fallacy
+            association = QuoteFallacyAssociation.objects.get(quote=quote) # assumes there is only one fallacy associated with this quote
+            is_correct = (association.fallacy.id == fallacy.id)
+            response.is_correct = is_correct
+            response.save()
 
-            decision, explanation = submission.generate_decision()
-            submission.final_decision = decision
-            submission.save()
-            
             content = dict()
-            content["reveal"] = ["response"]
-            content["hide"] = ["ajax_form"]
-            content["explanation"] = explanation
-            if decision == 0:
-                content["reveal"].append("no-decision")
-            elif decision >= .15:
-                content["reveal"].append("strong-yes")
-            elif decision > 0:
-                content["reveal"].append("lean-yes")
-            elif decision <= -.15:
-                content["reveal"].append("strong-no")
-            elif decision < 0:
-                content["reveal"].append("lean-no")
-
+            content["correct_fallacy_name"] = association.fallacy.name
+            content["is_correct"] = is_correct
+            content["explanation"] = association.explanation
+            content["improvement"] = association.improvement
             return JsonResponse(content)
         else:
-            return HttpResponse("sorry, the form isn't valid")
+            return HttpResponse(status=500)
 
 

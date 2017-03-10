@@ -54,4 +54,4 @@ class QuoteFallacyQuizItemResponse(models.Model):
     participation_item = models.ForeignKey(BeatTheBullshitItem, on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
     choice = models.ForeignKey(Fallacy, on_delete = models.SET_NULL, null=True)
-
+    is_correct = models.BooleanField()

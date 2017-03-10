@@ -6,13 +6,6 @@ from core import models as cm
 from widgets import forms as wf
 from .models import Fallacy
 
-class ParticipateForm(forms.Form):
-    def __init__(self, item, *args, **kwargs):
-        super(ParticipateForm, self).__init__(*args, **kwargs)
-        povs = item.participation_project.ballotdeciderproject.points_of_view.all()
-        for pov in povs:
-            self.fields["pov_weight_"+str(pov.id)] = forms.IntegerField(widget = NumberInput(attrs={'type': 'range', 'step': '1'}))
-
 class CreateProjectForm(forms.Form):
     name = forms.CharField()
     topic_overview = forms.CharField(widget = Textarea)

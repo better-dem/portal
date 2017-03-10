@@ -13,7 +13,6 @@
      var item_recommendations = content["recommendations"]
      console.log("recommended items", item_recommendations);
      for (i = 0; i < item_recommendations.length && i < 10; i++){
-	 console.log("here")
 	 var eid = "recommendation_"+(i);
 	 display_item_mini(item_recommendations[i], eid);
      }
