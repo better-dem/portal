@@ -11,14 +11,17 @@
 <div id="quote_{{ quote.id }}_div" style="display:none;">
   <div class="panel panel-default">
     <div class="panel-body">
-      <span>
+      <span style="display: inline-block;">
 	<img src="{% static quote.screenshot_filename %}" width="150" height="150"/>
       </span>
-      <span>
+      <span style="display: inline-block;">
 	<b style="font-size:2em">&ldquo;</b> <i>{{ quote.quote_string }}</i> <b style="font-size:2em">&rdquo;</b>
 	- {{ quote.speaker_name }}
 	<p>Follow our <a href="{{ quote.reference }}">reference</a></p>
       </span>
+      {% if quote.youtube_video_id %}<span style="display: inline-block;">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ quote.youtube_video_id }}" frameborder="0" allowfullscreen></iframe>
+      </span>{% endif %}
     </div>
   </div>
 

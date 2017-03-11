@@ -31,6 +31,7 @@ class Quote(models.Model):
     speaker_name = models.CharField(max_length = 500)
     reference = models.URLField()
     screenshot_filename = models.FilePathField(max_length=500, blank=True)
+    youtube_video_id = models.CharField(max_length=100, blank=True)
     project = models.ForeignKey('BeatTheBullshitProject', on_delete=models.CASCADE)
 
 class Fallacy(models.Model):

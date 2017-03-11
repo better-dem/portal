@@ -14,6 +14,7 @@ class CreateProjectForm(forms.Form):
     speaker_name1 = forms.CharField(max_length=500, required=False)
     reference1 = forms.URLField(required = False)
     screenshot_filename1 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+    youtube_video_id1 = forms.CharField(max_length=100, required=False)
     fallacy1 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
     fallacy_association_explanation1 = forms.CharField(widget = Textarea, required=False)
     fallacy_association_improvement1 = forms.CharField(widget = Textarea, required=False)
@@ -22,6 +23,7 @@ class CreateProjectForm(forms.Form):
     speaker_name2 = forms.CharField(max_length=500, required=False)
     reference2 = forms.URLField(required = False)
     screenshot_filename2 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+    youtube_video_id2 = forms.CharField(max_length=100, required=False)
     fallacy2 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
     fallacy_association_explanation2 = forms.CharField(widget = Textarea, required=False)
     fallacy_association_improvement2 = forms.CharField(widget = Textarea, required=False)
@@ -30,6 +32,7 @@ class CreateProjectForm(forms.Form):
     speaker_name3 = forms.CharField(max_length=500, required=False)
     reference3 = forms.URLField(required = False)
     screenshot_filename3 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+    youtube_video_id3 = forms.CharField(max_length=100, required=False)
     fallacy3 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
     fallacy_association_explanation3 = forms.CharField(widget = Textarea, required=False)
     fallacy_association_improvement3 = forms.CharField(widget = Textarea, required=False)
@@ -51,7 +54,7 @@ class CreateProjectForm(forms.Form):
             fae = cleaned_data.get("speaker_name"+str(i))
             fai = cleaned_data.get("speaker_name"+str(i))
             quote_vars = [quote, speaker, ref, scsht, fall, fae, fai] 
-            if any(quote_vars) and not all(quote_vars):
+            if any(quote_vars+[cleaned_data.get("youtube_video_id"+str(i))]) and not all(quote_vars):
                 raise forms.ValidationError("Each quote must either be left blank or filled in completely: " + str(i))
 
 class EditProjectForm(CreateProjectForm):

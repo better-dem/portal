@@ -34,6 +34,8 @@ def new_project(request):
                     path_with_bucket_and_leading_slash = urlsplit(screenshot_url)[2]
                     path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
                     q.screenshot_filename = path_without_bucket
+                    if "youtube_video_id"+str(i) in form.cleaned_data:
+                        q.youtube_video_id = form.cleaned_data["youtube_video_id"+str(i)]
 
                     q.project = project;
                     q.save()
