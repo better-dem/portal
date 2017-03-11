@@ -77,15 +77,15 @@ def propagate_project_changes(project, change_set):
 def edit_project(request, project_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     project = get_object_or_404(BeatTheBullshitProject, pk=project_id) 
-    basic_fields = {"name": "name", "topic_overview": "topic_overview"}
+    basic_fields = ["name", "topic_overview"]
 
     if request.method == 'POST':
         form = EditProjectForm(project, request.POST)
         changes = set()
         if form.is_valid():
             for key in basic_fields:
-                if not project.__dict__[key] == form.cleaned_data[basic_fields[key]]:
-                    project.__dict__[key] = form.cleaned_data[basic_fields[key]]
+                if not project.__dict__[key] == form.cleaned_data[key]:
+                    project.__dict__[key] = form.cleaned_data[key]
                     changes.add(key)
 
             project.save()
@@ -106,8 +106,8 @@ def edit_project(request, project_id):
                 if key.startswith("delete_quote_") and val:
                     changes.add("del_quotes")
                     quote_id = int(key.replace("delete_quote_", ""))
-                    assert(project.quotes.filter(id=quote_id).exists())
-                    project.quotes.filter(id=quote_id).delete()
+                    assert(project.quote_set.filter(id=quote_id).exists())
+                    project.quote_set.filter(id=quote_id).delete()
                     Quote.objects.filter(id=quote_id).delete()
 
             current_tags = set(project.tags.all())
@@ -131,12 +131,14 @@ def edit_project(request, project_id):
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
 
     else:
-        data = {i[1]: project.__dict__[i[0]] for i in basic_fields.items()}
+        data = {k: project.__dict__[k] for k in basic_fields}
         current_tags = list(project.tags.all())
         for i, t in enumerate(current_tags):
             if i > 2:
                 break
             data["tag"+str(i+1)] = t.get_name()
+        sys.stderr.write(str(data))
+        sys.stderr.flush()
         form = EditProjectForm(project, data)
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
 

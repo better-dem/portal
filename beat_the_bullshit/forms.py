@@ -5,41 +5,27 @@ from core import forms as cf
 from core import models as cm
 from widgets import forms as wf
 from .models import Fallacy
+import sys
 
 class CreateProjectForm(forms.Form):
     name = forms.CharField()
-    topic_overview = forms.CharField(widget = Textarea)
+    topic_overview = forms.CharField(widget = Textarea(attrs={"rows": 2}))
 
-    quote1 = forms.CharField(widget=Textarea, required=False)
-    speaker_name1 = forms.CharField(max_length=500, required=False)
-    reference1 = forms.URLField(required = False)
-    screenshot_filename1 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
-    youtube_video_id1 = forms.CharField(max_length=100, required=False)
-    fallacy1 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
-    fallacy_association_explanation1 = forms.CharField(widget = Textarea, required=False)
-    fallacy_association_improvement1 = forms.CharField(widget = Textarea, required=False)
-
-    quote2 = forms.CharField(widget=Textarea, required=False)
-    speaker_name2 = forms.CharField(max_length=500, required=False)
-    reference2 = forms.URLField(required = False)
-    screenshot_filename2 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
-    youtube_video_id2 = forms.CharField(max_length=100, required=False)
-    fallacy2 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
-    fallacy_association_explanation2 = forms.CharField(widget = Textarea, required=False)
-    fallacy_association_improvement2 = forms.CharField(widget = Textarea, required=False)
-
-    quote3 = forms.CharField(widget=Textarea, required=False)
-    speaker_name3 = forms.CharField(max_length=500, required=False)
-    reference3 = forms.URLField(required = False)
-    screenshot_filename3 = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
-    youtube_video_id3 = forms.CharField(max_length=100, required=False)
-    fallacy3 = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
-    fallacy_association_explanation3 = forms.CharField(widget = Textarea, required=False)
-    fallacy_association_improvement3 = forms.CharField(widget = Textarea, required=False)
-
-    tag1 = cf.tag_aac.get_new_form_field(required=False)
-    tag2 = cf.tag_aac.get_new_form_field(required=False)
-    tag3 = cf.tag_aac.get_new_form_field(required=False)
+    def __init__(self, *args, **kwargs):
+        super(CreateProjectForm, self).__init__(*args, **kwargs)
+        for i in range(1,4):
+            # quote and fallacy fields
+            self.fields["quote"+str(i)] = forms.CharField(widget=Textarea(attrs={"rows": 2}), required=False)
+            self.fields["speaker_name"+str(i)] = forms.CharField(max_length=500, required=False)
+            self.fields["reference"+str(i)] = forms.URLField(required = False)
+            self.fields["screenshot_filename"+str(i)] = forms.URLField(widget=S3DirectWidget(dest="file_upload"), required=False)
+            self.fields["youtube_video_id"+str(i)] = forms.CharField(max_length=100, required=False)
+            self.fields["fallacy"+str(i)] = forms.ModelChoiceField(queryset=Fallacy.objects.all(), required=False)
+            self.fields["fallacy_association_explanation"+str(i)] = forms.CharField(widget = Textarea(attrs={"rows": 2}), required=False)
+            self.fields["fallacy_association_improvement"+str(i)] = forms.CharField(widget = Textarea(attrs={"rows": 2}), required=False)
+        for i in range(1,4):     # separate loops for field ordering
+            # tags
+            self.fields["tag"+str(i)] = cf.tag_aac.get_new_form_field(required=False)
 
     def clean(self):
         cleaned_data = super(CreateProjectForm, self).clean()
@@ -59,8 +45,10 @@ class CreateProjectForm(forms.Form):
 
 class EditProjectForm(CreateProjectForm):
     def __init__(self, project, *args, **kwargs):
-        super(CreateProjectForm, self).__init__(*args, **kwargs)
-        quotes = project.quotes.all()
+        super(EditProjectForm, self).__init__(*args, **kwargs)
+        quotes = project.quote_set.all()
         for q in quotes:
-            self.fields["delete_quote_"+str(pov.id)] = forms.BooleanField(help_text=str(quote.quote_string), required=False)
-
+            self.fields["delete_quote_"+str(q.id)] = forms.BooleanField(help_text=str(q.quote_string), required=False)
+        for i in range(1,4):
+            self.fields.pop("screenshot_filename"+str(i)) # don't include screenshots in edit form, too complicated
+        self.order_fields(["name", "topic_overview"]+["delete_quote_"+str(q.id) for q in quotes])
