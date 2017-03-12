@@ -11,30 +11,35 @@
 <div id="quote_{{ quote.id }}_div" style="display:none;">
   <div class="panel panel-default">
     <div class="panel-body">
-      <span style="display: inline-block;">
-	<img src="{% static quote.screenshot_filename %}" width="150" height="150"/>
-      </span>
-      <span style="display: inline-block;">
-	<b style="font-size:2em">&ldquo;</b> <i>{{ quote.quote_string }}</i> <b style="font-size:2em">&rdquo;</b>
-	- {{ quote.speaker_name }}
-	<p>Follow our <a href="{{ quote.reference }}">reference</a></p>
-      </span>
-      {% if quote.youtube_video_id %}<span style="display: inline-block;">
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ quote.youtube_video_id }}" frameborder="0" allowfullscreen></iframe>
-      </span>{% endif %}
+	<div class="flex-container">
+	    <span style="display: inline-block; vertical-align:center;">
+		<img src="{% static quote.screenshot_filename %}" width="150" height="150"/>
+	    </span>
+	    <span style="display: inline-block; vertical-align:center;">
+		<span class="flex-container" style="-webkit-align-items: flex-end; align-items: flex-end;">
+		    <span style="display: inline-block; margin:5px; vertical-align: top;"><b style="font-size:2em">&ldquo;</b> <i>{{ quote.quote_string }}</i> <b style="font-size:2em">&rdquo;</b></span>
+		    <span style="display: inline-block;  margin:5px; vertical-align: bottom;"> - {{ quote.speaker_name }}</span>
+		</span>
+		<div><p>Follow our <a href="{{ quote.reference }}">reference</a></p></div>
+	    </span>
+	</div>
+	<div>
+	{% if quote.youtube_video_id %}<iframe width="560" height="315" src="https://www.youtube.com/embed/{{ quote.youtube_video_id }}" frameborder="0" allowfullscreen></iframe>{% endif %}
+	</div>
     </div>
   </div>
 
   <h3>What type of bull**** is this?</h3>
   
   {% for fallacy in fallacies %}
-  <div>
-    <input type="button" class="btn btn-info" onclick="handle_button_press(this);" data-fallacy-id="{{ fallacy.id }}" data-quote-id="{{ quote.id }}" name="optradio" value="{{ fallacy.name }}">
-    <span class="glyphicon glyphicon-question-sign" style="cursor:pointer;" onclick='present_definition("{{ fallacy.name|escapejs }}", "{{ fallacy.description|escapejs }}", "{{ fallacy.example_context|escapejs }}", "{{ fallacy.example|escapejs }}", "{{ fallacy.improvement|escapejs }}")'></span>
+  <div style="padding:10px;" onMouseOver="this.style.backgroundColor='#F8F8F8'" onMouseOut="this.style.backgroundColor='#FFFFFF'" >
+      <span onclick="handle_button_press(this);" data-fallacy-id="{{ fallacy.id }}" data-quote-id="{{ quote.id }}" style="cursor:pointer; padding:10px;" class="glyphicon glyphicon-unchecked"></span>
+      {{ fallacy.name }}
+      <span class="glyphicon glyphicon-question-sign" style="cursor:pointer; padding:10px;" onclick='present_definition("{{ fallacy.name|escapejs }}", "{{ fallacy.description|escapejs }}", "{{ fallacy.example_context|escapejs }}", "{{ fallacy.example|escapejs }}", "{{ fallacy.improvement|escapejs }}")'></span>
   </div>
   {% endfor %}
-  {% endfor %}
 </div>
+{% endfor %}
 
 <div id="item_result_div" style="display:none;">
   <div class="panel panel-default">
@@ -94,6 +99,7 @@ var handle_button_press = function(elem){
   var quote_id = elem.getAttribute("data-quote-id");
   var content = {"type": "quote_fallacy_quiz_item_submit", "quote_id": quote_id, "fallacy_id": elem.getAttribute("data-fallacy-id")};
   var quote_index = quote_ids.indexOf(parseInt(quote_id));  
+  console.log("quote index", quote_index);
   var next_quote_index = quote_index + 1;
   if (next_quote_index >= quote_ids.length){
     next_quote_index = -1;
@@ -127,6 +133,7 @@ var render_quote = function(index){
 }
 
 var render_item_result = function(correct_fallacy_name, is_correct, explanation, improvement, next_index){
+  console.log("rendering item result", next_index)
   for (var i=0; i<quote_ids.length; i++){
     document.getElementById("quote_"+quote_ids[i]+"_div").style.display="none";
   }

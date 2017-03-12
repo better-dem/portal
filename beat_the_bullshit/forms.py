@@ -49,6 +49,4 @@ class EditProjectForm(CreateProjectForm):
         quotes = project.quote_set.all()
         for q in quotes:
             self.fields["delete_quote_"+str(q.id)] = forms.BooleanField(help_text=str(q.quote_string), required=False)
-        for i in range(1,4):
-            self.fields.pop("screenshot_filename"+str(i)) # don't include screenshots in edit form, too complicated
         self.order_fields(["name", "topic_overview"]+["delete_quote_"+str(q.id) for q in quotes])

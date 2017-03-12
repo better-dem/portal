@@ -26,7 +26,7 @@
     "pk": 3,
     "fields": {
         "name": "Appeal to Popularity",
-        "description": "Using the popularity of a premise or proposition as evidence for its truthfulness",
+        "description": "Saying something's true because it's a popular belief",
 	"example_context": "Is the national debt out of control?",
 	"example": "75% of Americans think so.",
 	"improvement": "First, what does it mean for debt to be out of control? I think we'd both agree that debt is out of control if interest payments are larger than the debtor's income..."

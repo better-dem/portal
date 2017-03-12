@@ -22,6 +22,15 @@ body {
     white-space: normal;
 }
 
+.flex-container {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
 .item-mini-container {
     display: -webkit-flex;
     display: flex;

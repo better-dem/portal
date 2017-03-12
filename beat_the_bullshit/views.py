@@ -92,14 +92,28 @@ def edit_project(request, project_id):
 
             # allow adding more points of view, basics, and effects
             for i in range(1,4):
-                quote = form.cleaned_data.get("quote_"+str(i), None)
+                quote = form.cleaned_data.get("quote"+str(i), None)
                 if not quote is None and not quote=="":
-                    pov = PointOfView()
-                    pov.quote = quote
-                    pov.is_favorable = form.cleaned_data["pov_is_favorable_"+str(i)]
-                    pov.save()
-                    project.points_of_view.add(pov)
-                    changes.add("povs")
+                    q = Quote()
+                    q.quote_string = quote
+                    q.speaker_name = form.cleaned_data["speaker_name"+str(i)]
+                    q.reference = form.cleaned_data["reference"+str(i)]
+                    screenshot_url = form.cleaned_data["screenshot_filename"+str(i)]
+                    path_with_bucket_and_leading_slash = urlsplit(screenshot_url)[2]
+                    path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
+                    q.screenshot_filename = path_without_bucket
+                    if "youtube_video_id"+str(i) in form.cleaned_data:
+                        q.youtube_video_id = form.cleaned_data["youtube_video_id"+str(i)]
+
+                    q.project = project;
+                    q.save()
+                    
+                    qfa = QuoteFallacyAssociation()
+                    qfa.quote = q
+                    qfa.fallacy = form.cleaned_data["fallacy"+str(i)]
+                    qfa.explanation = form.cleaned_data["fallacy_association_explanation"+str(i)]
+                    qfa.improvement = form.cleaned_data["fallacy_association_improvement"+str(i)]
+                    qfa.save()
             
             # Allow deleting quotes
             for key, val in form.cleaned_data.items():
@@ -108,7 +122,8 @@ def edit_project(request, project_id):
                     quote_id = int(key.replace("delete_quote_", ""))
                     assert(project.quote_set.filter(id=quote_id).exists())
                     project.quote_set.filter(id=quote_id).delete()
-                    Quote.objects.filter(id=quote_id).delete()
+                    Quote.objects.filter(id=quote_id).delete() 
+                    # quote-filter-assiciation is deleted with cascade
 
             current_tags = set(project.tags.all())
             new_tags = set()
