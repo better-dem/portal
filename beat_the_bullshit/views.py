@@ -161,7 +161,8 @@ def edit_project(request, project_id):
 def administer_project(request, project_id):
     project = get_object_or_404(BeatTheBullshitProject, pk=project_id) 
     items = BeatTheBullshitItem.objects.filter(participation_project=project, is_active=True).distinct()
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project":project, 'site': os.environ["SITE"]})
+    responses = QuoteFallacyQuizItemResponse.objects.filter(participation_item__participation_project = project).distinct()
+    return render(request, 'beat_the_bullshit/project_admin.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project":project, 'site': os.environ["SITE"], 'responses': responses})
 
 
 def participate(request, item_id):
@@ -174,8 +175,6 @@ def participate(request, item_id):
         return render(request, 'beat_the_bullshit/participate.html', context)
     if request.method == 'POST' and request.is_ajax():
         submission_data = json.loads(request.body.strip())
-        sys.stderr.write(str(submission_data))
-        sys.stderr.flush()
         if "type" in submission_data and submission_data["type"] == "quote_fallacy_quiz_item_submit":
             qid = submission_data["quote_id"]
             quote = get_object_or_404(Quote, pk=qid, project=project)

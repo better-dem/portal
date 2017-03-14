@@ -24,7 +24,7 @@ class BeatTheBullshitItem(cm.ParticipationItem):
         self.tags.add(*self.participation_project.tags.all())
 
     def set_display_image(self):
-        self.display_image_file = "single_quiz/img/default.png"
+        self.display_image_file = "beat_the_bullshit/img/human_brain.jpg"
 
 class Quote(models.Model):
     quote_string = models.TextField()

@@ -3,9 +3,20 @@
 {% load staticfiles %}
 
 <h2>{{ project.name }}</h2>
-<p>
-{{ project.topic_overview }}
-</p>
+
+<div id="get_started">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <p>
+	{{ project.topic_overview }}
+      </p>
+      <p style="padding-top: 10px;">
+	Can you beat the bullshit? Take our quiz to find out.
+      </p>
+      <input type="button" class="btn btn-info" onclick="document.body.scrollTop = document.documentElement.scrollTop = 0; document.getElementById('get_started').style.display = 'none'; render_quote(0);" value="Get Started"></input>
+    </div>
+  </div>
+</div>
 
 {% for quote in project.quote_set.all %}
 <div id="quote_{{ quote.id }}_div" style="display:none;">
@@ -17,27 +28,28 @@
 	    </span>
 	    <span style="display: inline-block; vertical-align:center;">
 		<span class="flex-container" style="-webkit-align-items: flex-end; align-items: flex-end;">
-		    <span style="display: inline-block; margin:5px; vertical-align: top;"><b style="font-size:2em">&ldquo;</b> <i>{{ quote.quote_string }}</i> <b style="font-size:2em">&rdquo;</b></span>
+		    <span style="display: inline-block; margin:5px; vertical-align: top;">&ldquo;<i>{{ quote.quote_string }}</i>&rdquo;</span>
 		    <span style="display: inline-block;  margin:5px; vertical-align: bottom;"> - {{ quote.speaker_name }}</span>
 		</span>
 		<div><p>Follow our <a href="{{ quote.reference }}">reference</a></p></div>
 	    </span>
 	</div>
-	<div>
-	{% if quote.youtube_video_id %}<iframe width="560" height="315" src="https://www.youtube.com/embed/{{ quote.youtube_video_id }}" frameborder="0" allowfullscreen></iframe>{% endif %}
+
+	{% if quote.youtube_video_id %}<h3>Watch the Video</h3><div style="margin-top: 10px;"><div class="videoWrapper"><iframe width="560" height="349" src="https://www.youtube.com/embed/{{ quote.youtube_video_id }}" frameborder="0" allowfullscreen></iframe></div></div>{% endif %}
+
+	<h3>What type of bullshit is this?</h3>
+	
+	{% for fallacy in fallacies %}
+	<div style="padding:5px;" onMouseOver="this.style.backgroundColor='#F8F8F8'" onMouseOut="this.style.backgroundColor='#FFFFFF'" >
+	  <span onclick="document.body.scrollTop = document.documentElement.scrollTop = 0; handle_button_press(this);" data-fallacy-id="{{ fallacy.id }}" data-quote-id="{{ quote.id }}" style="cursor:pointer; padding:5px;" class="glyphicon glyphicon-unchecked"></span>
+	  {{ fallacy.name }}
+	  <span class="glyphicon glyphicon-question-sign" style="cursor:pointer; padding-left:10px;" onclick='present_definition("{{ fallacy.name|escapejs }}", "{{ fallacy.description|escapejs }}", "{{ fallacy.example_context|escapejs }}", "{{ fallacy.example|escapejs }}", "{{ fallacy.improvement|escapejs }}")'></span>
 	</div>
-    </div>
+	{% endfor %}
+
+    </div>    
   </div>
 
-  <h3>What type of bull**** is this?</h3>
-  
-  {% for fallacy in fallacies %}
-  <div style="padding:10px;" onMouseOver="this.style.backgroundColor='#F8F8F8'" onMouseOut="this.style.backgroundColor='#FFFFFF'" >
-      <span onclick="handle_button_press(this);" data-fallacy-id="{{ fallacy.id }}" data-quote-id="{{ quote.id }}" style="cursor:pointer; padding:10px;" class="glyphicon glyphicon-unchecked"></span>
-      {{ fallacy.name }}
-      <span class="glyphicon glyphicon-question-sign" style="cursor:pointer; padding:10px;" onclick='present_definition("{{ fallacy.name|escapejs }}", "{{ fallacy.description|escapejs }}", "{{ fallacy.example_context|escapejs }}", "{{ fallacy.example|escapejs }}", "{{ fallacy.improvement|escapejs }}")'></span>
-  </div>
-  {% endfor %}
 </div>
 {% endfor %}
 
@@ -69,7 +81,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <button type="button" class="close" data-dismiss="modal" onclick="document.body.scrollTop = document.documentElement.scrollTop = 0;">&times;</button>
         <h4 class="modal-title definition_modal_term"></h4>
       </div>
       <div class="modal-body">
@@ -150,9 +162,9 @@ var render_item_result = function(correct_fallacy_name, is_correct, explanation,
   document.getElementById("item_result_explanation").textContent = explanation;
   document.getElementById("item_result_improvement").textContent = improvement;
   if (next_index == -1){
-    document.getElementById("item_result_next").innerHTML = "<input type='button' class='btn btn-info' onclick='render_final_result();' value='Finish'></input>";
+    document.getElementById("item_result_next").innerHTML = "<input type='button' class='btn btn-info' onclick='document.body.scrollTop = document.documentElement.scrollTop = 0; render_final_result();' value='Finish'></input>";
   } else {
-    document.getElementById("item_result_next").innerHTML = "<input type='button' class='btn btn-info' onclick='render_quote("+next_index+");' value='Next Quote'></input>";
+    document.getElementById("item_result_next").innerHTML = "<input type='button' class='btn btn-info' onclick='document.body.scrollTop = document.documentElement.scrollTop = 0; render_quote("+next_index+");' value='Next Quote'></input>";
   }
 }
 
@@ -165,8 +177,6 @@ var render_final_result = function(){
   document.getElementById("final_result").style.display="block";
   document.getElementById("final_score").innerHTML = final_score;
 }
-
-$(document).ready(render_quote(0));
 
 </script>
 
