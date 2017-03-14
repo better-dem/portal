@@ -1,0 +1,194 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>{{ project.name }}</h2>
+
+<div id="get_started">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <p>
+	{{ project.topic_overview }}
+      </p>
+      {% if project.bullet_1 or project.bullet_2 or project.bullet_3%}
+      <ul>
+	{% if project.bullet_1 %}<li>{{ project.bullet_1 }}</li>{% endif %}
+	{% if project.bullet_2 %}<li>{{ project.bullet_2 }}</li>{% endif %}
+	{% if project.bullet_3 %}<li>{{ project.bullet_3 }}</li>{% endif %}
+      </ul>
+      {% endif %}
+      <p style="padding-top: 10px;">
+	It would be complicated enough if the bullshit and confusion wasn't already in full spin.
+      </p>
+      <h4 style="padding-top: 10px;">
+	Can you beat the bullshit? Take our quiz to find out!
+      </h4>
+      <input type="button" class="btn btn-info" onclick="document.body.scrollTop = document.documentElement.scrollTop = 0; document.getElementById('get_started').style.display = 'none'; render_quote(0);" value="Get Started"></input>
+    </div>
+  </div>
+</div>
+
+{% for quote in project.quote_set.all %}
+<div id="quote_{{ quote.id }}_div" style="display:none;">
+  <div class="panel panel-default">
+    <div class="panel-body">
+	<div class="flex-container">
+	    <span style="display: inline-block; vertical-align:center;">
+		<img src="{% static quote.screenshot_filename %}" width="150" height="150"/>
+	    </span>
+	    <span style="display: inline-block; vertical-align:center;">
+		<span class="flex-container" style="-webkit-align-items: flex-end; align-items: flex-end;">
+		    <span style="display: inline-block; margin:5px; vertical-align: top;">&ldquo;<i>{{ quote.quote_string }}</i>&rdquo;</span>
+		    <span style="display: inline-block;  margin:5px; vertical-align: bottom;"> - {{ quote.speaker_name }}</span>
+		</span>
+		<div><p>Follow our <a href="{{ quote.reference }}">reference</a></p></div>
+	    </span>
+	</div>
+
+	{% if quote.youtube_video_id %}<h3>Watch the Video</h3><div style="margin-top: 10px;"><div class="videoWrapper"><iframe width="560" height="349" src="https://www.youtube.com/embed/{{ quote.youtube_video_id }}" frameborder="0" allowfullscreen></iframe></div></div>{% endif %}
+
+	<h3>What type of bullshit is this?</h3>
+	
+	{% for fallacy in fallacies %}
+	<div style="padding:5px;" onMouseOver="this.style.backgroundColor='#F8F8F8'" onMouseOut="this.style.backgroundColor='#FFFFFF'" >
+	  <span onclick="document.body.scrollTop = document.documentElement.scrollTop = 0; handle_button_press(this);" data-fallacy-id="{{ fallacy.id }}" data-quote-id="{{ quote.id }}" style="cursor:pointer; padding:5px;" class="glyphicon glyphicon-unchecked"></span>
+	  {{ fallacy.name }}
+	  <span class="glyphicon glyphicon-question-sign" style="cursor:pointer; padding-left:10px;" onclick='present_definition("{{ fallacy.name|escapejs }}", "{{ fallacy.description|escapejs }}", "{{ fallacy.example_context|escapejs }}", "{{ fallacy.example|escapejs }}", "{{ fallacy.improvement|escapejs }}")'></span>
+	</div>
+	{% endfor %}
+
+    </div>    
+  </div>
+
+</div>
+{% endfor %}
+
+<div id="item_result_div" style="display:none;">
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <h2 id="item_result_correct" class="text-success" style="display:none;"><span class="glyphicon glyphicon-ok"></span>Correct!</h2>
+      <h2 id="item_result_incorrect" class="text-danger" style="display:none;"><span class="glyphicon glyphicon-remove"></span>Wrong!</h2>
+      <div>The correct fallacy was: <span id="item_result_correct_fallacy_name"></span></div>
+      <div id="item_result_explanation" style="padding:15px;"></div>
+      <hr>
+      Maybe instead, they should have said something like this:
+      <div style="padding:15px; font-style:italic;">&ldquo;<span id="item_result_improvement"></span>&rdquo;</div>
+      <hr>
+      <div style="padding:15px;" id="item_result_next"></div>
+    </div>
+  </div>
+</div>
+
+<div id="final_result" style="display: none;">
+  <div class="jumbotron">
+    <h2>Thanks for playing!</h2>
+    Your score was <span id="final_score"></span>
+  </div>
+</div>
+
+
+<div id="definition_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" onclick="document.body.scrollTop = document.documentElement.scrollTop = 0;">&times;</button>
+        <h4 class="modal-title definition_modal_term"></h4>
+      </div>
+      <div class="modal-body">
+        <h4>Definition:</h4>
+	<div id="definition_modal_definition"></div>
+	<hr>
+	For example, if your friend says this:
+        <div style="padding:15px; font-style:italic;">&ldquo;<span id="definition_modal_example_context"></span>&rdquo;</div>
+	And you say this:
+        <div style="padding:15px; font-style:italic;">&ldquo;<span id="definition_modal_example"></span>&rdquo;</div>
+	Then you're using the <span class="definition_modal_term"></span> technique. Stop it!
+	<hr>
+	Maybe instead, you should say this:
+        <div style="padding:15px; font-style:italic;">&ldquo;<span id="definition_modal_improvement"></span>&rdquo;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+var quote_ids = [{% for quote in project.quote_set.all %}{{quote.id}},{% endfor %}];
+var num_correct = 0;
+
+var handle_button_press = function(elem){
+  // check the answer
+  var quote_id = elem.getAttribute("data-quote-id");
+  var content = {"type": "quote_fallacy_quiz_item_submit", "quote_id": quote_id, "fallacy_id": elem.getAttribute("data-fallacy-id")};
+  var quote_index = quote_ids.indexOf(parseInt(quote_id));  
+  console.log("quote index", quote_index);
+  var next_quote_index = quote_index + 1;
+  if (next_quote_index >= quote_ids.length){
+    next_quote_index = -1;
+  }
+  submit_ajax_form("/apps/beat_the_bullshit/participate/{{ item.id }}", JSON.stringify(content), function(content, status){
+    console.log(JSON.stringify(content));
+    var correct_fallacy_name = content["correct_fallacy_name"];
+    var is_correct = content["is_correct"];
+    var explanation = content["explanation"];
+    var improvement = content["improvement"];
+    render_item_result(correct_fallacy_name, is_correct, explanation, improvement, next_quote_index);
+  });
+}
+
+var present_definition = function(term, definition, example_context, example, improvement){
+$(".definition_modal_term").text(term);
+$("#definition_modal_definition").text(definition);
+$("#definition_modal_example_context").text(example_context);
+$("#definition_modal_example").text(example);
+$("#definition_modal_improvement").text(improvement);
+$("#definition_modal").modal()
+}
+
+var render_quote = function(index){
+  console.log(index);
+  for (var i=0; i<quote_ids.length; i++){
+    document.getElementById("quote_"+quote_ids[i]+"_div").style.display="none";
+  }
+  document.getElementById("item_result_div").style.display="none";
+  document.getElementById("quote_"+quote_ids[index]+"_div").style.display="block";
+}
+
+var render_item_result = function(correct_fallacy_name, is_correct, explanation, improvement, next_index){
+  console.log("rendering item result", next_index)
+  for (var i=0; i<quote_ids.length; i++){
+    document.getElementById("quote_"+quote_ids[i]+"_div").style.display="none";
+  }
+  document.getElementById("item_result_div").style.display="block";
+  if (is_correct){
+    num_correct += 1;
+    document.getElementById("item_result_correct").style.display="block";
+    document.getElementById("item_result_incorrect").style.display="none";
+  } else {
+    document.getElementById("item_result_incorrect").style.display="block";
+    document.getElementById("item_result_correct").style.display="none";
+  }
+  document.getElementById("item_result_correct_fallacy_name").textContent = correct_fallacy_name;
+  document.getElementById("item_result_explanation").textContent = explanation;
+  document.getElementById("item_result_improvement").textContent = improvement;
+  if (next_index == -1){
+    document.getElementById("item_result_next").innerHTML = "<input type='button' class='btn btn-info' onclick='document.body.scrollTop = document.documentElement.scrollTop = 0; render_final_result();' value='Finish'></input>";
+  } else {
+    document.getElementById("item_result_next").innerHTML = "<input type='button' class='btn btn-info' onclick='document.body.scrollTop = document.documentElement.scrollTop = 0; render_quote("+next_index+");' value='Next Quote'></input>";
+  }
+}
+
+var render_final_result = function(){
+  var final_score = ""+num_correct+"/"+quote_ids.length;
+  for (var i=0; i<quote_ids.length; i++){
+    document.getElementById("quote_"+quote_ids[i]+"_div").style.display="none";
+  }
+  document.getElementById("item_result_div").style.display="none";
+  document.getElementById("final_result").style.display="block";
+  document.getElementById("final_score").innerHTML = final_score;
+}
+
+</script>
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}

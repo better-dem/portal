@@ -113,7 +113,7 @@ class CreateProjectForm(forms.Form):
 
 class EditProjectForm(CreateProjectForm):
     def __init__(self, project, *args, **kwargs):
-        super(CreateProjectForm, self).__init__(*args, **kwargs)
+        super(EditProjectForm, self).__init__(*args, **kwargs)
         povs = project.points_of_view.all()
         for pov in povs:
             self.fields["delete_pov_"+str(pov.id)] = forms.BooleanField(help_text=str(pov.quote), required=False)

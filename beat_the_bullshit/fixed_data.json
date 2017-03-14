@@ -1,0 +1,57 @@
+[
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 1,
+    "fields": {
+        "name": "Genetic Fallacy",
+        "description": "Dismissing an argument because of who made it",
+	"example_context": "I think you did great.",
+	"example": "Of course you're saying that, you're my friend.",
+	"improvement": "Thank you, I still didn't do as well as I wanted to."
+    }
+},
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 2,
+    "fields": {
+        "name": "Cherry Picking",
+        "description": "selecting extreme examples to make a point",
+	"example_context": "Why should I drive instead of flying?",
+	"example": "Flying is so dangerous! That Malaysian Airlines flight crashed and hundreds of passengers died.",
+	"improvement": "Driving is more than 70 times more likely than flying to lead to fatal accidents per mile travelled, so you should fly if safety is your priority."
+    }
+},
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 3,
+    "fields": {
+        "name": "Appeal to Popularity",
+        "description": "Saying something's true because it's a popular belief",
+	"example_context": "Is the national debt out of control?",
+	"example": "75% of Americans think so.",
+	"improvement": "First, what does it mean for debt to be out of control? I think we'd both agree that debt is out of control if interest payments are larger than the debtor's income..."
+    }
+},
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 4,
+    "fields": {
+        "name": "Appeal to Ridicule",
+        "description": "Presenting an argument as ridiculous, implying that it isn't even worth considering",
+	"example_context": "Why is nudity illegal anyway? What's profane about the human body?",
+	"example": "That's just ridiculous.",
+	"improvement": "Maybe public health issues would arrise because of failure to wipe."
+    }
+},
+{
+    "model": "beat_the_bullshit.fallacy",
+    "pk": 5,
+    "fields": {
+        "name": "False Dilemma",
+        "description": "Acting like there are only two choices when there may be many",
+	"example_context": "I'm not sure which major I should choose.",
+	"example": "You're either going to be a doctor or a lawyer, so you have to pick pre-law or pre-med.",
+	"improvement": "What interests you? You want something that gives you some economic benefit after graduating, but not at the expense of your happiness."
+    }
+}
+]

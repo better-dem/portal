@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'single_quiz.apps.SingleQuizConfig',
     'ballot_decider.apps.BallotDeciderConfig',
     'interactive_visualization.apps.InteractiveVisualizationConfig',
+    'beat_the_bullshit.apps.BeatTheBullshitConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
