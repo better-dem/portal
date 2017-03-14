@@ -10,6 +10,9 @@ import sys
 class CreateProjectForm(forms.Form):
     name = forms.CharField()
     topic_overview = forms.CharField(widget = Textarea(attrs={"rows": 2}))
+    bullet_1 = forms.CharField(widget = Textarea(attrs={"rows": 2}), required=False)
+    bullet_2 = forms.CharField(widget = Textarea(attrs={"rows": 2}), required=False)
+    bullet_3 = forms.CharField(widget = Textarea(attrs={"rows": 2}), required=False)
 
     def __init__(self, *args, **kwargs):
         super(CreateProjectForm, self).__init__(*args, **kwargs)
@@ -49,4 +52,4 @@ class EditProjectForm(CreateProjectForm):
         quotes = project.quote_set.all()
         for q in quotes:
             self.fields["delete_quote_"+str(q.id)] = forms.BooleanField(help_text=str(q.quote_string), required=False)
-        self.order_fields(["name", "topic_overview"]+["delete_quote_"+str(q.id) for q in quotes])
+        self.order_fields(["name", "topic_overview", "bullet_1", "bullet_2", "bullet_3"]+["delete_quote_"+str(q.id) for q in quotes])

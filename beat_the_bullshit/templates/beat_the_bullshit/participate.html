@@ -10,9 +10,19 @@
       <p>
 	{{ project.topic_overview }}
       </p>
+      {% if project.bullet_1 or project.bullet_2 or project.bullet_3%}
+      <ul>
+	{% if project.bullet_1 %}<li>{{ project.bullet_1 }}</li>{% endif %}
+	{% if project.bullet_2 %}<li>{{ project.bullet_2 }}</li>{% endif %}
+	{% if project.bullet_3 %}<li>{{ project.bullet_3 }}</li>{% endif %}
+      </ul>
+      {% endif %}
       <p style="padding-top: 10px;">
-	Can you beat the bullshit? Take our quiz to find out.
+	It would be complicated enough if the bullshit and confusion wasn't already in full spin.
       </p>
+      <h4 style="padding-top: 10px;">
+	Can you beat the bullshit? Take our quiz to find out!
+      </h4>
       <input type="button" class="btn btn-info" onclick="document.body.scrollTop = document.documentElement.scrollTop = 0; document.getElementById('get_started').style.display = 'none'; render_quote(0);" value="Get Started"></input>
     </div>
   </div>

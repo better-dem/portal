@@ -5,6 +5,9 @@ import core.models as cm
 
 class BeatTheBullshitProject(cm.ParticipationProject):
     topic_overview = models.TextField()
+    bullet_1 = models.TextField(blank=True, null=True)
+    bullet_2 = models.TextField(blank=True, null=True)
+    bullet_3 = models.TextField(blank=True, null=True)
     tags = models.ManyToManyField(cm.Tag)
 
     def update_items(self):

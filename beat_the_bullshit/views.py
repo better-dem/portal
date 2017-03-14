@@ -21,6 +21,10 @@ def new_project(request):
             project.name = form.cleaned_data["name"]
             project.owner_profile = profile
             project.topic_overview = form.cleaned_data["topic_overview"]
+            for i in range(1,4):
+                k = "bullet_"+str(i)
+                if k in form.cleaned_data:
+                    project.__dict__[k] = form.cleaned_data[k]
             project.save()
 
             for i in range(1,4):
@@ -77,7 +81,7 @@ def propagate_project_changes(project, change_set):
 def edit_project(request, project_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     project = get_object_or_404(BeatTheBullshitProject, pk=project_id) 
-    basic_fields = ["name", "topic_overview"]
+    basic_fields = ["name", "topic_overview", "bullet_1", "bullet_2", "bullet_3"]
 
     if request.method == 'POST':
         form = EditProjectForm(project, request.POST)
