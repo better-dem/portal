@@ -317,6 +317,9 @@ def event_from_request(request):
     e.save()
     return e.pk
 
+def demo(request):
+    return render(request, 'core/demo.html', {"email":os.environ["FROM_EMAIL"]})
+
 def volunteer(request):
     return render(request, 'core/contact.html', {"message": "We are looking for volunteers to help with issue research, content creation, and software development. If you're interested, please contact us via email.", "email":os.environ["FROM_EMAIL"], "subject": "Volunteering at Better Democracy Network", "title":"Volunteer at Better Democracy Network"})
 

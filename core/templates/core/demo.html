@@ -1,0 +1,84 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+<h2>Portal Demonstration</h2>
+<p>
+The Better Democracy Portal has lots to offer for both ordinary citizens and government officials.
+Click below to see some of the highlights.
+</p>
+
+<div class="panel-group" id="accordion">
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse1"><h3 style="display: inline;">Ordinary Citizens</h3></a>
+      </div>
+    </div>
+    <div id="collapse1" class="panel-collapse collapse">
+      <div class="panel-body flex-container">
+	  <div>
+	      <h3>Participation Feed</h3>
+	      First and foremost, the Better Democracy Portal is a place for ordinary citizens to learn and find opportunities to impact policy to improve their communities.
+	      The participation feed recommends the best and latest opportunities in the places you follow.
+	      Check out <a href="/feed/">the feed</a>.
+	      <div style="padding:10px;">
+		  <a href="/mv_prop_1"><img style="max-width:300px;" class="img-responsive" src="{% static 'core/img/demo_participation_feed.png' %}"><img></a>
+	      </div>
+	  </div>
+
+	  <div>
+	      <h3>Ballot Decider</h3>
+	      The ballot decider tool presents important background information and projections for ballot measures, as well as a tool to help you visualize your decision process.
+	      Check out <a href="/mv_prop_1">an example</a>.
+	      <div style="padding:10px;">
+		  <a href="/mv_prop_1"><img style="max-width:300px;" class="img-responsive" src="{% static 'core/img/demo_ballot_decider.png' %}"><img></a>
+	      </div>
+	  </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="panel-title">
+	<a data-toggle="collapse" data-parent="#accordion" href="#collapse2"><h3 style="display: inline;">Government Officials</h3></a>
+      </div>
+    </div>
+    <div id="collapse2" class="panel-collapse collapse">
+      <div class="panel-body flex-container">
+
+	  <div>
+	      <h3>Land Use Planning Outreach</h3>
+	      Doing outreach for a land use planning project? Need to get feedback from constituents? Run a survey using our land use planning outreach tool.
+	      <a href="mailto:{{ email }}">Contact us</a> to sign up for FREE access for your city.
+	      <div style="padding:10px;">
+		  <img style="max-width:300px;" class="img-responsive" src="{% static 'core/img/demo_land_use.png' %}"><img>
+	      </div>
+	  </div>
+
+	  <div>
+	      <h3>City Budget Transparency</h3>
+	      Want to save time answering constituent questions about your budget's basics? Want your constituents to be informed and able to make smart decisions on local ballot measures? Want beautiful visuals to explore your city's spending? Try out our city budget transparency tool.
+	      <a href="mailto:{{ email }}">Contact us</a> to sign up for FREE access for your city.
+	      <div style="padding:10px;">
+		  <img style="max-width:300px;" class="img-responsive" src="{% static 'core/img/demo_city_budgeting.png' %}"><img>
+	      </div>
+	  </div>
+
+	  <div>
+	      <h3>Civic Engagement Tech Exchange</h3>
+	      Looking for something else? Our tech exchange has information about dozens of useful tools that might do the trick.
+	      Check out <a href="/apps/tool_review/overview/-1">the tool exchange</a>.
+	      <div style="padding:10px;">
+		  <a href="/apps/tool_review/overview/-1"><img style="max-width:300px;" class="img-responsive" src="{% static 'core/img/demo_tool_exchange.png' %}"><img></a>
+	      </div>
+	  </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
