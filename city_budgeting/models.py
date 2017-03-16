@@ -29,6 +29,9 @@ class CityBudgetingProject(cm.ParticipationProject):
             return set([item.id])
         return set()
 
+    def set_name(self):
+        self.name = "City Budget Outreach Project for "+project.city.get_name()
+
 class CityBudgetingItem(cm.ParticipationItem):
     """
     The budget transparency interactive widget page
