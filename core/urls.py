@@ -5,6 +5,7 @@ from . import views
 from . import forms
 
 urlpatterns = [
+    url(r'^demo/$', views.demo, name="demo"),
     url(r'^donate/$', views.donate, name="donate"),
     url(r'^volunteer/$', views.volunteer, name="volunteer"),
     url(r'^nonpartisanship/$', views.nonpartisanship, name="nonpartisanship"),
