@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>{{ project.name }}</h2>
+
+<div id="top">
+  <div class="panel panel-default">
+    <div class="panel-body">
+	<p>
+	    This budget is for the fiscal period from {{ project.fiscal_period_start }} to {{ project.fiscal_period_end }}.
+	</p>
+	<p>
+	    To see the official budget document, go <a href="{{ project.budget_url }}">here</a>.
+	</p>
+    </div>
+  </div>
+</div>
+
+{% for rs in data.revenue_sources %}
+<div id="revenue_source_div_{{ rs.id }}">
+  <div class="panel panel-default">
+    <div class="panel-body">
+	<h3>Revenue Source: {{ rs.name }}</h3>
+	<ul>
+	    <li><b>Amount:</b>{{ rs.amount }}</li>
+	    <li><b>Description:</b>{{ rs.description }}</li>
+	    {% if rs.reference %}<li><b>Reference:</b><a href="{{ rs.reference }}">Visit reference</a></li>{% endif %}
+	</ul>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for fund in data.funds %}
+<div id="revenue_source_div_{{ fund.id }}">
+  <div class="panel panel-default">
+    <div class="panel-body">
+	<h3>City Fund: {{ fund.name }}</h3>
+	<ul>
+	    <li><b>Amount:</b>{{ fund.amount }}</li>
+	    <li><b>Description:</b>{{ fund.description }}</li>
+	    {% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
+	</ul>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% for expense in data.expenses %}
+<div id="revenue_source_div_{{ expense.id }}">
+  <div class="panel panel-default">
+    <div class="panel-body">
+	<h3>Expense: {{ expense.name }}</h3>
+	<ul>
+	    <li><b>Amount:</b>{{ expense.amount }}</li>
+	    <li><b>Description:</b>{{ expense.description }}</li>
+	    {% if expense.reference %}<li><b>Reference:</b><a href="{{ expense.reference }}">Visit reference</a></li>{% endif %}
+	</ul>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}
