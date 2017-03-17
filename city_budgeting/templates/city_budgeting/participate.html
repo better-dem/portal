@@ -5,8 +5,6 @@
 
 <h2>{{ project.name }}</h2>
 
-<div id="pie_revenues"></div>
-
 <div id="top" class="vis-page">
     <div class="panel panel-default">
 	<div class="panel-body">
@@ -44,19 +42,21 @@
 		    <a href="#" onclick="show_top()">Back to Top</a>
 		</div>		
 	    </div>
-
-	    <pre id="data" style="display: none;">revenue_id,revenue_name,revenue_amount
-0,tax,100
-1,fees,1000</pre>
-
-
-
-	    <ul>
-		{% for rs in data.revenues %}
-		<li><a href="#" onclick="show_detail('revenue', {{ rs.id }})">{{ rs.name }}</a></li>
-		{% endfor %}	
-	    </ul>
-	    <div class="clearfix"></div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-6">
+		    <div id="revenues_pie_div"></div>
+		    <pre id="revenues_data" style="display: none;">id,name,amount
+{% for rs in data.revenues %}{{ rs.id }},{{ rs.name }},{{ rs.amount }}
+{% endfor %}</pre>
+		</div>
+		<div class="col-sm-6">
+		    <ul>
+			{% for rs in data.revenues %}
+			<li><a href="#" onclick="show_detail('revenue', {{ rs.id }})">{{ rs.name }}</a></li>
+			{% endfor %}	
+		    </ul>
+		</div>
+	    </div>
 	</div>
     </div>
 </div>
@@ -119,57 +119,92 @@
 <script>
  var show_revenues = function(){
      $(".vis-page").hide();
-     $("#revenues").show()
+     $("#revenues").show();
+     resize_charts();
  }
  
  var show_funds = function(){
      $(".vis-page").hide();
-     $("#funds").show()
+     $("#funds").show();
+     resize_charts();
  }
  
  var show_expenses = function(){
      $(".vis-page").hide();
-     $("#expenses").show()
+     $("#expenses").show();
+     resize_charts();
  }
  
  var show_top = function(){
      $(".vis-page").hide();
-     $("#top").show()
+     $("#top").show();
+     resize_charts();
  }
  
  var show_detail = function(type, id){
      $(".vis-page").hide();
      var div_id = type+"_source_div_"+id;
-     $("#"+div_id).show()
+     $("#"+div_id).show();
+     resize_charts();
  }
 
- $( document ).ready(show_top());
+var charts_info = [];
+
+var create_pie = function(chart_div_id, data_pre_id, link_map){
+     var parsed_data = d3.csv.parse(d3.select('pre#'+data_pre_id).text());
+     var ndx = crossfilter(parsed_data);
+     var name_dimension = ndx.dimension(function(d) { return d.name; });
+     var sum_by_name = name_dimension.group( function(d){ return d;} ).reduceSum( function(d) { return +d.amount; })
+     /* var top_amounts = sum_by_name.top(2); */
+
+     var pie_chart = dc.pieChart("#"+chart_div_id);
+     pie_chart.width(250)
+	      .height(150)
+	      .dimension(name_dimension)
+	      .group(sum_by_name)
+	      .legend(dc.legend())
+	      .on("renderlet", (function(chart) {
+		  pie_chart.selectAll('.pie-slice').on("click", function(d) {
+		      var k = d.data.key;
+		      if (k in link_map){
+			  link_map[k](); // execute the function from link map
+		      } else {
+			  console.log("clicked, but key not in link map", k);
+		      }
+		  });
+	      }));
+     pie_chart.filter = function(){}; // turn off the filtering on click
+     
+     pie_chart.render()
+     charts_info.push({"chart": pie_chart, "div_id": chart_div_id});
+}
 
 
- var parsed_data = d3.csv.parse(d3.select('pre#data').text());
- var ndx = crossfilter(parsed_data);
- var revenues_dimension = ndx.dimension(function(d) { return d.revenue_name; });
- var sum_revenue = revenues_dimension.group(function(d){ return d;});
- var sum_revenue = revenues_dimension.group( function(d){ return d;} ).reduceSum( function(d) { return +d.revenue_amount; })
- var top_revenues = sum_revenue.top(2);
+ var resize_charts = function(){
+     for ( var i=0; i < charts_info.length; i++ ){
+	 ci = charts_info[i];
+	 // console.log("div id", ci.div_id);
+	 var horizontal_space_available = document.getElementById(ci.div_id).parentNode.clientWidth - 20;
+	 var width = d3.min([Math.floor(horizontal_space_available), 500]);
+	 var height = d3.max([Math.floor(width * 1.0/2), 200])
+	 ci.chart.width(width).height(height).redraw();
+     }
+ }
 
- console.log("top revenues");
- console.log(top_revenues);
- console.log("revenues dimension");
- console.log(revenues_dimension.top());
- console.log("sum revenue");
- console.log(sum_revenue);
+ $( window ).resize( function() {
+     resize_charts();
+ });
 
- var pie_revenues_chart = dc.pieChart("#pie_revenues");
- pie_revenues_chart
-    .width(350)
-    .height(200)
-    .dimension(revenues_dimension)
-    .group(sum_revenue)
-    .legend(dc.legend());
 
- pie_revenues_chart.render()
- pie_revenues_chart.width(500).height(500).redraw();
+ $( document ).ready( function() {
+     var revenues_link_map = {};
+     {% for rs in data.revenues %}revenues_link_map["{{ rs.name }}"] = function(){show_detail('revenue', {{ rs.id }});};{% endfor %}
+
+     create_pie("revenues_pie_div", "revenues_data", revenues_link_map);
+     show_top();
+ });
+
+
 
 </script>
 
