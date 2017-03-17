@@ -2,65 +2,176 @@
 {% block content %}
 {% load staticfiles %}
 
+
 <h2>{{ project.name }}</h2>
 
-<div id="top">
-  <div class="panel panel-default">
-    <div class="panel-body">
-	<p>
-	    This budget is for the fiscal period from {{ project.fiscal_period_start }} to {{ project.fiscal_period_end }}.
-	</p>
-	<p>
-	    To see the official budget document, go <a href="{{ project.budget_url }}">here</a>.
-	</p>
+<div id="pie_revenues"></div>
+
+<div id="top" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Budget Overview</h3>
+		</div>
+	    </div>
+
+	    <p>
+		This budget is for the fiscal period from {{ project.fiscal_period_start }} to {{ project.fiscal_period_end }}.
+	    </p>
+	    <p>
+		To see the official budget document, go <a href="{{ project.budget_url }}">here</a>.
+	    </p>
+
+	    <ul>
+		<li><a href="#" onclick="show_revenues()">Revenues</a></li>
+		<li><a href="#" onclick="show_funds()">Funds</a></li>
+		<li><a href="#" onclick="show_expenses()">Expenses</a></li>
+	    </ul>
+
+	</div>
     </div>
-  </div>
 </div>
 
-{% for rs in data.revenues %}
-<div id="revenue_source_div_{{ rs.id }}">
-  <div class="panel panel-default">
-    <div class="panel-body">
-	<h3>Revenue Source: {{ rs.name }}</h3>
-	<ul>
-	    <li><b>Amount:</b>{{ rs.amount }}</li>
-	    <li><b>Description:</b>{{ rs.description }}</li>
-	    {% if rs.reference %}<li><b>Reference:</b><a href="{{ rs.reference }}">Visit reference</a></li>{% endif %}
-	</ul>
+<div id="revenues" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-8">
+		    <h3 style="margin: 0px;">Revenues Overview</h3>
+		</div>
+		<div class="col-sm-4 text-right">
+		    <a href="#" onclick="show_top()">Back to Top</a>
+		</div>		
+	    </div>
+
+	    <pre id="data" style="display: none;">revenue_id,revenue_name,revenue_amount
+0,tax,100
+1,fees,1000</pre>
+
+
+
+	    <ul>
+		{% for rs in data.revenues %}
+		<li><a href="#" onclick="show_detail('revenue', {{ rs.id }})">{{ rs.name }}</a></li>
+		{% endfor %}	
+	    </ul>
+	    <div class="clearfix"></div>
+	</div>
     </div>
-  </div>
+</div>
+
+
+{% for rs in data.revenues %}
+<div id="revenue_source_div_{{ rs.id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-8">
+		    <h3 style="margin: 0px;">Revenue Source: {{ rs.name }}</h3>
+		</div>
+		<div class="col-sm-4 text-right">
+		    <a href="#" onclick="show_revenues()">Back to Revenues</a><br>
+		    <a href="#" onclick="show_top()">Back to Top</a>
+		</div>		
+	    </div>
+	    <ul>
+		<li><b>Amount:</b>{{ rs.amount }}</li>
+		<li><b>Description:</b>{{ rs.description }}</li>
+		{% if rs.reference %}<li><b>Reference:</b><a href="{{ rs.reference }}">Visit reference</a></li>{% endif %}
+	    </ul>
+	</div>
+    </div>
 </div>
 {% endfor %}
 
 {% for fund in data.funds %}
-<div id="revenue_source_div_{{ fund.id }}">
-  <div class="panel panel-default">
-    <div class="panel-body">
-	<h3>City Fund: {{ fund.name }}</h3>
-	<ul>
-	    <li><b>Amount:</b>{{ fund.amount }}</li>
-	    <li><b>Description:</b>{{ fund.description }}</li>
-	    {% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
-	</ul>
+<div id="revenue_source_div_{{ fund.id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body">
+	    <h3>City Fund: {{ fund.name }}</h3>
+	    <ul>
+		<li><b>Amount:</b>{{ fund.amount }}</li>
+		<li><b>Description:</b>{{ fund.description }}</li>
+		{% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
+	    </ul>
+	</div>
     </div>
-  </div>
 </div>
 {% endfor %}
 
 {% for expense in data.expenses %}
-<div id="revenue_source_div_{{ expense.id }}">
-  <div class="panel panel-default">
-    <div class="panel-body">
-	<h3>Expense: {{ expense.name }}</h3>
-	<ul>
-	    <li><b>Amount:</b>{{ expense.amount }}</li>
-	    <li><b>Description:</b>{{ expense.description }}</li>
-	    {% if expense.reference %}<li><b>Reference:</b><a href="{{ expense.reference }}">Visit reference</a></li>{% endif %}
-	</ul>
+<div id="revenue_source_div_{{ expense.id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body">
+	    <h3>Expense: {{ expense.name }}</h3>
+	    <ul>
+		<li><b>Amount:</b>{{ expense.amount }}</li>
+		<li><b>Description:</b>{{ expense.description }}</li>
+		{% if expense.reference %}<li><b>Reference:</b><a href="{{ expense.reference }}">Visit reference</a></li>{% endif %}
+	    </ul>
+	</div>
     </div>
-  </div>
 </div>
 {% endfor %}
+
+
+<script>
+ var show_revenues = function(){
+     $(".vis-page").hide();
+     $("#revenues").show()
+ }
+ 
+ var show_funds = function(){
+     $(".vis-page").hide();
+     $("#funds").show()
+ }
+ 
+ var show_expenses = function(){
+     $(".vis-page").hide();
+     $("#expenses").show()
+ }
+ 
+ var show_top = function(){
+     $(".vis-page").hide();
+     $("#top").show()
+ }
+ 
+ var show_detail = function(type, id){
+     $(".vis-page").hide();
+     var div_id = type+"_source_div_"+id;
+     $("#"+div_id).show()
+ }
+
+ $( document ).ready(show_top());
+
+
+ var parsed_data = d3.csv.parse(d3.select('pre#data').text());
+ var ndx = crossfilter(parsed_data);
+ var revenues_dimension = ndx.dimension(function(d) { return d.revenue_name; });
+ var sum_revenue = revenues_dimension.group(function(d){ return d;});
+ var sum_revenue = revenues_dimension.group( function(d){ return d;} ).reduceSum( function(d) { return +d.revenue_amount; })
+ var top_revenues = sum_revenue.top(2);
+
+ console.log("top revenues");
+ console.log(top_revenues);
+ console.log("revenues dimension");
+ console.log(revenues_dimension.top());
+ console.log("sum revenue");
+ console.log(sum_revenue);
+
+ var pie_revenues_chart = dc.pieChart("#pie_revenues");
+ pie_revenues_chart
+    .width(350)
+    .height(200)
+    .dimension(revenues_dimension)
+    .group(sum_revenue)
+    .legend(dc.legend());
+
+ pie_revenues_chart.render()
+ pie_revenues_chart.width(500).height(500).redraw();
+
+</script>
 
 
 {% include "core/item_recommendations.html" %}

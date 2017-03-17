@@ -4,19 +4,30 @@ from core import models as cm
 import sys
 import random
 import json
+from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
 
-def validate_budget_json(obj):
-    assert(len(obj.keys()) == 3)
-    assert("revenues" in obj.keys())
-    assert("funds" in obj.keys()) 
-    assert("expenses" in obj.keys())
-    # much more here
+def validate_budget_json(json_string):
+    obj = None
+    try:
+        obj = json.loads(json_string)
+    except Exception as e:
+        raise ValidationError(_("Error parsing json:%(error)s"), params={'error': str(e)})
+    try:
+        assert(len(obj.keys()) == 3)
+        assert("revenues" in obj.keys())
+        assert("funds" in obj.keys()) 
+        assert("expenses" in obj.keys())
+        # much more here
+    except Exception as e:
+        raise ValidationError(("The budget JSON string must contain exactly 3 keys at the top level: revenues, funds, and expenses",))
 
 class CityBudgetingProject(cm.ParticipationProject):
     city = models.ForeignKey(cm.GeoTag, on_delete = models.CASCADE)
     fiscal_period_start = models.DateField()
     fiscal_period_end = models.DateField()
-    budget_json = models.TextField() # contains a budget_json format
+    # contains a string in budget_json format
+    budget_json = models.TextField(validators=[validate_budget_json]) 
     budget_json_version = models.IntegerField(default=1)
     budget_url = models.URLField(blank=False)
     
