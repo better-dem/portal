@@ -7,7 +7,7 @@
 
 <div id="top" class="vis-page">
     <div class="panel panel-default">
-	<div class="panel-body">
+	<div class="panel-body" style="min-height: 500px;">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-12">
 		    <h3 style="margin: 0px;">Budget Overview</h3>
@@ -50,7 +50,7 @@
 
 <div id="revenues" class="vis-page">
     <div class="panel panel-default">
-	<div class="panel-body">
+	<div class="panel-body" style="min-height: 500px;">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-8">
 		    <h3 style="margin: 0px;">Revenues Overview</h3>
@@ -63,7 +63,7 @@
 		<div class="col-sm-6">
 		    <div id="revenues_pie_div"></div>
 		    <pre id="revenues_data" style="display: none;">id,name,amount
-{% for rs in data.revenues %}{{ rs.id }},{{ rs.name }},{{ rs.amount }}
+{% for rs in data.revenues.items %}{{ rs.id }},{{ rs.name }},{{ rs.amount }}
 {% endfor %}</pre>
 		</div>
 		<div class="col-sm-6">
@@ -82,7 +82,7 @@
 
 <div id="expenses" class="vis-page">
     <div class="panel panel-default">
-	<div class="panel-body">
+	<div class="panel-body" style="min-height: 500px;">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-8">
 		    <h3 style="margin: 0px;">Expenses Overview</h3>
@@ -95,7 +95,7 @@
 		<div class="col-sm-6">
 		    <div id="expenses_pie_div"></div>
 		    <pre id="expenses_data" style="display: none;">id,name,amount
-{% for exp in data.expenses %}{{ exp.id }},{{ exp.name }},{{ exp.amount }}
+{% for exp in data.expenses.items %}{{ exp.id }},{{ exp.name }},{{ exp.amount }}
 {% endfor %}</pre>
 		</div>
 		<div class="col-sm-6">
@@ -113,7 +113,7 @@
 
 <div id="funds" class="vis-page">
     <div class="panel panel-default">
-	<div class="panel-body">
+	<div class="panel-body" style="min-height: 500px;">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-8">
 		    <h3 style="margin: 0px;">Funds Overview</h3>
@@ -126,7 +126,7 @@
 		<div class="col-sm-6">
 		    <div id="funds_pie_div"></div>
 		    <pre id="funds_data" style="display: none;">id,name,amount
-{% for f in data.funds %}{{ f.id }},{{ f.name }},{{ f.starting_balance }}
+{% for f in data.funds.items %}{{ f.id }},{{ f.name }},{{ f.starting_balance }}
 {% endfor %}</pre>
 		</div>
 		<div class="col-sm-6">
@@ -142,10 +142,10 @@
 
 
 
-{% for rs in data.revenues %}
+{% for rs in data.revenues.items %}
 <div id="revenue_div_{{ rs.id }}" class="vis-page">
     <div class="panel panel-default">
-	<div class="panel-body">
+	<div class="panel-body" style="min-height: 500px;">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-8">
 		    <h3 style="margin: 0px;">Revenue Source: {{ rs.name }}</h3>
@@ -165,10 +165,10 @@
 </div>
 {% endfor %}
 
-{% for exp in data.expenses %}
+{% for exp in data.expenses.items %}
 <div id="expense_div_{{ exp.id }}" class="vis-page">
     <div class="panel panel-default">
-	<div class="panel-body">
+	<div class="panel-body" style="min-height: 500px;">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-8">
 		    <h3 style="margin: 0px;">Expense: {{ exp.name }}</h3>
@@ -188,9 +188,9 @@
 </div>
 {% endfor %}
 
-{% for fund in data.funds %}
+{% for fund in data.funds.items %}
 <div id="fund_div_{{ fund.id }}" class="vis-page">
-    <div class="panel panel-default">
+    <div class="panel panel-default" style="min-height: 500px;">
 	<div class="panel-body">
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-sm-8">
@@ -297,35 +297,35 @@ var create_pie = function(chart_div_id, data_pre_id, link_map){
      //// create charts
      // create linked pie chart for revenue summary pane
      var revenues_link_map = {};
-     {% for rs in data.revenues %}revenues_link_map["{{ rs.name|escapejs }}"] = function(){show_detail('revenue', {{ rs.id }});};{% endfor %}
+     {% for rs in data.revenues.items %}revenues_link_map["{{ rs.name|escapejs }}"] = function(){show_detail('revenue', {{ rs.id }});};{% endfor %}
      create_pie("revenues_pie_div", "revenues_data", revenues_link_map);
      
      // create linked pie chart for expense summary pane
      var expenses_link_map = {};
-     {% for exp in data.expenses %}expenses_link_map["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endfor %}
+     {% for exp in data.expenses.items %}expenses_link_map["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endfor %}
      create_pie("expenses_pie_div", "expenses_data", expenses_link_map);
      
      // create linked pie chart for funds summary pane
      var funds_link_map = {};
-     {% for f in data.funds %}funds_link_map["{{ f.name|escapejs }}"] = function(){show_detail('fund', {{ f.id }});};{% endfor %}
+     {% for f in data.funds.items %}funds_link_map["{{ f.name|escapejs }}"] = function(){show_detail('fund', {{ f.id }});};{% endfor %}
      create_pie("funds_pie_div", "funds_data", funds_link_map);
 
 
      //// calculate totals and insert them into document
      var total_revenue = 0;
-     {% for rs in data.revenues %}
+     {% for rs in data.revenues.items %}
      total_revenue += {{ rs.amount }};
      {% endfor %}     
      $(".total_revenue").text("$"+total_revenue);
 
      var total_expense = 0;
-     {% for exp in data.expenses %}
+     {% for exp in data.expenses.items %}
      total_expense += {{ exp.amount }};
      {% endfor %}     
      $(".total_expense").text("$"+total_expense);
 
      var total_starting_balance = 0;
-     {% for f in data.funds %}
+     {% for f in data.funds.items %}
      total_starting_balance += {{ f.starting_balance }};
      {% endfor %}     
      $(".total_starting_balance").text("$"+total_starting_balance);
