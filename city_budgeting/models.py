@@ -12,9 +12,16 @@ from collections import Counter
 def validate_budget_json(json_string):
     def assert_schema(d, schema):
         """ Ensure d follows schema exactly. All keys are required. Schema is just for depth=1 """
-        assert(len(d.keys()) == len(schema))
+        try:
+            assert(len(d.keys()) == len(schema))
+        except AssertionError:
+                raise ValidationError(_("keys: %(key)s don't match requirements: %(req)s"), params={'key': unicode(d.keys()), 'req': unicode(schema.keys())})
+            
         for k in schema.keys():
-            assert(k in d.keys())
+            try:
+                assert(k in d.keys())
+            except AssertionError:
+                raise ValidationError(_("missing key: %(key)s. Required keys: %(req)s"), params={'key': unicode(k), 'req': unicode(schema.keys())})
             try:
                 assert(isinstance(d[k], schema[k]))
             except AssertionError:
@@ -44,25 +51,16 @@ def validate_budget_json(json_string):
         assert_close_enough(sum(r["category_checksums"].values()), checksum)
         category_sums = Counter({c:0 for c in categories})
         for i in r["items"]:
-            assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode})
+            assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode, "target_fund":int})
             assert(i["category"] in categories)
             category_sums.update({i["category"]: i["amount"]})
         for c in categories:
             assert_close_enough(category_sums[c], r["category_checksums"][c])
 
         f = obj["funds"] 
-        assert_schema(f, {"checksum": float, "category_checksums": dict, "items": list})
-        checksum = f["checksum"]
-        categories = f["category_checksums"].keys()
-        assert_schema(f["category_checksums"], {k: float for k in categories})
-        assert_close_enough(sum(f["category_checksums"].values()), checksum)
-        category_sums = Counter({c:0 for c in categories})
+        assert_schema(f, {"items": list})
         for i in f["items"]:
-            assert_schema(i, {"id": int, "name": unicode, "category": unicode,"starting_balance": float})
-            assert(i["category"] in categories)
-            category_sums.update({i["category"]: i["starting_balance"]})
-        for c in categories:
-            assert_close_enough(category_sums[c], f["category_checksums"][c])
+            assert_schema(i, {"id": int, "name": unicode, "category": unicode, "description":unicode})
 
         e = obj["expenses"]
         assert_schema(e, {"checksum": float, "category_checksums": dict, "items": list})
@@ -72,7 +70,7 @@ def validate_budget_json(json_string):
         assert_close_enough(sum(e["category_checksums"].values()), checksum)
         category_sums = Counter({c:0 for c in categories})
         for i in e["items"]:
-            assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode})
+            assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode, "origin_fund":int})
             assert(i["category"] in categories)
             category_sums.update({i["category"]: i["amount"]})
         for c in categories:

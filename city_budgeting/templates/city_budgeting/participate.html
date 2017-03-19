@@ -126,13 +126,13 @@
 		<div class="col-sm-6">
 		    <div id="funds_pie_div"></div>
 		    <pre id="funds_data" style="display: none;">id,name,amount
-{% for f in data.funds.items %}{{ f.id }},{{ f.name }},{{ f.starting_balance }}
+{% for r in data.revenues.items %}{{ r.target_fund }},{% for k, v in fund_map.items %}{% if k == r.target_fund %}{{ v.name }}{% endif %}{% endfor %},{{ r.amount }}
 {% endfor %}</pre>
 		</div>
 		<div class="col-sm-6">
 		    <h4>Summary</h4>
 		    <ul>
-			<li><b>Total Starting Fund Balance: </b><span class="total_starting_balance"></span></li>
+			<li>Number of Funds: {{ fund_map|length }}</li>
 		    </ul>
 		</div>
 	    </div>
@@ -156,9 +156,9 @@
 		</div>		
 	    </div>
 	    <ul>
-		<li><b>Amount:</b>{{ rs.amount }}</li>
-		<li><b>Description:</b>{{ rs.description }}</li>
-		{% if rs.reference %}<li><b>Reference:</b><a href="{{ rs.reference }}">Visit reference</a></li>{% endif %}
+		<li><b>Amount: </b>${{ rs.amount }}</li>
+		<li><b>Description: </b>{{ rs.description }}</li>
+		{% if rs.reference %}<li><b>Reference: </b><a href="{{ rs.reference }}">Visit reference</a></li>{% endif %}
 	    </ul>
 	</div>
     </div>
@@ -179,9 +179,9 @@
 		</div>		
 	    </div>
 	    <ul>
-		<li><b>Amount:</b>{{ exp.amount }}</li>
-		<li><b>Description:</b>{{ exp.description }}</li>
-		{% if exp.reference %}<li><b>Reference:</b><a href="{{ exp.reference }}">Visit reference</a></li>{% endif %}
+		<li><b>Amount: </b>${{ exp.amount }}</li>
+		<li><b>Description: </b>{{ exp.description }}</li>
+		{% if exp.reference %}<li><b>Reference: </b><a href="{{ exp.reference }}">Visit reference</a></li>{% endif %}
 	    </ul>
 	</div>
     </div>
@@ -203,8 +203,7 @@
 	    </div>
 
 	    <ul>
-		<li><b>Starting Balance:</b>{{ fund.starting_balance }}</li>
-		<li><b>Description:</b>{{ fund.description }}</li>
+		<li><b>Description: </b>{{ fund.description }}</li>
 		{% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
 	    </ul>
 	</div>
@@ -282,9 +281,11 @@ var create_pie = function(chart_div_id, data_pre_id, link_map){
 	 ci = charts_info[i];
 	 // console.log("div id", ci.div_id);
 	 var horizontal_space_available = document.getElementById(ci.div_id).parentNode.clientWidth - 20;
-	 var width = d3.min([Math.floor(horizontal_space_available), 500]);
-	 var height = d3.max([Math.floor(width * 1.0/2), 200])
-	 ci.chart.width(width).height(height).redraw();
+	 if (horizontal_space_available > 0){
+	     var width = d3.min([Math.floor(horizontal_space_available), 500]);
+	     var height = d3.max([Math.floor(width * 1.0/2), 200])
+	     ci.chart.width(width).height(height).redraw();
+	 }
      }
  }
 
@@ -324,12 +325,6 @@ var create_pie = function(chart_div_id, data_pre_id, link_map){
      {% endfor %}     
      $(".total_expense").text("$"+total_expense);
 
-     var total_starting_balance = 0;
-     {% for f in data.funds.items %}
-     total_starting_balance += {{ f.starting_balance }};
-     {% endfor %}     
-     $(".total_starting_balance").text("$"+total_starting_balance);
-
      var total_result = total_revenue - total_expense;
      if (total_result < 0){
 	 $(".total_result").text("Deficit of $" + -1*total_result);
@@ -337,10 +332,7 @@ var create_pie = function(chart_div_id, data_pre_id, link_map){
 	 $(".total_result").text("Surplus of $" + total_result);
      }
      show_top();
-
-
  });
-
 
 
 </script>

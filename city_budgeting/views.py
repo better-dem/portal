@@ -88,5 +88,7 @@ def participate(request, item_id):
     item = CityBudgetingItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.citybudgetingproject
-    context.update({"project": project, "data":json.loads(project.budget_json), "site": os.environ["SITE"], "item":item})
+    data = json.loads(project.budget_json)
+    fund_map = {i["id"]: i for i in data["funds"]["items"]}
+    context.update({"project": project, "data":data, "site": os.environ["SITE"], "item":item, "fund_map":fund_map})
     return render(request, "city_budgeting/participate.html", context)
