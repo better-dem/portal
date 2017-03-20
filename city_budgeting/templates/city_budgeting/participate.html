@@ -23,7 +23,7 @@
 
 
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 
 		    <ul>
 			<li><a href="#" onclick="show_revenues()">Revenues</a></li>
@@ -32,7 +32,7 @@
 		    </ul>
 
 		</div>
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 
 		    <ul>
 			<li><b>Total Revenue: </b><span class="total_revenue"></span></li>
@@ -60,13 +60,13 @@
 		</div>		
 	    </div>
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 		    <div id="revenues_pie_div"></div>
-		    <pre id="revenues_data" style="display: none;">id,name,amount
-{% for rs in data.revenues.items %}{{ rs.id }},{{ rs.name }},{{ rs.amount }}
+		    <pre id="revenues_data" style="display: none;">id,name,category,amount
+{% for rs in data.revenues.items %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
 {% endfor %}</pre>
 		</div>
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 		    <h4>Summary</h4>
 		    <ul>
 			<li><b>Total Revenue: </b><span class="total_revenue"></span></li>
@@ -76,8 +76,6 @@
 	</div>
     </div>
 </div>
-
-
 
 
 <div id="expenses" class="vis-page">
@@ -92,13 +90,13 @@
 		</div>		
 	    </div>
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 		    <div id="expenses_pie_div"></div>
-		    <pre id="expenses_data" style="display: none;">id,name,amount
-{% for exp in data.expenses.items %}{{ exp.id }},{{ exp.name }},{{ exp.amount }}
+		    <pre id="expenses_data" style="display: none;">id,name,category,amount
+{% for exp in data.expenses.items %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
 {% endfor %}</pre>
 		</div>
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 		    <h4>Summary</h4>
 		    <ul>
 			<li><b>Total Expenses: </b><span class="total_expense"></span></li>
@@ -123,13 +121,13 @@
 		</div>		
 	    </div>
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 		    <div id="funds_pie_div"></div>
 		    <pre id="funds_data" style="display: none;">id,name,amount
 {% for r in data.revenues.items %}{{ r.target_fund }},{% for k, v in fund_map.items %}{% if k == r.target_fund %}{{ v.name }}{% endif %}{% endfor %},{{ r.amount }}
 {% endfor %}</pre>
 		</div>
-		<div class="col-sm-6">
+		<div class="col-lg-6">
 		    <h4>Summary</h4>
 		    <ul>
 			<li>Number of Funds: {{ fund_map|length }}</li>
@@ -140,6 +138,66 @@
     </div>
 </div>
 
+
+{% for c_id, c_name in revenue_categories.items %}
+<div id="revenue_category_div_{{ c_id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-8">
+		    <h3 style="margin: 0px;">Revenue Category: {{ c_name }}</h3>
+		</div>
+		<div class="col-sm-4 text-right">
+		    <a href="#" onclick="show_revenues()">Back to Revenues</a><br>
+		    <a href="#" onclick="show_top()">Back to Top</a>
+		</div>		
+	    </div>
+	    <div class="row">
+		<div class="col-lg-6">
+		  <div id="revenues_category_pie_div_{{ c_id }}"></div>
+		    <pre id="revenues_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
+{% for rs in data.revenues.items %}{% if rs.category == c_name %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% endif %}{% endfor %}</pre>
+		</div>
+		<div class="col-lg-6">
+		  Summary Forthcoming
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+{% endfor %}
+
+
+
+{% for c_id, c_name in expense_categories.items %}
+<div id="expense_category_div_{{ c_id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-8">
+		    <h3 style="margin: 0px;">Expense Category: {{ c_name }}</h3>
+		</div>
+		<div class="col-sm-4 text-right">
+		    <a href="#" onclick="show_expenses()">Back to Expenses</a><br>
+		    <a href="#" onclick="show_top()">Back to Top</a>
+		</div>		
+	    </div>
+	    <div class="row">
+		<div class="col-lg-6">
+		  <div id="expenses_category_pie_div_{{ c_id }}"></div>
+		    <pre id="expenses_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
+{% for exp in data.expenses.items %}{% if exp.category == c_name %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+{% endif %}{% endfor %}</pre>
+		</div>
+		<div class="col-lg-6">
+		  Summary Forthcoming
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+{% endfor %}
 
 
 {% for rs in data.revenues.items %}
@@ -246,12 +304,11 @@
 
 var charts_info = [];
 
-var create_pie = function(chart_div_id, data_pre_id, link_map){
+var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      var parsed_data = d3.csv.parse(d3.select('pre#'+data_pre_id).text());
      var ndx = crossfilter(parsed_data);
-     var name_dimension = ndx.dimension(function(d) { return d.name; });
-     var sum_by_name = name_dimension.group( function(d){ return d;} ).reduceSum( function(d) { return +d.amount; })
-     /* var top_amounts = sum_by_name.top(2); */
+     var name_dimension = ndx.dimension(function(d) { return d[dimension_var]; });
+     var sum_by_name = name_dimension.group( function(d){ return d;} ).reduceSum( function(d) { return +d.amount; });
 
      var pie_chart = dc.pieChart("#"+chart_div_id);
      pie_chart.width(250)
@@ -283,8 +340,8 @@ var create_pie = function(chart_div_id, data_pre_id, link_map){
 	 var horizontal_space_available = document.getElementById(ci.div_id).parentNode.clientWidth - 20;
 	 if (horizontal_space_available > 0){
 	     var width = d3.min([Math.floor(horizontal_space_available), 500]);
-	     var height = d3.max([Math.floor(width * 1.0/2), 200])
-	     ci.chart.width(width).height(height).redraw();
+	     var height = width;
+	     ci.chart.radius(3*height/8).width(width).height(height).redraw();
 	 }
      }
  }
@@ -298,19 +355,33 @@ var create_pie = function(chart_div_id, data_pre_id, link_map){
      //// create charts
      // create linked pie chart for revenue summary pane
      var revenues_link_map = {};
-     {% for rs in data.revenues.items %}revenues_link_map["{{ rs.name|escapejs }}"] = function(){show_detail('revenue', {{ rs.id }});};{% endfor %}
-     create_pie("revenues_pie_div", "revenues_data", revenues_link_map);
+     {% for i, rc in revenue_categories.items %}revenues_link_map["{{ rc|escapejs }}"] = function(){show_detail('revenue_category', {{ i }});};{% endfor %}
+     create_pie("category", "revenues_pie_div", "revenues_data", revenues_link_map);
      
      // create linked pie chart for expense summary pane
      var expenses_link_map = {};
-     {% for exp in data.expenses.items %}expenses_link_map["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endfor %}
-     create_pie("expenses_pie_div", "expenses_data", expenses_link_map);
+     {% for i, ec in expense_categories.items %}expenses_link_map["{{ ec|escapejs }}"] = function(){show_detail('expense_category', {{ i }});};{% endfor %}
+     create_pie("category", "expenses_pie_div", "expenses_data", expenses_link_map);
      
      // create linked pie chart for funds summary pane
      var funds_link_map = {};
      {% for f in data.funds.items %}funds_link_map["{{ f.name|escapejs }}"] = function(){show_detail('fund', {{ f.id }});};{% endfor %}
-     create_pie("funds_pie_div", "funds_data", funds_link_map);
+     create_pie("category", "funds_pie_div", "funds_data", funds_link_map);
 
+
+     // create pies for revenue categories
+     {% for i, rc in revenue_categories.items %}
+     var revenues_link_map_{{ i }} = {};
+     {% for r in data.revenues.items %}{% if r.category == rc %}revenues_link_map_{{ i }}["{{ r.name|escapejs }}"] = function(){show_detail('revenue', {{ r.id }});};{% endif %}{% endfor %}
+     create_pie("name", "revenues_category_pie_div_{{ i }}", "revenues_data_cat_{{ i}}", revenues_link_map_{{ i }});
+     {% endfor %}
+
+     // create pies for expense categories
+     {% for i, ex in expense_categories.items %}
+     var expenses_link_map_{{ i }} = {};
+     {% for exp in data.expenses.items %}{% if exp.category == ex %}expenses_link_map_{{ i }}["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endif %}{% endfor %}
+     create_pie("name", "expenses_category_pie_div_{{ i }}", "expenses_data_cat_{{ i}}", expenses_link_map_{{ i }});
+     {% endfor %}
 
      //// calculate totals and insert them into document
      var total_revenue = 0;

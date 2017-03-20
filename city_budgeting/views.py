@@ -90,5 +90,7 @@ def participate(request, item_id):
     project = item.participation_project.citybudgetingproject
     data = json.loads(project.budget_json)
     fund_map = {i["id"]: i for i in data["funds"]["items"]}
-    context.update({"project": project, "data":data, "site": os.environ["SITE"], "item":item, "fund_map":fund_map})
+    revenue_categories = {i[0]: i[1] for i in enumerate(set([x["category"] for x in data["revenues"]["items"]]))}
+    expense_categories = {i[0]: i[1] for i in enumerate(set([x["category"] for x in data["expenses"]["items"]]))}
+    context.update({"project": project, "data":data, "site": os.environ["SITE"], "item":item, "fund_map":fund_map, "revenue_categories": revenue_categories, "expense_categories": expense_categories})
     return render(request, "city_budgeting/participate.html", context)

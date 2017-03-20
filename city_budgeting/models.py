@@ -44,18 +44,9 @@ def validate_budget_json(json_string):
         assert_schema(obj, {"revenues": dict, "funds": dict, "expenses": dict})
 
         r = obj["revenues"]
-        assert_schema(r, {"checksum": float, "category_checksums": dict, "items": list})
-        checksum = r["checksum"]
-        categories = r["category_checksums"].keys()
-        assert_schema(r["category_checksums"], {k: float for k in categories})
-        assert_close_enough(sum(r["category_checksums"].values()), checksum)
-        category_sums = Counter({c:0 for c in categories})
+        assert_schema(r, {"items": list})
         for i in r["items"]:
             assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode, "target_fund":int})
-            assert(i["category"] in categories)
-            category_sums.update({i["category"]: i["amount"]})
-        for c in categories:
-            assert_close_enough(category_sums[c], r["category_checksums"][c])
 
         f = obj["funds"] 
         assert_schema(f, {"items": list})
@@ -63,18 +54,9 @@ def validate_budget_json(json_string):
             assert_schema(i, {"id": int, "name": unicode, "category": unicode, "description":unicode})
 
         e = obj["expenses"]
-        assert_schema(e, {"checksum": float, "category_checksums": dict, "items": list})
-        checksum = e["checksum"]
-        categories = e["category_checksums"].keys()
-        assert_schema(e["category_checksums"], {k: float for k in categories})
-        assert_close_enough(sum(e["category_checksums"].values()), checksum)
-        category_sums = Counter({c:0 for c in categories})
+        assert_schema(e, {"items": list})
         for i in e["items"]:
             assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode, "origin_fund":int})
-            assert(i["category"] in categories)
-            category_sums.update({i["category"]: i["amount"]})
-        for c in categories:
-            assert_close_enough(category_sums[c], e["category_checksums"][c])
             
         # much more here
     except Exception as e:
