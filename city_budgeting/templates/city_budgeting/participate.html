@@ -14,6 +14,7 @@
 		</div>
 	    </div>
 
+	    <p>{{ data.description }}</p>
 	    <p>
 		This budget is for the fiscal period from {{ project.fiscal_period_start }} to {{ project.fiscal_period_end }}.
 	    </p>
@@ -61,6 +62,8 @@
 		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
 		</div>
 	    </div>
+	    <p>{{ data.revenues.description }}</p>
+
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-lg-8">
 		    <div id="revenues_pie_div"></div>
@@ -93,6 +96,7 @@
 		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
 		</div>
 	    </div>
+	    <p>{{ data.expenses.description }}</p>
 
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-lg-8">
@@ -127,6 +131,7 @@
 		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
 		</div>
 	    </div>
+	    <p>{{ data.funds.description }}</p>
 
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-lg-8">
@@ -349,6 +354,15 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
 			  console.log("clicked, but key not in link map", k);
 		      }
 		  });
+		  pie_chart.selectAll('.dc-legend-item').on("click", function(d) {
+		      var k = d.data.key;
+		      if (k in link_map){
+			  link_map[k](); // execute the function from link map
+		      } else {
+			  console.log("clicked, but key not in link map", k);
+		      }
+		  });
+
 	      }));
      pie_chart.filter = function(){}; // turn off the filtering on click
      
@@ -430,6 +444,8 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      var total_result = total_revenue - total_expense;
      if (total_result < 0){
 	 $(".total_result").text("Deficit of " + dollar_formatter.format(-1*total_result));
+     } else if (total_result == 0){
+         $(".total_result").text("Balanced Budget");
      } else {
 	 $(".total_result").text("Surplus of " + dollar_formatter.format(total_result));
      }

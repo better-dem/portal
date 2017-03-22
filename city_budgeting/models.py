@@ -41,20 +41,20 @@ def validate_budget_json(json_string):
     except Exception as e:
         raise ValidationError(_("Error parsing json:%(error)s"), params={'error': unicode(e)})
     try:
-        assert_schema(obj, {"revenues": dict, "funds": dict, "expenses": dict})
+        assert_schema(obj, {"description": unicode, "revenues": dict, "funds": dict, "expenses": dict})
 
         r = obj["revenues"]
-        assert_schema(r, {"items": list})
+        assert_schema(r, {"description": unicode, "items": list})
         for i in r["items"]:
             assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode, "target_fund":int})
 
         f = obj["funds"] 
-        assert_schema(f, {"items": list})
+        assert_schema(f, {"description": unicode, "items": list})
         for i in f["items"]:
             assert_schema(i, {"id": int, "name": unicode, "category": unicode, "description":unicode})
 
         e = obj["expenses"]
-        assert_schema(e, {"items": list})
+        assert_schema(e, {"description": unicode, "items": list})
         for i in e["items"]:
             assert_schema(i, {"id": int, "name": unicode, "category": unicode,"amount": float, "description": unicode, "origin_fund":int})
             
