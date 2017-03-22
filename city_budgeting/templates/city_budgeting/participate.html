@@ -292,12 +292,35 @@
 		</div>
 	    </div>
 
-	    <ul>
-		{% if fund.description %}<li><b>Description: </b>{{ fund.description }}</li>{% endif %}
-		<li><b>Total Fund Budget: </b> <span class="total_fund_{{ fund.id }}"></span></li>
-		<li><b>Total Fund Expenses: </b> <span class="total_fund_expenses_{{ fund.id }}"></span></li>
-		{% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
-	    </ul>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-xs-12 col-md-4">
+		    <h4>Fund Revenues by Category</h4>
+		    <div id="fund_revenues_pie_div_{{ fund.id }}"></div>
+		    <pre id="fund_revenues_data_{{ fund.id }}" style="display: none;">id,name,category,amount
+{% for rs in data.revenues.items %}{% if rs.target_fund == fund.id %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% endif %}{% endfor %}</pre>
+		</div>
+
+		<div class="col-xs-12 col-md-4">
+		    <h4>Fund Expenses by Category</h4>
+		    <div id="fund_expenses_pie_div_{{ fund.id }}"></div>
+		    <pre id="fund_expenses_data_{{ fund.id }}" style="display: none;">id,name,category,amount
+{% for exp in data.expenses.items %}{% if exp.origin_fund == fund.id %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+{% endif %}{% endfor %}</pre>
+		</div>
+
+		<div class="col-xs-12 col-md-4">
+		    <h4>Summary</h4>
+		    <ul>
+			{% if fund.description %}<li><b>Description: </b>{{ fund.description }}</li>{% endif %}
+			<li><b>Total Fund Budget: </b> <span class="total_fund_{{ fund.id }}"></span></li>
+			<li><b>Total Fund Expenses: </b> <span class="total_fund_expenses_{{ fund.id }}"></span></li>
+			{% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
+		    </ul>
+		</div>
+		<div class="clearfix"></div>
+	    </div>
+
 	</div>
     </div>
 </div>
@@ -424,6 +447,12 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      var expenses_link_map_{{ i }} = {};
      {% for exp in data.expenses.items %}{% if exp.category == ex %}expenses_link_map_{{ i }}["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endif %}{% endfor %}
      create_pie("name", "expenses_category_pie_div_{{ i }}", "expenses_data_cat_{{ i}}", expenses_link_map_{{ i }});
+     {% endfor %}
+
+     // create pies for each funds' revenues and expenses
+     {% for f in data.funds.items %}
+     create_pie("category", "fund_revenues_pie_div_{{ f.id }}", "fund_revenues_data_{{ f.id }}", revenues_link_map);
+     create_pie("category", "fund_expenses_pie_div_{{ f.id }}", "fund_expenses_data_{{ f.id }}", expenses_link_map);
      {% endfor %}
 
      //// calculate totals and insert them into document
