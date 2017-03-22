@@ -70,6 +70,7 @@
 		    <pre id="revenues_data" style="display: none;">id,name,category,amount
 {% for rs in data.revenues.items %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
 {% endfor %}</pre>
+		    <div class="clearfix"></div>
 		</div>
 		<div class="col-lg-4">
 		    <h4>Summary</h4>
@@ -105,6 +106,7 @@
 {% for exp in data.expenses.items %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
 {% endfor %}</pre>
 		</div>
+		<div class="clearfix"></div>
 		<div class="col-lg-4">
 		    <h4>Summary</h4>
 		    <ul>
@@ -139,6 +141,7 @@
 		    <pre id="funds_data" style="display: none;">id,name,amount
 {% for r in data.revenues.items %}{{ r.target_fund }},{% for k, v in fund_map.items %}{% if k == r.target_fund %}{{ v.name }}{% endif %}{% endfor %},{{ r.amount }}
 {% endfor %}</pre>
+		    <div class="clearfix"></div>
 		</div>
 		<div class="col-lg-4">
 		    <h4>Summary</h4>
@@ -170,9 +173,10 @@
 	    <div class="row">
 		<div class="col-lg-8">
 		  <div id="revenues_category_pie_div_{{ c_id }}"></div>
-		    <pre id="revenues_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
+		  <pre id="revenues_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
 {% for rs in data.revenues.items %}{% if rs.category == c_name %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
 {% endif %}{% endfor %}</pre>
+		  <div class="clearfix"></div>
 		</div>
 		<div class="col-lg-4">
 		  <ul>
@@ -208,6 +212,7 @@
 		    <pre id="expenses_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
 {% for exp in data.expenses.items %}{% if exp.category == c_name %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
 {% endif %}{% endfor %}</pre>
+		    <div class="clearfix"></div>
 		</div>
 		<div class="col-lg-4">
 		  <ul>
@@ -346,7 +351,7 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
 	      .group(sum_by_name)
 	      .legend(dc.legend())
 	      .on("renderlet", (function(chart) {
-		  pie_chart.selectAll('.pie-slice').on("click", function(d) {
+		  chart.selectAll('.pie-slice').on("click", function(d) {
 		      var k = d.data.key;
 		      if (k in link_map){
 			  link_map[k](); // execute the function from link map
@@ -354,15 +359,14 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
 			  console.log("clicked, but key not in link map", k);
 		      }
 		  });
-		  pie_chart.selectAll('.dc-legend-item').on("click", function(d) {
-		      var k = d.data.key;
+		  chart.selectAll('.dc-legend-item').on("click", function(d) {
+		      var k = d.name; // add names to link map
 		      if (k in link_map){
 			  link_map[k](); // execute the function from link map
 		      } else {
 			  console.log("clicked, but key not in link map", k);
 		      }
 		  });
-
 	      }));
      pie_chart.filter = function(){}; // turn off the filtering on click
      
@@ -394,7 +398,7 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      //// create charts
      // create linked pie chart for revenue summary pane
      var revenues_link_map = {};
-     {% for i, rc in revenue_categories.items %}revenues_link_map["{{ rc|escapejs }}"] = function(){show_detail('revenue_category', {{ i }});};{% endfor %}
+     {% for i, rc in revenue_categories.items %}revenues_link_map["{{ rc|escapejs }}"] = function(){show_detail('revenue_category', {{ i }});}; {% endfor %}
      create_pie("category", "revenues_pie_div", "revenues_data", revenues_link_map);
      
      // create linked pie chart for expense summary pane
