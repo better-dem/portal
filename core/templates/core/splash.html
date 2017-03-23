@@ -12,7 +12,7 @@
 	background-size: cover;
 	}
 	
-	#p2 {
+	.p2 {
 	height: 200px;
 	}
 
@@ -29,29 +29,6 @@
 	-webkit-align-items: center;
 	align-items: center;
 	justify-content: center;
-	}
-
-
-	.side-by-side-centered {
-	height: 100%;
-	display: -webkit-flexbox;
-	display: -ms-flexbox;
-	display: -webkit-flex;
-	display: flex;
-	-webkit-flex-align: center;
-	-ms-flex-align: center;
-	-webkit-align-items: center;
-	align-items: center;
-	justify-content: center;
-	}
-
-
-	.three-container {
-	height: 300px;
-	}
-	.three-item {
-	max-width: 300px;
-	padding: 30px;
 	}
 
 	.jumbo1 {
@@ -72,14 +49,14 @@
 	.jumbo2 {
 	font-size: 25px;
 	}
-	.three-item {
-	max-width: 200px;
-	}
 	}
 		
 	@media (max-width: 600px) {
 	.parallax {
-	height: 300px;
+	height: 400px;
+	}
+	.p2 {
+	height: 200px;
 	}
 	.jumbo1 {
 	font-size: 32px;
@@ -87,36 +64,21 @@
 	.jumbo2 {
 	font-size: 20px;
 	}
-	.side-by-side-centered {
-	-webkit-flex-direction: column;
-	flex-direction: column;
-	align-items: left;
-	}
-	.three-container {
-	height: 500px;
-	}
-	.three-item {
-	max-width: 80%;
-	width: 80%;
-	padding: 0px;
-	}
 	}
 
 
 	@media (max-width: 400px) {
 	.parallax {
-	height: 200px;
+	height: 350px;
+	}
+	.p2 {
+	height: 150px;
 	}
 	.jumbo1 {
 	font-size: 25px;
 	}
 	.jumbo2 {
 	font-size: 15px;
-	}
-	.three-item {
-	max-width: 100%;
-	width: 100%;
-	padding: 0px;
 	}
 	}
 
@@ -131,47 +93,119 @@
 	<div class="full-centered">
 	  <div class="jumbo1" style="text-align: center;">Welcome to the Better Democracy Portal</div>
 	  <div class="jumbo2" style="text-align: center;">Your resource to learn about and participate in government</div>
-	  <p></p>
-	  <a href="/demo/" class="btn btn-primary" role="button">Get Started!</a>
-	  
+	  <p><center>
+	      <a href="#ordinary_citizens" class="btn btn-primary" role="button" style="margin:10px;">Ordinary Citizens Get Started!</a>
+	      <a href="#public_servants" class="btn btn-primary" role="button" style="margin:10px;">Public Servants Get Started!</a></center>
+	  </p>
 	</div>
       </div>
 
-      <div class="three-container">
-	<div class="side-by-side-centered">
-	  <div class="three-item">
-	    <h2>We are:</h2>
-	    <ul>
-	      <li>A Washington State nonprofit</li>
-	      <li>Engineers and social scientists</li>
-	      <li>Passionate about your voice</li>
-	    </ul>
-	  </div>
+      <div id="ordinary_citizens" style="height:100px;"></div>
+      <div class="container">
+	  <div class="panel panel-default">
+	      <div class="panel-heading">
+		  <div class="panel-title">
+		      <h3 style="display: inline;">Ordinary Citizens</h3>
+		  </div>
+	      </div>
 
+	      <div style="padding:15px;">
+		  <div>
+		      The Better Democracy Portal is a place for ordinary citizens to learn and find opportunities to impact policy.
+		      The participation feed recommends the best and latest opportunities in the places you follow.
+		      Check out <a href="/feed/">the feed</a>.
+		  </div>
+		  <div style="height:10px;"></div>
+		  <!-- <div>
+		       <a href="/feed/"><img class="img-responsive" src="{% static 'core/img/demo_participation_feed.png' %}"><img></a>
+		       </div> -->
 
-	  <div class="three-item">
-	    <h2>We do:</h2>
-	    <ul>
-	      <li>Local</li>
-	      <li>State</li>
-	      <li>Federal</li>
-	    </ul>
-	  </div>
-	  
-	  <div class="three-item">
-	    <h2>We make:</h2>
-	    <ul>
-	      <li>Interactive visualizations</li>
-	      <li>Decision tools</li>
-	      <li>Outreach tools</li>
-	      <li>Quizzes and videos</li>
-	    </ul>
-	  </div>
+		  <p>Some of what you'll find browsing around the participation feed:
+		      <ul>
+			  <li><b>Open Data Visualizations: </b>Learn what your government is up to. Understand the issues affecting your community.</li>
+			  <li><b>Local Government Outreach: </b>Find out about meetings, surveys, and other opportunities to have your voice heard.</li>
+			  <li><b>Decision Tools: </b>Make the right decision by learning about the background and effects of a proposal, then weighing important arguments.</li>
+			  <li><b>Critical Thinking Exercises: </b>Practice catching illogical arguments on both sides of important issues.</li>
+			  <li><b>More: </b>A collection of action-packed tools, quizzes, surveys, articles, and videos awaits!</li>
+		      </ul>
+		  </p>
+	      </div>
 
-	</div>
+	  </div>
+      </div>
+      <div style="height:100px;"></div>
+
+      <div class="parallax p2" style="background-image: url('{% static 'core/img/us_capital_building.jpeg' %}');">
       </div>
 
-      <div id="p2" class="parallax" style="background-image: url('{% static 'core/img/us_capital_building.jpeg' %}');">
+      <div id="public_servants" style="height:100px;"></div>
+      <div class="container">
+	  <div class="panel panel-default">
+	      <div class="panel-heading">
+		  <div class="panel-title">
+		      <h3 style="display: inline;">Public Servants</h3>
+		  </div>
+	      </div>
+	      <div style="padding:15px;">
+		  We provide a growing suite of free web tools for you to inform and engage with your constituents.
+	      </div>
+
+	      <div class="panel-body flex-container">
+
+		  <div style="max-width:300px; padding:15px;">
+		      <div>
+			  <h3>Land Use Planning Outreach</h3>
+			  Doing outreach for a land use planning project? Need to get feedback from constituents? Run a survey using our land use planning outreach tool.
+			  <a href="mailto:{{ email }}">Contact us</a> to sign up for FREE access for your city.
+		      </div>
+		      <div style="height:10px;"></div>
+		      <div>
+			  <img class="img-responsive" src="{% static 'core/img/demo_land_use.png' %}"><img>
+		      </div>
+		  </div>
+
+		  <div style="max-width:300px; padding:15px;">
+		      <div>
+			  <h3>City Budget Transparency</h3>
+			  Want to save time answering constituent questions about your budget's basics? Want your constituents to be informed and able to make smart decisions on local ballot measures? Want beautiful visuals to explore your city's spending without spending six figures? Try our city budget transparency tool.
+			  Check out <a href="/kirkland_budget">an example</a>, or <a href="mailto:{{ email }}">contact us</a> to sign up for FREE access for your city.
+		      </div>
+		      <div style="height:10px;"></div>
+		      <div>
+			  <img class="img-responsive" src="{% static 'core/img/demo_city_budgeting.png' %}"><img>
+		      </div>
+		  </div>
+
+		  <div style="max-width:300px; padding:15px;">
+		      <div>
+			  <h3>Public Meetings</h3>
+			  Want more participation without the mailing lists? Want to hear from constituents who can't make the meeting? Want to follow up with attendees? Try our public meeting tool.
+			  <a href="mailto:{{ email }}">Contact us</a> to sign up for FREE access for your city.
+		      </div>
+		      <div style="height:10px;"></div>
+		      <div>
+			  <img class="img-responsive" src="{% static 'core/img/public_meeting.png' %}"><img>
+		      </div>
+		  </div>
+
+		  <div style="max-width:300px; padding:15px;">
+		      <div>
+			  <h3>Civic Engagement Tech Exchange</h3>
+			  Looking for something else? Our tech exchange has information about dozens of useful tools that might do the trick.
+			  Check out <a href="/apps/tool_review/overview/-1">the tool exchange</a>.
+		      </div>
+		      <div style="height:10px;"></div>
+		      <div>
+			  <a href="/apps/tool_review/overview/-1"><img class="img-responsive" src="{% static 'core/img/demo_tool_exchange.png' %}"><img></a>
+		      </div>
+		  </div>
+	      </div>
+	  </div>
+      </div>
+
+      <div style="height:100px;"></div>
+
+      <div class="parallax p2" style="background-image: url('{% static 'core/img/us_capital_building.jpeg' %}');">
       </div>
 
       <div style="text-align: center;">
@@ -187,5 +221,3 @@
 
     </body>
 </html>
-
-      

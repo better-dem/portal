@@ -1,0 +1,529 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+
+<h2>{{ project.name }}</h2>
+
+<div id="top" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Budget Overview</h3>
+		</div>
+	    </div>
+
+	    <p>{{ data.description }}</p>
+	    <p>
+		This budget is for the fiscal period from {{ project.fiscal_period_start }} to {{ project.fiscal_period_end }}.
+	    </p>
+	    <p>
+		To see the official budget document, go <a href="{{ project.budget_url }}">here</a>.
+	    </p>
+
+
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-lg-6">
+
+		    <ul>
+			<li><a href="#" onclick="show_revenues()">Revenues</a></li>
+			<li><a href="#" onclick="show_funds()">Funds</a></li>
+			<li><a href="#" onclick="show_expenses()">Expenses</a></li>
+		    </ul>
+
+		</div>
+		<div class="col-lg-6">
+
+		    <ul>
+			<li><b>Total Budget Size: </b><span class="total_revenue"></span></li>
+			<!-- <li><b>Total Expenses: </b><span class="total_expense"></span></li>
+			     <li><b>Result: </b><span class="total_result"></span></li> -->
+		    </ul>
+
+
+		</div>
+	    </div>
+
+	</div>
+    </div>
+</div>
+
+<div id="revenues" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Revenues Overview</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+	    <p>{{ data.revenues.description }}</p>
+
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-lg-8">
+		    <div id="revenues_pie_div"></div>
+		    <pre id="revenues_data" style="display: none;">id,name,category,amount
+{% for rs in data.revenues.items %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% endfor %}</pre>
+		    <div class="clearfix"></div>
+		</div>
+		<div class="col-lg-4">
+		    <h4>Summary</h4>
+		    <ul>
+			<li><b>Total Revenue: </b><span class="total_revenue"></span></li>
+		    </ul>
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+
+
+<div id="expenses" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Expenses Overview</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+	    <p>{{ data.expenses.description }}</p>
+
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-lg-8">
+		    <div id="expenses_pie_div"></div>
+		    <pre id="expenses_data" style="display: none;">id,name,category,amount
+{% for exp in data.expenses.items %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+{% endfor %}</pre>
+		</div>
+		<div class="clearfix"></div>
+		<div class="col-lg-4">
+		    <h4>Summary</h4>
+		    <ul>
+			<li><b>Total Expenses: </b><span class="total_expense"></span></li>
+		    </ul>
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+
+
+
+<div id="funds" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Funds Overview</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+	    <p>{{ data.funds.description }}</p>
+
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-lg-8">
+		    <div id="funds_pie_div"></div>
+		    <pre id="funds_data" style="display: none;">id,name,amount
+{% for r in data.revenues.items %}{{ r.target_fund }},{% for k, v in fund_map.items %}{% if k == r.target_fund %}{{ v.name }}{% endif %}{% endfor %},{{ r.amount }}
+{% endfor %}</pre>
+		    <div class="clearfix"></div>
+		</div>
+		<div class="col-lg-4">
+		    <h4>Summary</h4>
+		    <ul>
+			<li>Number of Funds: {{ fund_map|length }}</li>
+		    </ul>
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+
+
+{% for c_id, c_name in revenue_categories.items %}
+<div id="revenue_category_div_{{ c_id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Revenue Category: {{ c_name }}</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_revenues()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+
+	    <div class="row">
+		<div class="col-lg-8">
+		  <div id="revenues_category_pie_div_{{ c_id }}"></div>
+		  <pre id="revenues_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
+{% for rs in data.revenues.items %}{% if rs.category == c_name %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% endif %}{% endfor %}</pre>
+		  <div class="clearfix"></div>
+		</div>
+		<div class="col-lg-4">
+		  <ul>
+		    <li><b>Total {{ c_name }} Revenues:</b> <span class="revenue_category_total_{{ c_id}}"></span></li>
+		  </ul>
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+{% endfor %}
+
+
+
+{% for c_id, c_name in expense_categories.items %}
+<div id="expense_category_div_{{ c_id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Expense Category: {{ c_name }}</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_expenses()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+
+	    <div class="row">
+		<div class="col-lg-8">
+		  <div id="expenses_category_pie_div_{{ c_id }}"></div>
+		    <pre id="expenses_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
+{% for exp in data.expenses.items %}{% if exp.category == c_name %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+{% endif %}{% endfor %}</pre>
+		    <div class="clearfix"></div>
+		</div>
+		<div class="col-lg-4">
+		  <ul>
+		    <li><b>Total {{ c_name }} Expenses:</b> <span class="expense_category_total_{{ c_id}}"></span></li>
+		  </ul>
+		</div>
+	    </div>
+	</div>
+    </div>
+</div>
+{% endfor %}
+
+
+{% for rs in data.revenues.items %}
+<div id="revenue_div_{{ rs.id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Revenue Source: {{ rs.name }}</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_detail('revenue_category', {% for id, c_name in revenue_categories.items %}{% if c_name == rs.category %}{{ id }}{% endif %}{% endfor %})" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+
+	    <ul>
+		<li><b>Amount: </b><span id="revenue_item_amount_{{ rs.id }}"></span></li>
+		{% if rs.description %}<li><b>Description: </b>{{ rs.description }}</li>{% endif %}
+		{% if rs.reference %}<li><b>Reference: </b><a href="{{ rs.reference }}">Visit reference</a></li>{% endif %}
+	    </ul>
+	</div>
+    </div>
+</div>
+{% endfor %}
+
+{% for exp in data.expenses.items %}
+<div id="expense_div_{{ exp.id }}" class="vis-page">
+    <div class="panel panel-default">
+	<div class="panel-body" style="min-height: 500px;">
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Expense: {{ exp.name }}</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_detail('expense_category', {% for id, c_name in expense_categories.items %}{% if c_name == exp.category %}{{ id }}{% endif %}{% endfor %})" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+
+	    <ul>
+		<li><b>Amount: </b><span id="expense_item_amount_{{ rs.id }}"></span></li>
+		{% if exp.description %}<li><b>Description: </b>{{ exp.description }}</li>{% endif %}
+		{% if exp.reference %}<li><b>Reference: </b><a href="{{ exp.reference }}">Visit reference</a></li>{% endif %}
+	    </ul>
+	</div>
+    </div>
+</div>
+{% endfor %}
+
+{% for fund in data.funds.items %}
+<div id="fund_div_{{ fund.id }}" class="vis-page">
+    <div class="panel panel-default" style="min-height: 500px;">
+	<div class="panel-body">
+
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		    <h3 style="margin: 0px;">Fund: {{ fund.name }}</h3>
+		</div>
+	    </div>
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-sm-12">
+		  <button type="button" onclick="show_funds()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
+		</div>
+	    </div>
+
+	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
+		<div class="col-xs-12 col-md-4">
+		    <h4>Fund Revenues by Category</h4>
+		    <div id="fund_revenues_pie_div_{{ fund.id }}"></div>
+		    <pre id="fund_revenues_data_{{ fund.id }}" style="display: none;">id,name,category,amount
+{% for rs in data.revenues.items %}{% if rs.target_fund == fund.id %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% endif %}{% endfor %}</pre>
+		</div>
+
+		<div class="col-xs-12 col-md-4">
+		    <h4>Fund Expenses by Category</h4>
+		    <div id="fund_expenses_pie_div_{{ fund.id }}"></div>
+		    <pre id="fund_expenses_data_{{ fund.id }}" style="display: none;">id,name,category,amount
+{% for exp in data.expenses.items %}{% if exp.origin_fund == fund.id %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+{% endif %}{% endfor %}</pre>
+		</div>
+
+		<div class="col-xs-12 col-md-4">
+		    <h4>Summary</h4>
+		    <ul>
+			{% if fund.description %}<li><b>Description: </b>{{ fund.description }}</li>{% endif %}
+			<li><b>Total Fund Budget: </b> <span class="total_fund_{{ fund.id }}"></span></li>
+			<li><b>Total Fund Expenses: </b> <span class="total_fund_expenses_{{ fund.id }}"></span></li>
+			{% if fund.reference %}<li><b>Reference:</b><a href="{{ fund.reference }}">Visit reference</a></li>{% endif %}
+		    </ul>
+		</div>
+		<div class="clearfix"></div>
+	    </div>
+
+	</div>
+    </div>
+</div>
+{% endfor %}
+
+
+<script>
+ var show_revenues = function(){
+     $(".vis-page").hide();
+     $("#revenues").show();
+     resize_charts();
+ }
+ 
+ var show_funds = function(){
+     $(".vis-page").hide();
+     $("#funds").show();
+     resize_charts();
+ }
+ 
+ var show_expenses = function(){
+     $(".vis-page").hide();
+     $("#expenses").show();
+     resize_charts();
+ }
+ 
+ var show_top = function(){
+     $(".vis-page").hide();
+     $("#top").show();
+     resize_charts();
+ }
+ 
+ var show_detail = function(type, id){
+     $(".vis-page").hide();
+     var div_id = type+"_div_"+id;
+     $("#"+div_id).show();
+     resize_charts();
+ }
+
+var charts_info = [];
+
+var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
+     var parsed_data = d3.csv.parse(d3.select('pre#'+data_pre_id).text());
+     var ndx = crossfilter(parsed_data);
+     var name_dimension = ndx.dimension(function(d) { return d[dimension_var]; });
+     var sum_by_name = name_dimension.group( function(d){ return d;} ).reduceSum( function(d) { return +d.amount; });
+
+     var pie_chart = dc.pieChart("#"+chart_div_id);
+     pie_chart.width(250)
+	      .height(150)
+	      .dimension(name_dimension)
+	      .group(sum_by_name)
+	      .legend(dc.legend())
+	      .on("renderlet", (function(chart) {
+		  chart.selectAll('.pie-slice').on("click", function(d) {
+		      var k = d.data.key;
+		      if (k in link_map){
+			  link_map[k](); // execute the function from link map
+		      } else {
+			  console.log("clicked, but key not in link map", k);
+		      }
+		  });
+		  chart.selectAll('.dc-legend-item').on("click", function(d) {
+		      var k = d.name; // add names to link map
+		      if (k in link_map){
+			  link_map[k](); // execute the function from link map
+		      } else {
+			  console.log("clicked, but key not in link map", k);
+		      }
+		  });
+	      }));
+     pie_chart.filter = function(){}; // turn off the filtering on click
+     
+     pie_chart.render()
+     charts_info.push({"chart": pie_chart, "div_id": chart_div_id});
+}
+
+
+ var resize_charts = function(){
+     for ( var i=0; i < charts_info.length; i++ ){
+	 ci = charts_info[i];
+	 // console.log("div id", ci.div_id);
+	 var horizontal_space_available = document.getElementById(ci.div_id).parentNode.clientWidth - 20;
+	 if (horizontal_space_available > 0){
+	     var width = d3.min([Math.floor(horizontal_space_available), 550]);
+	     var height = width - 150;
+             var radius = height/2;
+	     ci.chart.cx(width-radius).cy(radius).radius(radius).width(width).height(height).redraw();
+	 }
+     }
+ }
+
+ $( window ).resize( function() {
+     resize_charts();
+ });
+
+
+ $( document ).ready( function() {
+     //// create charts
+     // create linked pie chart for revenue summary pane
+     var revenues_link_map = {};
+     {% for i, rc in revenue_categories.items %}revenues_link_map["{{ rc|escapejs }}"] = function(){show_detail('revenue_category', {{ i }});}; {% endfor %}
+     create_pie("category", "revenues_pie_div", "revenues_data", revenues_link_map);
+     
+     // create linked pie chart for expense summary pane
+     var expenses_link_map = {};
+     {% for i, ec in expense_categories.items %}expenses_link_map["{{ ec|escapejs }}"] = function(){show_detail('expense_category', {{ i }});};{% endfor %}
+     create_pie("category", "expenses_pie_div", "expenses_data", expenses_link_map);
+     
+     // create linked pie chart for funds summary pane
+     var funds_link_map = {};
+     {% for f in data.funds.items %}funds_link_map["{{ f.name|escapejs }}"] = function(){show_detail('fund', {{ f.id }});};{% endfor %}
+     create_pie("name", "funds_pie_div", "funds_data", funds_link_map);
+
+
+     // create pies for revenue categories
+     {% for i, rc in revenue_categories.items %}
+     var revenues_link_map_{{ i }} = {};
+     {% for r in data.revenues.items %}{% if r.category == rc %}revenues_link_map_{{ i }}["{{ r.name|escapejs }}"] = function(){show_detail('revenue', {{ r.id }});};{% endif %}{% endfor %}
+     create_pie("name", "revenues_category_pie_div_{{ i }}", "revenues_data_cat_{{ i}}", revenues_link_map_{{ i }});
+     {% endfor %}
+
+     // create pies for expense categories
+     {% for i, ex in expense_categories.items %}
+     var expenses_link_map_{{ i }} = {};
+     {% for exp in data.expenses.items %}{% if exp.category == ex %}expenses_link_map_{{ i }}["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endif %}{% endfor %}
+     create_pie("name", "expenses_category_pie_div_{{ i }}", "expenses_data_cat_{{ i}}", expenses_link_map_{{ i }});
+     {% endfor %}
+
+     // create pies for each funds' revenues and expenses
+     {% for f in data.funds.items %}
+     create_pie("category", "fund_revenues_pie_div_{{ f.id }}", "fund_revenues_data_{{ f.id }}", revenues_link_map);
+     create_pie("category", "fund_expenses_pie_div_{{ f.id }}", "fund_expenses_data_{{ f.id }}", expenses_link_map);
+     {% endfor %}
+
+     //// calculate totals and insert them into document
+     var dollar_formatter = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          minimumFractionDigits: 0,
+     });
+
+     var total_revenue = 0;
+     {% for rs in data.revenues.items %}
+     total_revenue += {{ rs.amount }};
+     $("#revenue_item_amount_{{ rs.id }}").text(dollar_formatter.format({{ rs.amount }}));{% endfor %}     
+     $(".total_revenue").text(dollar_formatter.format(total_revenue));
+
+     var total_expense = 0;
+     {% for exp in data.expenses.items %}
+     total_expense += {{ exp.amount }};
+     $("#expense_item_amount_{{ exp.id }}").text(dollar_formatter.format({{ exp.amount }}));{% endfor %}     
+     $(".total_expense").text(dollar_formatter.format(total_expense));
+
+     var total_result = total_revenue - total_expense;
+     if (total_result < 0){
+	 $(".total_result").text("Deficit of " + dollar_formatter.format(-1*total_result));
+     } else if (total_result == 0){
+         $(".total_result").text("Balanced Budget");
+     } else {
+	 $(".total_result").text("Surplus of " + dollar_formatter.format(total_result));
+     }
+     show_top();
+
+     var expense_totals_by_category={}
+     {% for id in expense_categories.keys %}
+     expense_totals_by_category[{{ id }}] = 0;{% endfor %}
+     {% for exp in data.expenses.items %}
+     expense_totals_by_category[{% for id, c_name in expense_categories.items %}{% if c_name == exp.category %}{{ id }}{% endif %}{% endfor %}] += {{ exp.amount }};{% endfor %}
+     for (var cid in expense_totals_by_category){
+          $(".expense_category_total_"+cid).text(dollar_formatter.format(expense_totals_by_category[cid]));
+     }
+
+     var revenue_totals_by_category={}
+     {% for id in revenue_categories.keys %}
+     revenue_totals_by_category[{{ id }}] = 0;{% endfor %}
+     {% for rs in data.revenues.items %}
+     revenue_totals_by_category[{% for id, c_name in revenue_categories.items %}{% if c_name == rs.category %}{{ id }}{% endif %}{% endfor %}] += {{ rs.amount }};{% endfor %}
+     for (var cid in revenue_totals_by_category){
+          $(".revenue_category_total_"+cid).text(dollar_formatter.format(revenue_totals_by_category[cid]));
+     }
+
+     var totals_by_fund={}
+     var total_expenses_by_fund={}
+     {% for fund in data.funds.items %}
+     total_expenses_by_fund[{{ fund.id }}] = 0;
+     totals_by_fund[{{ fund.id }}] = 0;{% endfor %}
+     {% for item in data.revenues.items %}
+     totals_by_fund[{{ item.target_fund }}] += {{ item.amount }};{% endfor %}
+     {% for item in data.expenses.items %}
+     total_expenses_by_fund[{{ item.origin_fund }}] += {{ item.amount }};{% endfor %}
+     for (var fid in totals_by_fund){
+          $(".total_fund_"+fid).text(dollar_formatter.format(totals_by_fund[fid]));
+	  $(".total_fund_expenses_"+fid).text(dollar_formatter.format(total_expenses_by_fund[fid]))
+          if (totals_by_fund[fid] !== total_expenses_by_fund[fid]){
+               console.log("fund not balanced!", fid, totals_by_fund[fid], total_expenses_by_fund[fid]);
+          }
+     }
+     
+ });
+
+
+</script>
+
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}

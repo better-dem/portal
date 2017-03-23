@@ -5,7 +5,7 @@ from importlib import import_module
 
 class CityBudgetingConfig(AppConfig):
     name = 'city_budgeting'
-    are_projects_editable = False
+    are_projects_editable = True
     custom_feed_item_template = None
     external_link=False
 

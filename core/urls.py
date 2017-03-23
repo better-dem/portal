@@ -5,7 +5,6 @@ from . import views
 from . import forms
 
 urlpatterns = [
-    url(r'^demo/$', views.demo, name="demo"),
     url(r'^donate/$', views.donate, name="donate"),
     url(r'^volunteer/$', views.volunteer, name="volunteer"),
     url(r'^nonpartisanship/$', views.nonpartisanship, name="nonpartisanship"),
@@ -15,7 +14,7 @@ urlpatterns = [
     url(r'^portal_stats/$', views.portal_stats, name="portal_stats"),
     url(r'^accounts/', include('registration.backends.hmac.urls')),
     url(r'^accounts/profile/$', views.show_profile, name="profile"),
-    url(r'^$', views.splash_if_anon, name="home"),
+    url(r'^$', views.home, name="home"),
     url(r'^feed/$', views.feed, name="feed"),
     url(r'^upload_dataset/$', views.upload_dataset, name="upload_dataset"),
     url(r'^testgeo/$', views.test_geo, name="test_geo"),
