@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
+from django.template import Template, Context
 from tool_review.models import ToolReviewProject, ToolReviewItem, TOOL_CATEGORIES, PROJECT_CATEGORIES
 from .forms import CreateProjectForm, EditProjectForm
 from django.db.models import Count
@@ -10,6 +11,7 @@ import core.views as cv
 import core.forms as cf
 import core.tasks as ct
 from urlparse import urlsplit
+import csv, io
 
 def new_project(request):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
@@ -145,3 +147,20 @@ def participate(request, item_id):
 def overview(request):
     items = ToolReviewItem.objects.all()[:100]
     return render(request, 'tool_review/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"], "tool_categories": [x[1] for x in TOOL_CATEGORIES], "project_categories": [x[1] for x in PROJECT_CATEGORIES]})
+
+def customActionDownloadOverviewCsv(request, ignore):
+    projects = ToolReviewProject.objects.filter(is_active=True)
+    csv_data = None
+    with io.BytesIO() as s:
+        w = csv.writer(s, delimiter=',', quotechar="|", quoting=csv.QUOTE_MINIMAL)
+        w.writerow(["id","name","url", "summary","tool category","project category"])
+        for p in projects:
+            w.writerow([unicode(x).encode("utf-8") for x in [p.id, p.name, p.url, p.summary, p.get_tool_category_display(), p.get_project_category_display()]])
+        csv_data = s.getvalue()
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="tool_review_overview.csv"'
+    t = Template("{{ data }}")
+    response.write(t.render(Context({"data": csv_data})))
+    return response
+
+
