@@ -152,7 +152,7 @@ def customActionDownloadOverviewCsv(request, ignore):
     projects = ToolReviewProject.objects.filter(is_active=True)
     csv_data = None
     with io.BytesIO() as s:
-        w = csv.writer(s, dialect='excel', delimiter=',')
+        w = csv.writer(s, delimiter=',', quotechar="|", quoting=csv.QUOTE_MINIMAL)
         w.writerow(["id","name","url", "summary","tool category","project category"])
         for p in projects:
             w.writerow([unicode(x).encode("utf-8") for x in [p.id, p.name, p.url, p.summary, p.get_tool_category_display(), p.get_project_category_display()]])
