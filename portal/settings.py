@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'ballot_decider.apps.BallotDeciderConfig',
     'interactive_visualization.apps.InteractiveVisualizationConfig',
     'beat_the_bullshit.apps.BeatTheBullshitConfig',
+    'legislators.apps.LegislatorsConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',

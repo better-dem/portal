@@ -3,19 +3,17 @@ from __future__ import unicode_literals
 from django.db import models
 from core import models as cm
 
-TOOL_CATEGORIES = (("OD", "Open Data"), ("ED", "Educational Material"), ("PA", "Policy Analysis"), ("CL", "Collaborative Problem-Solving"), ("UN", "Unclassified"))
-PROJECT_CATEGORIES = (("GV","Government Project"), ("OS", "Open source project"), ("CO", "Commercial Product"), ("UN", "Unclassified"), ("NC", "Nonprofit Closed Source"))
+CHAMBERS = (("UP", "upper"), ("LO", "lower"))
 
 class ToolReviewProject(cm.ParticipationProject):
-    # name <- tool's name
-    url = models.URLField()
-    screenshot_filename = models.FilePathField(max_length=500, blank=True)
-    summary = models.TextField()
-    youtube_video_id = models.CharField(max_length=100, blank=True)
-    review_blog_post = models.URLField(blank=True)
-    tags = models.ManyToManyField(cm.Tag)
-    tool_category = models.CharField(max_length=2, choices=TOOL_CATEGORIES, default="UN")
-    project_category = models.CharField(max_length=2, choices=PROJECT_CATEGORIES, default="UN")
+    open_states_leg_id = models.CharField(max_length=100)
+    open_states_active = models.BooleanField()
+    open_states_state = models.CharField(max_length=50)
+    photo_url = models.URLField()
+    webpage_url = models.URLField()
+    chamber = models.CharField(max_length=2, choices=CHAMBERS, blank=True, null=True)
+    district = models.CharField(max_length=50)
+    email = models.CharField(max_length=100)
     
     def update_items(self):
         if ToolReviewItem.objects.filter(participation_project=self, is_active=True).count()==0:
@@ -34,9 +32,6 @@ class ToolReviewItem(cm.ParticipationItem):
         self.tags.add(*self.participation_project.tags.all())
 
     def set_display_image(self):
-        if not self.participation_project.screenshot_filename is None:
-            self.display_image_file = self.participation_project.screenshot_filename
-        # else:
-        #     self.display_image_file = "tool_review/img/default.png"
+        self.display_image_file = "tool_review/img/default.png"
 
 
