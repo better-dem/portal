@@ -3,17 +3,17 @@ from __future__ import unicode_literals
 from django.db import models
 from core import models as cm
 
-CHAMBERS = (("UP", "upper"), ("LO", "lower"))
-
 class LegislatorsProject(cm.ParticipationProject):
     open_states_leg_id = models.CharField(max_length=100)
     open_states_active = models.BooleanField()
     open_states_state = models.CharField(max_length=50)
-    photo_url = models.URLField()
-    webpage_url = models.URLField()
-    chamber = models.CharField(max_length=2, choices=CHAMBERS, blank=True, null=True)
-    district = models.CharField(max_length=50)
-    email = models.CharField(max_length=100)
+    photo_url = models.URLField(null=True, blank=True)
+    webpage_url = models.URLField(null=True, blank=True)
+    chamber = models.CharField(max_length=100, blank=True, null=True)
+    district = models.CharField(max_length=50, blank=True, null=True)
+    email = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    tags = models.ManyToManyField(cm.Tag)
     
     def update_items(self):
         if LegislatorsItem.objects.filter(participation_project=self, is_active=True).count()==0:
@@ -26,7 +26,7 @@ class LegislatorsProject(cm.ParticipationProject):
 
 class LegislatorsItem(cm.ParticipationItem):
     def get_inline_display(self):
-        return self.participation_project.get_inherited_instance().summary
+        return self.participation_project.get_inherited_instance().name
 
     def set_relevant_tags(self):
         self.tags.add(*self.participation_project.tags.all())
