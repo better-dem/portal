@@ -48,17 +48,19 @@
 	  <th>Description</th>
 	  <th>Tags</th>
 	  <th style="width: 150px;">Photo</th>
+	  <th>Contact / website</th>
 	</tr>
 	<tr class="filters">
 	  <th><input type="text" id="name_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by name.."></th>
 	  <th><input type="text" id="description_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by description.."></th>
 	  <th><input type="text" id="tags_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by tags.."></th>
 	  <th></th>
+	  <th></th>
 	</tr>
 	{% for item in items %}
 	<tr>
-	  <td><a href="{{ item.link }}">{{ item.label }}</a></td>
-	  <td>{{ item.display }}</td>
+	  <td><a href="{{ item.link }}">{{ item.projectobj.name }}</a></td>
+	  <td>Serving {{ item.projectobj.chamber }} chamber, District {{ item.projectobj.district }}</td>
 	  <td>{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}</td>
 	  <td>
 	    {% if item.projectobj.photo_url %}
@@ -67,6 +69,7 @@
 	    </span>
 	    {% endif %}
 	  </td>
+	  <td>{% if item.projectobj.email %}<a href="mailto:{{ item.projectobj.email }}">{{ item.projectobj.email }}</a><br>{% endif %}{% if item.projectobj.webpage_url %}<a href="{{ item.projectobj.webpage_url }}">website</a>{% endif %}</td>
 	</tr>	
 	{% endfor %}
       </table>
@@ -89,9 +92,7 @@
         td_name = tr[i].getElementsByTagName("td")[0];
         td_description = tr[i].getElementsByTagName("td")[1];
         td_tags = tr[i].getElementsByTagName("td")[2];
-        td_tool_category = tr[i].getElementsByTagName("td")[3];
-        td_project_category = tr[i].getElementsByTagName("td")[4];
-        if (td_name && td_description && td_tags && td_tool_category && td_project_category) {
+        if (td_name && td_description && td_tags) {
             if (td_name.textContent.toUpperCase().indexOf(filters["name"]) > -1 && 
                 td_description.textContent.toUpperCase().indexOf(filters["description"]) > -1 &&
                 td_tags.textContent.toUpperCase().indexOf(filters["tags"]) > -1){

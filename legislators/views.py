@@ -22,10 +22,9 @@ def participate(request, item_id):
     item = LegislatorsItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.legislatorsproject
-    context.update({'site': os.environ["SITE"], "item": item})
+    context.update({'site': os.environ["SITE"], "item": item, "project":project})
     return render(request, "legislators/participate.html", context)
 
-
 def overview(request):
-    items = LegislatorsItem.objects.all()[:100]
+    items = LegislatorsItem.objects.filter(is_active=True)[:100]
     return render(request, 'legislators/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"]})
