@@ -83,7 +83,7 @@ class Command(BaseCommand):
                     if mode == "run" and existing_leg is None:
                         p = LegislatorsProject()
                         for i in simple_fields.items():
-                            p.__dict__[i[0]] = leg_json[i[1]]
+                            p.__dict__[i[0]] = leg_json.get(i[1], None)
                         
                         p.open_states_state = tag.name
                         p.owner_profile = cm.get_default_user().userprofile
@@ -126,12 +126,21 @@ class Command(BaseCommand):
                         #### finalize
                         ct.finalize_project(p)                        
 
-                    sys.stdout.write("keys:"+str(leg_json.keys())+"\n")
 
-
-
-            bill_files = os.listdir(workingdir+"/bills")
+            bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
             sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
+            sys.stdout.write("some bills:"+str(bill_files[:10])+"\n")
+            bill_subjects = set()
+            for f in bill_files:
+                with open(f, 'r') as bill_file:
+                    bill_json = json.loads(bill_file.read())
+                    if len(bill_subjects)==0:
+                        sys.stdout.write("Bill json: {}\n".format(bill_json))
+                        sys.stdout.flush()
+                    bill_subjects.update(bill_json["subjects"])
+
+            sys.stdout.write("Bill subjects: {}\n".format(bill_subjects))
+
             committee_files = os.listdir(workingdir+"/committees")
             sys.stdout.write("number of committees:"+str(len(committee_files))+"\n")
             sys.stdout.flush()
