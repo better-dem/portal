@@ -179,6 +179,9 @@ class Tag(models.Model):
         return self.name
 
 class GeoTag(Tag):
+    """
+    A tag which refers to a physical location / region
+    """
     polygon = models.PolygonField(geography = True, blank=True, null=True)
     polygon_area = models.FloatField(blank = True, null=True)
     point = models.PointField(geography = True, blank=True, null=True)
@@ -193,6 +196,7 @@ class GeoTag(Tag):
     FEATURE_TYPE_CHOICES = ((COUNTRY, "Country"),(STATE_OR_PROVINCE, "State or Province"),(CITY, "City or town"),(OTHER, "Other"),(UNKNOWN, "Unknown"))
 
     feature_type = models.CharField(max_length=2, choices=FEATURE_TYPE_CHOICES, default=UNKNOWN)
+
 
 class Event(models.Model):
     """

@@ -106,6 +106,9 @@ def upload_dataset(request):
             elif form.cleaned_data["format_id"] == "states_v1":
                 tasks.insert_states.delay(form.cleaned_data["small_test"])
                 return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
+            elif form.cleaned_data["format_id"] == "openstates_subjects_v1":
+                tasks.insert_openstates_subjects.delay(form.cleaned_data["small_test"])
+                return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
             else:
                 return HttpResponse("Sorry, this format is not known")
         else:

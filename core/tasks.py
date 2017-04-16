@@ -100,6 +100,44 @@ def insert_states(small_test):
     sys.stdout.write("Number of changes: "+str(num_changes)+"\n")
     sys.stdout.flush()
 
+
+@shared_task
+def insert_openstates_subjects(small_test):
+    filename = "/uploads/misc/tmp"
+    sys.stdout.write("Processing csv for file: "+str(filename)+"\n")
+    i = 0
+    num_changes = 0
+    with default_storage.open(filename, 'r') as f:
+        reader = csv.reader(f, delimiter=",", quotechar='"')
+        first_row = True
+        for row in reader:
+            if small_test and i > 100:
+                break
+            if i % 1000 == 0:
+                sys.stdout.write("Processing row "+str(i)+"\n")
+
+            i += 1
+            if first_row:
+                first_row = False
+                continue
+
+            name = row[0]
+
+            if not cm.Tag.objects.filter(name=name, detail="Openstates Subject").exists():
+                t = cm.Tag.objects.create(name=name, detail="Openstates Subject")
+                t.save()
+                num_changes += 1
+
+    default_storage.delete(filename)
+    sys.stdout.write("Done updating Openstates Subjects\n")
+    sys.stdout.write("Number of rows processed: "+str(i)+"\n")
+    sys.stdout.write("Number of changes: "+str(num_changes)+"\n")
+    sys.stdout.flush()
+
+
+
+
+
 ### Begin: Regular Background tasks
 
 @shared_task
