@@ -18,7 +18,7 @@ def get_core_app():
 
 def get_registered_participation_apps():
     all_apps = apps.get_app_configs()
-    participation_apps = [a for a in all_apps if not a.name=="core" and len(get_app_project_models(a))==1]
+    participation_apps = [a for a in all_apps if not a.name=="core" and len(get_app_project_models(a))>=1]
     return participation_apps
 
 def get_app_project_models(app):
@@ -42,18 +42,30 @@ def get_item_subclass_test(app):
     item_models = get_app_item_models(app)
     if len(item_models) == 0:
         raise Exception("app"+app.name+" has no Participation Item models")
-    m = item_models[0]
-    subclass_name = m.__name__.lower().replace("_","")
-    return lambda x: getattr(x, subclass_name)
+    subclass_names = [m.__name__.lower().replace("_","") for m in item_models]
+    def test(x):
+        for s in subclass_names:
+            try:
+                return getattr(x, s)
+            except:
+                continue
+        raise Exception()
+    return test
 
 def get_project_subclass_test(app):
     project_models = get_app_project_models(app)
     if len(project_models) == 0:
         raise Exception("app"+app.name+" has no Participation Project models")
-    m = project_models[0]
-    subclass_name = m.__name__.lower().replace("_","")
-    return lambda x: getattr(x, subclass_name)
 
+    subclass_names = [m.__name__.lower().replace("_","") for m in project_models]
+    def test(x):
+        for s in subclass_names:
+            try:
+                return getattr(x, s)
+            except:
+                continue
+        raise Exception()
+    return test
 
 def get_provider_permission(app):
     project_model = get_app_project_models(app)[0]

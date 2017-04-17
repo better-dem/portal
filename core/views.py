@@ -208,8 +208,7 @@ def app_view_relay(request, app_name, action_name, object_id):
             return app.views_module.participate(request, object_id) 
 
         elif action_name == "overview":
-            # object id is irrelevant
-            return app.views_module.overview(request) 
+            return app.views_module.overview(request, object_id) 
 
         elif action_name == "delete_project":
             if has_app_perm:

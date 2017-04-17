@@ -25,6 +25,8 @@ class Command(BaseCommand):
 
         num_new_legislators = 0
         num_updated_legislators = 0
+        num_new_bills = 0
+        num_updated_bills = 0
         num_state_errors = 0
         num_legislator_errors = 0
 
@@ -126,7 +128,6 @@ class Command(BaseCommand):
                         #### finalize
                         ct.finalize_project(p)                        
 
-
             bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
             sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
             sys.stdout.write("some bills:"+str(bill_files[:10])+"\n")
@@ -144,20 +145,38 @@ class Command(BaseCommand):
 
                     if mode == "run" and existing_bill is None:
                         p = BillsProject()
+                        # sys.stderr.write("Bill title:{}\n".format(bill_json['title']))
                         for i in bill_fields.items():
-                            p.__dict__[i[0]] = leg_json.get(i[1], None)
+                            p.__dict__[i[0]] = bill_json.get(i[1], None)[:500]
 
                         for i in bill_action_date_fields.items():
-                            date_string = leg_json.get(i[1], None)
+                            date_string = bill_json["action_dates"].get(i[1], None)
                             if not date_string is None:
-                                sys.stdout.write("{}\n".format(date_string))
+                                # sys.stdout.write("{}: {}\n".format(i[1], date_string))
+                                if " " in date_string:
+                                    date_string = date_string.split(" ")[0]
                                 p.__dict__[i[0]] = date_string
 
+                        p.owner_profile = cm.get_default_user().userprofile
                         p.save()
 
+                        p.tags.add(tag)
                         subjects = bill_json["subjects"]
                         for s in subjects:
-                            pass
+                            try:
+                                t = cm.Tag.objects.get(name=s, detail="Openstates Subject")
+                                p.tags.add(t)
+                            except cm.Tag.DoesNotExist:
+                                pass
+
+                        ct.finalize_project(p)                        
+                        num_new_bills += 1
+                        if num_new_bills % 1000 == 0:
+                            sys.stderr.write("Adding new bill #{}\n".format(num_new_bills))
+
+                    elif mode == "run":
+                        p = existing_bill
+                        ct.finalize_project(p)                        
                     
 
             committee_files = os.listdir(workingdir+"/committees")
@@ -173,6 +192,8 @@ class Command(BaseCommand):
         sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
         sys.stdout.write("Number of state errors: {}\n".format(num_state_errors))
         sys.stdout.write("Number of legislator errors: {}\n".format(num_legislator_errors))
+        sys.stdout.write("Number of bills added: {}\n".format(num_new_bills))
+        sys.stdout.write("Number of bills updated: {}\n".format(num_updated_bills))
         sys.stdout.write("DONE\n")
         sys.stdout.flush()
          

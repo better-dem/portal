@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from legislators.models import LegislatorsProject, LegislatorsItem
+from legislators.models import LegislatorsProject, LegislatorsItem, BillsProject, BillsItem
 import os
 import sys
 import core.models as cm
@@ -25,6 +25,10 @@ def participate(request, item_id):
     context.update({'site': os.environ["SITE"], "item": item, "project":project})
     return render(request, "legislators/participate.html", context)
 
-def overview(request):
-    items = LegislatorsItem.objects.filter(is_active=True)[:100]
-    return render(request, 'legislators/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"]})
+def overview(request, item_id):
+    if item_id == "-1":
+        items = LegislatorsItem.objects.filter(is_active=True)[:100]
+        return render(request, 'legislators/overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"]})
+    elif item_id == "0":
+        items = BillsItem.objects.filter(is_active=True)[:100]
+        return render(request, 'legislators/bills_overview.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], 'site':os.environ["SITE"]})

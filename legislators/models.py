@@ -44,6 +44,15 @@ class BillsProject(cm.ParticipationProject):
     passed_lower_date = models.DateField(null=True, blank=True)
     signed_date = models.DateField(null=True, blank=True)
 
+    def update_items(self):
+        if BillsItem.objects.filter(participation_project=self, is_active=True).count()==0:
+            item = BillsItem()
+            item.name = self.name
+            item.participation_project = self
+            item.save()
+            return set([item.id])
+        return set()
+
 class BillsItem(cm.ParticipationItem):
     def get_inline_display(self):
         return self.participation_project.get_inherited_instance().name
