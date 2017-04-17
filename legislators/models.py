@@ -34,3 +34,23 @@ class LegislatorsItem(cm.ParticipationItem):
     def set_display_image(self):
         self.display_image_file = "legislators/img/default.png"
 
+class BillsProject(cm.ParticipationProject):
+    open_states_bill_id = models.CharField(max_length=100)
+    bill_id = models.CharField(max_length=100)
+    tags = models.ManyToManyField(cm.Tag)
+    first_action_date = models.DateField(null=True, blank=True)
+    last_action_date = models.DateField(null=True, blank=True)
+    passed_upper_date = models.DateField(null=True, blank=True)
+    passed_lower_date = models.DateField(null=True, blank=True)
+    signed_date = models.DateField(null=True, blank=True)
+
+class BillsItem(cm.ParticipationItem):
+    def get_inline_display(self):
+        return self.participation_project.get_inherited_instance().name
+
+    def set_relevant_tags(self):
+        self.tags.add(*self.participation_project.tags.all())
+
+    def set_display_image(self):
+        self.display_image_file = "legislators/img/default.png"
+

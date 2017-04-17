@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from legislators.models import LegislatorsProject, LegislatorsItem
+from legislators.models import LegislatorsProject, LegislatorsItem, BillsProject, BillsItem
 import core.models as cm
 import core.tasks as ct
 
@@ -72,7 +72,7 @@ class Command(BaseCommand):
             for f in legislator_files:
                 with open(workingdir+"/legislators/"+f, 'r') as leg_file:
                     leg_json = json.loads(leg_file.read())
-                    simple_fields = {"name":"full_name", "photo_url":"photo_url", "webpage_url":"url", "chamber":"chamber", "district":"district", "open_states_leg_id":"id", "open_states_active":"active", "email":"email", "phone":"office_phone"}
+                    legislator_fields = {"name":"full_name", "photo_url":"photo_url", "webpage_url":"url", "chamber":"chamber", "district":"district", "open_states_leg_id":"id", "open_states_active":"active", "email":"email", "phone":"office_phone"}
 
                     existing_leg = None
                     try:
@@ -82,7 +82,7 @@ class Command(BaseCommand):
 
                     if mode == "run" and existing_leg is None:
                         p = LegislatorsProject()
-                        for i in simple_fields.items():
+                        for i in legislator_fields.items():
                             p.__dict__[i[0]] = leg_json.get(i[1], None)
                         
                         p.open_states_state = tag.name
@@ -95,7 +95,7 @@ class Command(BaseCommand):
                     elif mode == "run": # check for updates to an existing legislator
                         change_set = set()
                         p = existing_leg
-                        for i in simple_fields.items():
+                        for i in legislator_fields.items():
                             if not p.__dict__[i[0]] == leg_json.get(i[1], None):
                                 change_set.add(i[0])
                             p.__dict__[i[0]] = leg_json.get(i[1], None)
@@ -130,16 +130,35 @@ class Command(BaseCommand):
             bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
             sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
             sys.stdout.write("some bills:"+str(bill_files[:10])+"\n")
-            bill_subjects = set()
+            bill_fields = {"open_states_bill_id":"id", "name":"title", "bill_id":"bill_id"}
+            bill_action_date_fields = {"first_action_date": "first", "last_action_date": "last", "passed_upper_date":"passed_upper", "passed_lower_date":"passed_lower", "signed_date":"signed"}
             for f in bill_files:
                 with open(f, 'r') as bill_file:
                     bill_json = json.loads(bill_file.read())
-                    if len(bill_subjects)==0:
-                        sys.stdout.write("Bill json: {}\n".format(bill_json))
-                        sys.stdout.flush()
-                    bill_subjects.update(bill_json["subjects"])
 
-            sys.stdout.write("Bill subjects: {}\n".format(bill_subjects))
+                    existing_bill = None
+                    try:
+                        existing_bill = BillsProject.objects.get(open_states_bill_id = bill_json["id"])
+                    except BillsProject.DoesNotExist:
+                        pass
+
+                    if mode == "run" and existing_bill is None:
+                        p = BillsProject()
+                        for i in bill_fields.items():
+                            p.__dict__[i[0]] = leg_json.get(i[1], None)
+
+                        for i in bill_action_date_fields.items():
+                            date_string = leg_json.get(i[1], None)
+                            if not date_string is None:
+                                sys.stdout.write("{}\n".format(date_string))
+                                p.__dict__[i[0]] = date_string
+
+                        p.save()
+
+                        subjects = bill_json["subjects"]
+                        for s in subjects:
+                            pass
+                    
 
             committee_files = os.listdir(workingdir+"/committees")
             sys.stdout.write("number of committees:"+str(len(committee_files))+"\n")
