@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponseServerError
 import core.models as cm
 import core.tasks as tasks
-from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
 import sys
 from django.core.files.storage import default_storage
 from django.db import transaction
@@ -98,7 +98,7 @@ def upload_dataset(request):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = UploadGeoTagset(request.POST, request.FILES)
+        form = UploadDataset(request.POST, request.FILES)
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
                 tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"])
@@ -114,7 +114,7 @@ def upload_dataset(request):
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
     else:
-        form = UploadGeoTagset()
+        form = UploadDataset()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
     
 

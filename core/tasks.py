@@ -9,11 +9,15 @@ from django.db.models.signals import post_save
 from django.contrib.gis.geos import Point        
 from django.db import transaction
 
-def finalize_project(project):
+def finalize_project(project, current_process=False):
     """
     update items and recommendations for a new or newly-edited project
+    optional flag current_process allows this to be run in the current process instead of queued and run by celery worker
     """
-    transaction.on_commit(lambda: item_update.delay(project.pk))
+    if current_process:
+        transaction.on_commit(lambda: item_update(project.pk))
+    else:
+        transaction.on_commit(lambda: item_update.delay(project.pk))
 
 ### Begin: Tasks for loading data files & updating the database
 
@@ -150,8 +154,8 @@ def item_update(project_id):
         for t in i.tags.all():
             feed_update_by_tag(t.id)
             
-    sys.stdout.write("number of items created: "+str(num_items_created))
-    sys.stdout.flush()
+    # sys.stdout.write("number of items created: {}\n".format(num_items_created))
+    # sys.stdout.flush()
 
 @shared_task
 def feed_update_by_user_profile(profile_id):
@@ -180,8 +184,8 @@ def feed_update_by_tag(tag_id, limit_user_profile=None):
     else:
         user_profiles = [cm.UserProfile.objects.get(pk=limit_user_profile)]
 
-    sys.stdout.write("updating feed by tag: "+str(t.name)+limit_logstr+", number of user profiles:"+str(len(user_profiles))+", number of participation items: "+str(len(recent_items))+" \n")
-    sys.stdout.flush()
+    # sys.stdout.write("updating feed by tag: "+str(t.name)+limit_logstr+", number of user profiles:"+str(len(user_profiles))+", number of participation items: "+str(len(recent_items))+" \n")
+    # sys.stdout.flush()
 
     num_matches_created = 0
 
@@ -193,6 +197,6 @@ def feed_update_by_tag(tag_id, limit_user_profile=None):
             match.save()
             num_matches_created += 1
 
-    sys.stdout.write("number of matches created: "+str(num_matches_created))
-    sys.stdout.flush()
+    # sys.stdout.write("number of matches created: "+str(num_matches_created))
+    # sys.stdout.flush()
 
