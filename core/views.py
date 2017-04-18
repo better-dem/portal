@@ -4,17 +4,22 @@ from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F, Sum
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponseServerError
+from django.core.files.storage import default_storage
+from django.db import transaction
+from django.conf import settings
+
 import core.models as cm
 import core.tasks as tasks
 from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+
 import sys
-from django.core.files.storage import default_storage
-from django.db import transaction
 import os
-import stripe
 import random
-from django.conf import settings
+import json
+
+import stripe
+
 stripe.api_key = os.environ["STRIPE_API_KEY"]
 
 def get_default_og_metadata(request, participation_item=None):
@@ -259,6 +264,14 @@ def feed(request):
     context.update(get_default_og_metadata(request))
     return render(request, 'core/feed.html', context)
 
+
+@ensure_csrf_cookie
+def feed2(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    context = {'site': os.environ["SITE"]}
+    context.update(get_default_og_metadata(request))
+    return render(request, 'core/feed2.html', context)
+
 def get_item_details(item, get_activity=False):
     """
     Return a dict describing the properties of some ParticipationItem,
@@ -420,7 +433,51 @@ def item_info(request, item_id):
     ans = {"img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name, "external_link": external_link}
     return JsonResponse(ans)
 
+def feed_recommendations(request):
+    """
+    recommend items as a user arrives to go at the top of their feed 
+    """
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not request.is_ajax() or not request.method == "POST":
+        return HttpResponse(status=500)
+
+    #### extract content from current_feed_contents
+    sys.stderr.write("Request body: {}\n".format(request.body.strip()))
+    sys.stderr.flush()
+    submission_data = json.loads(request.body.strip())
+    current_feed_contents = set(submission_data.get("current_feed_contents", []))
+    # feed size maxes out at 100
+    if len(current_feed_contents) >= 100:
+        return JsonResponse({"recommendations":[]})
+
+    ### recommend diverse content to the user which doesn't overlap with current feed contents
+    recommendations = set()
+    subjects_of_interest = set()
+    places_of_interest = set()
+    for t in profile.tags.all():
+        try:
+            geo = t.geotag
+            places_of_interest.add(t)
+        except:
+            subjects_of_interest.add(t)
+
+    for t in places_of_interest:
+        for app in cm.get_registered_participation_apps():
+            for item_model in cm.get_app_item_models(app):
+                recommendations.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
+
+    # TODO: make use of subjects of interest
+    recommendations = recommendations - current_feed_contents
+    recommendations = random.sample(recommendations, min(10, len(recommendations)))
+    content = {"recommendations": recommendations}
+    return JsonResponse(content)
+
+
+
 def recommend_related(request, item_id):
+    """
+    recommend related items to put at the bottom of a participation page
+    """
     if not request.is_ajax() or not request.method == "POST":
         return HttpResponse(status=500)
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
@@ -438,3 +495,11 @@ def recommend_related(request, item_id):
     recommendations = random.sample(candidates, min(10, len(candidates)))
     content = {"recommendations": [r.id for r in recommendations]}
     return JsonResponse(content)
+
+def js_templates(request, item_name):
+    if item_name == "feed_item_nunjucks.html":
+        return FileResponse(open("core/templates/core/feed_item_nunjucks.html"))
+    else:
+        sys.stderr.write("Unknown template requested: {}\n".format(item_name))
+        sys.stderr.flush()
+        return HttpResponse("")

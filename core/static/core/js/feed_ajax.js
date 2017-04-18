@@ -133,6 +133,7 @@ var ajax_form_setup = function(){
 }
 
 //// feed updating methods
+// mini items go on the bottom of participate views as recommendations
 var display_item_mini = function(item_id, element_id){
     var cb = function(response_content, status){
 	console.log("ajax form response. status:"+status);
@@ -157,6 +158,53 @@ var display_item_mini = function(item_id, element_id){
     }
     submit_ajax_form("/item_info/"+item_id+"/", "", cb);
 }
+
+// feed items populate news feeds, admin views, and are also used within participate pages
+var display_feed_item = function(item_id, element_id){
+    var cb = function(response_content, status){
+	console.log("ajax form response. status:"+status);
+	console.log("ajax form response. response_content:"+response_content);
+	console.log(JSON.stringify(response_content));
+        // TODO: update html and content
+	var link = response_content["link"];
+	var img_url = response_content["img_url"];
+	var title = response_content["title"];
+	if (title.length > 30){
+	    title = title.substring(0,30)+"..."
+	}
+	var new_tab = response_content["external_link"];
+	var elem = document.getElementById(element_id);
+	if (new_tab){
+	    elem.innerHTML = "<a target=\"_blank\" id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
+	} else {
+	    elem.innerHTML = "<a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
+	}
+	$("#mini_item_link_"+element_id).text(title)
+	$("#mini_item_link_"+element_id).prepend("<img src=\""+img_url+"\">")
+	$(elem).addClass('item-mini');
+        // TODO: call javascript methods for inline displays, set up ajax within items, etc.
+    }
+    submit_ajax_form("/item_info/"+item_id+"/", "", cb);
+}
+
+var get_feed_recommendations_next_page = function(){
+    var cb = function(response_content, status){
+	console.log("ajax form response. status:"+status);
+	console.log("ajax form response. response_content:"+response_content);
+	console.log(JSON.stringify(response_content));
+	var item_recommendations = response_content["recommendations"]
+	for (i = 0; i < item_recommendations.length; i++){
+	    current_feed_contents.push(item_recommendations[i])
+	    var eid = "feed_item_"+(item_recommendations[i]);
+	    $("#feed").append("<div id=\""+eid+"\"></div>");
+	    display_feed_item(item_recommendations[i], eid);
+	}
+    }
+    submit_ajax_form("/feed_recommendations/", JSON.stringify({"current_feed_contents":current_feed_contents}), cb);
+}
+
+var current_feed_contents = [];
+
 
 $(document).ready(ajax_form_setup);
 
