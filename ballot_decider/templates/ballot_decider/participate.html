@@ -24,11 +24,10 @@
 
 	{% for item in basics %}
 	<p>
-	{% if item.custom_template %}
-	{% include item.custom_template %}
-	{% else %}
-	{% include "core/feed_item.html" %}
-	{% endif %}
+	  <div id="feed_item_{{ item.id }}"></div>
+	  <script>
+	    $(document).ready(function(){display_feed_item({{ item.id }}, "feed_item_{{ item.id }}", "{{ item.app }}");});
+	  </script>
 	</p>
 	{% endfor %}
 
@@ -48,11 +47,10 @@
 
 	{% for item in effects %}
 	<p>
-	{% if item.custom_template %}
-	{% include item.custom_template %}
-	{% else %}
-	{% include "core/feed_item.html" %}
-	{% endif %}
+	  <div id="feed_item_{{ item.id }}"></div>
+	  <script>
+	    $(document).ready(function(){display_feed_item({{ item.id }}, "feed_item_{{ item.id }}", "{{ item.app }}");});
+	  </script>
 	</p>
 	{% endfor %}
 
@@ -105,7 +103,7 @@
 	    
 	    {% endfor %}
 
-	    <div class="btn btn-primary portal_ajax_submit" role="button" data-target-element="{% for pov in ballot.points_of_view.all %}pov_weight_{{ pov.id }},{% endfor %}" data-result-element="pros_and_cons_result">Decide!</div>
+	    <div id="ballot_decider_submit_button" class="btn btn-primary portal_ajax_submit" role="button" data-target-element="{% for pov in ballot.points_of_view.all %}pov_weight_{{ pov.id }},{% endfor %}" data-result-element="pros_and_cons_result">Decide!</div>
 	  </div>
 	  
 	  <div class="response" style="display: none;">
@@ -131,6 +129,8 @@
 </div>
 
 <script type="text/javascript">
+register_event_trigger(document.getElementById("ballot_decider_submit_button"));
+
 // whenever items are shown, they need to be refreshed
 $(document).ready(function(){
 $("#collapse1").on("shown.bs.collapse", function(){

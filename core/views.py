@@ -291,7 +291,7 @@ def get_item_details(item, get_activity=False):
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
     project = item.participation_project.get_inherited_instance()
-    ans = {"label": item.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
+    ans = {"label": item.name, "app": app.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
     if not item.display_image_file == "":
         ans["display_image_file"] = item.display_image_file
     if get_activity:
@@ -407,7 +407,6 @@ def report_issues(request, *args, **kwargs):
         form = IssueReportForm(initial={"event_id":event_id})
         return render(request, 'core/generic_form.html', {"title": "Report an Issue", 'form': form, 'action_path' : request.path})
 
-
 def moderate_issues(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     app = cm.get_core_app()
@@ -454,8 +453,6 @@ def feed_recommendations(request):
         return HttpResponse(status=500)
 
     #### extract content from current_feed_contents
-    sys.stderr.write("Request body: {}\n".format(request.body.strip()))
-    sys.stderr.flush()
     submission_data = json.loads(request.body.strip())
     current_feed_contents = set(submission_data.get("current_feed_contents", []))
     # feed size maxes out at 100

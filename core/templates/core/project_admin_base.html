@@ -13,6 +13,7 @@
 
 <h2>Items</h2>
     Number of items corresponding to this project: {{ items|length }}.
+
     {% for item in items %}    
     <p>
 	{% if item.num_matches %}
@@ -26,13 +27,14 @@
 	{% endif %}
     </p>
 	
+
     <p>
 	How this item is displayed to users:
-	{% if item.custom_template %}
-	{% include item.custom_template %}
-	{% else %}
-	{% include "core/feed_item.html" %}
-	{% endif %}
+
+	<div id="feed_item_{{ item.id }}"></div>
+	<script>
+	  $(document).ready(function(){display_feed_item({{ item.id }}, "feed_item_{{ item.id }}", "{{ item.app }}");});
+	</script>
     </p>    
 
     {% block item_detail %}{% endblock %}
