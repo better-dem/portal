@@ -58,6 +58,18 @@ def administer_project(request, project_id):
     items = SingleQuizItem.objects.filter(participation_project=project)
     return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project, 'site': os.environ["SITE"]})
 
+
+def item_info(request, item_id, ans):
+    (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
+    item = cm.ParticipationItem.objects.get(pk=item_id).singlequizitem
+    project = item.participation_project.singlequizproject
+    project_keys = {"option1":"option1", "option2":"option2", "option3":"option3", "option4":"option4", "option5":"option5", "citation_url": "citation_url"}
+
+    for k in project_keys.keys():
+        ans["item"][k] = project.__dict__[project_keys[k]]
+
+    return JsonResponse(ans)
+
 def participate(request, item_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 

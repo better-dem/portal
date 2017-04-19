@@ -111,6 +111,17 @@ def participate(request, item_id):
     context["item"] = item
     return render(request, 'interactive_visualization/participate.html', context)
 
+def item_info(request, item_id, ans):
+    (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
+    item = cm.ParticipationItem.objects.get(pk=item_id).interactivevisualizationitem
+    project = item.participation_project.interactivevisualizationproject
+    project_keys = {"project_id": "id", "project_name":"name", "switch_variable":"switch_variable", "switch_title":"switch_title", "switch_note":"switch_note", "methodology_note": "methodology_note", "methodology_url":"methodology_url", "bar1_variable": "bar1_variable", "bar1_title": "bar1_title", "bar1_x_label": "bar1_x_label", "bar1_y_label": "bar1_y_label", "pie1_variable": "pie1_variable", "pie1_title": "pie1_title", "bar2_variable": "bar2_variable", "bar2_title": "bar2_title", "bar2_x_label": "bar2_x_label", "bar2_y_label": "bar2_y_label", "pie2_variable": "pie2_variable", "pie2_title": "pie2_title"}
+
+    for k in project_keys.keys():
+        ans["item"][k] = project.__dict__[project_keys[k]]
+
+    return JsonResponse(ans)
+
 # use camel case because we don't allow underscores in custom
 def customActionCsvData(request, item_id):
     item = get_object_or_404(InteractiveVisualizationItem, pk=item_id, is_active=True)

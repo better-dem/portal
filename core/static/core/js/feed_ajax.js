@@ -119,20 +119,27 @@ var register_event_trigger = function(b){
     }, false);
 }
 
-// register ajax form event triggers on all forms on the page
-var ajax_form_setup = function(){
-    var portal_ajax_form_submit_buttons = document.getElementsByClassName("portal_ajax_submit");
-    console.log("portal ajax form submit buttons:");
-    console.log(portal_ajax_form_submit_buttons);
-
-    for ( var i = 0; i < portal_ajax_form_submit_buttons.length; i++){
-	console.log("registering button:" + i);
-	var b = portal_ajax_form_submit_buttons[i];
-	register_event_trigger(b)
-    };
-}
-
 //// feed updating methods
+var env = new nunjucks.Environment(new nunjucks.WebLoader("/js_templates"));
+var escapeJSMap = {
+    '\\': '\\u005C',
+    '\'': '\\u0027',
+    '"': '\\u0022',
+    '>': '\\u003E',
+    '<': '\\u003C',
+    '&': '\\u0026',
+    '=': '\\u003D',
+    '-': '\\u002D',
+    ';': '\\u003B'
+};
+
+env.addFilter('escapejs', function(str) {
+    return str.replace(/["'><&=\-;\\]/g, function(ch) {
+	return escapeJSMap[ch];
+    });
+});
+
+
 // mini items go on the bottom of participate views as recommendations
 var display_item_mini = function(item_id, element_id){
     var cb = function(response_content, status){
@@ -160,31 +167,18 @@ var display_item_mini = function(item_id, element_id){
 }
 
 // feed items populate news feeds, admin views, and are also used within participate pages
-var display_feed_item = function(item_id, element_id){
+var display_feed_item = function(item_id, element_id, app_name){
     var cb = function(response_content, status){
 	console.log("ajax form response. status:"+status);
 	console.log("ajax form response. response_content:"+response_content);
 	console.log(JSON.stringify(response_content));
         // TODO: update html and content
-	var link = response_content["link"];
-	var img_url = response_content["img_url"];
-	var title = response_content["title"];
-	if (title.length > 30){
-	    title = title.substring(0,30)+"..."
-	}
-	var new_tab = response_content["external_link"];
-	var elem = document.getElementById(element_id);
-	if (new_tab){
-	    elem.innerHTML = "<a target=\"_blank\" id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
-	} else {
-	    elem.innerHTML = "<a id=\"mini_item_link_"+element_id+"\"href=\""+link+"\"></a>";
-	}
-	$("#mini_item_link_"+element_id).text(title)
-	$("#mini_item_link_"+element_id).prepend("<img src=\""+img_url+"\">")
-	$(elem).addClass('item-mini');
+
+	var res = env.render(app_name+"/feed_item.html", response_content);
+	$("#"+element_id).html(res)
         // TODO: call javascript methods for inline displays, set up ajax within items, etc.
     }
-    submit_ajax_form("/item_info/"+item_id+"/", "", cb);
+    submit_ajax_form("/apps/"+app_name+"/item_info/"+item_id, "", cb);
 }
 
 var get_feed_recommendations_next_page = function(){
@@ -194,18 +188,15 @@ var get_feed_recommendations_next_page = function(){
 	console.log(JSON.stringify(response_content));
 	var item_recommendations = response_content["recommendations"]
 	for (i = 0; i < item_recommendations.length; i++){
-	    current_feed_contents.push(item_recommendations[i])
-	    var eid = "feed_item_"+(item_recommendations[i]);
+	    current_feed_contents.push(item_recommendations[i][0])
+	    var eid = "feed_item_"+(item_recommendations[i][0]);
 	    $("#feed").append("<div id=\""+eid+"\"></div>");
-	    display_feed_item(item_recommendations[i], eid);
+	    display_feed_item(item_recommendations[i][0], eid, item_recommendations[i][1]);
 	}
     }
     submit_ajax_form("/feed_recommendations/", JSON.stringify({"current_feed_contents":current_feed_contents}), cb);
 }
 
 var current_feed_contents = [];
-
-
-$(document).ready(ajax_form_setup);
 
 

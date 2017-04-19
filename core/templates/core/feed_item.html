@@ -1,15 +1,10 @@
-{% load staticfiles %}
 <div class="panel panel-default">
     <div class="panel-heading"><a {% block custom_link_content %}{% endblock %} href="{{ item.link }}">{{ item.label }}</a></div>
     <div class="panel-body">
 
-	{% block display_image %}
-	{% if item.display_image_file %}
-	<span>
-	<img src="{% static item.display_image_file %}" class="img-thumbnail" width="90" height="90">
-	</span>
-	{% endif %}
-	{% endblock %}
+{% block display_image %}	<span>
+	<img src="{{ item.img_url }}" class="img-thumbnail" width="90" height="90">
+	</span>{% endblock %}
 
 	<span class="item_content">
 	  <div>

@@ -12,26 +12,6 @@
 
 <div id="feed"></div>
 <script>
-  var env = new nunjucks.Environment(new nunjucks.WebLoader("{{ site }}/js_templates"));
-  var escapeJSMap = {
-    '\\': '\\u005C',
-    '\'': '\\u0027',
-    '"': '\\u0022',
-    '>': '\\u003E',
-    '<': '\\u003C',
-    '&': '\\u0026',
-    '=': '\\u003D',
-    '-': '\\u002D',
-    ';': '\\u003B'
-  };
-
-  env.addFilter('escapejs', function(str) {
-    return str.replace(/["'><&=\-;\\]/g, function(ch) {
-      return escapeJSMap[ch];
-    });
-  });
-  var res = env.render("feed_item_nunjucks.html", {"item": {"link": "http://google.com", "label":"Google!", "display": "here's some neat stuff", "tags": []}, "site": "localhost:5000"});
-  $("#feed").html(res);
-  // $(document).ready(get_feed_recommendations_next_page);
+  $(document).ready(get_feed_recommendations_next_page);
 </script>
 {% endblock %}

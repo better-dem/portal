@@ -3,13 +3,13 @@
         
 <div id="single_quiz_result_{{ item.id }}">
   <div class="single_quiz_ajax_form">
-    <div>{{ item.itemobj.name }}</div>
+    <div>{{ item.name }}</div>
     <select id="single_quiz_{{ item.id }}">
-      {% if item.projectobj.option1 %}  <option value="1">{{ item.projectobj.option1 }}</option>{% endif %}
-      {% if item.projectobj.option2 %}  <option value="2">{{ item.projectobj.option2 }}</option>{% endif %}
-      {% if item.projectobj.option3 %}  <option value="3">{{ item.projectobj.option3 }}</option>{% endif %}
-      {% if item.projectobj.option4 %}  <option value="4">{{ item.projectobj.option4 }}</option>{% endif %}
-      {% if item.projectobj.option5 %}  <option value="5">{{ item.projectobj.option5 }}</option>{% endif %}
+      {% if item.option1 %}  <option value="1">{{ item.option1 }}</option>{% endif %}
+      {% if item.option2 %}  <option value="2">{{ item.option2 }}</option>{% endif %}
+      {% if item.option3 %}  <option value="3">{{ item.option3 }}</option>{% endif %}
+      {% if item.option4 %}  <option value="4">{{ item.option4 }}</option>{% endif %}
+      {% if item.option5 %}  <option value="5">{{ item.option5 }}</option>{% endif %}
     </select>
     <div>
       <input type="submit" class="portal_ajax_submit" id="single_quiz_submit_{{ item.id }}" data-target-element="single_quiz_{{ item.id }}" data-result-element="single_quiz_result_{{ item.id }}" data-target-url="{{ item.link }}" value="Submit" />
@@ -28,8 +28,11 @@
     <div class="explanation"></div>
   </p>
   <p class="sources" style="display: none;">
-    Follow our sources <a href="{{ item.projectobj.citation_url }}">here</a>!
+    Follow our sources <a href="{{ item.citation_url }}">here</a>!
   </p>
 </div>
 
+<script>
+  register_event_trigger(document.getElementById("single_quiz_submit_{{ item.id }}"));
+</script>
 {% endblock %}

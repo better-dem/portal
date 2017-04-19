@@ -215,6 +215,17 @@ def app_view_relay(request, app_name, action_name, object_id):
         elif action_name == "overview":
             return app.views_module.overview(request, object_id) 
 
+        elif action_name == "item_info":
+            if not request.is_ajax() or not request.method == "POST":
+                return HttpResponse(status=500)
+            # default item info
+            item = get_object_or_404(cm.ParticipationItem, pk=object_id)
+            ans = {"item": {"id": item.id, "img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name, "label": item.get_inline_display(), "tags": [t.name for t in item.tags.all()]}, "site": os.environ["SITE"]}
+            if "item_info" in app.views_module.__dict__:
+                return app.views_module.item_info(request, object_id, ans)
+            else:
+                return JsonResponse(ans)
+
         elif action_name == "delete_project":
             if has_app_perm:
                 project = get_object_or_404(cm.ParticipationProject, pk=object_id, is_active=True, owner_profile=profile)
@@ -436,6 +447,7 @@ def item_info(request, item_id):
 def feed_recommendations(request):
     """
     recommend items as a user arrives to go at the top of their feed 
+    recommendations are tuples: (ParticipationItem.id, app_name)
     """
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if not request.is_ajax() or not request.method == "POST":
@@ -464,15 +476,13 @@ def feed_recommendations(request):
     for t in places_of_interest:
         for app in cm.get_registered_participation_apps():
             for item_model in cm.get_app_item_models(app):
-                recommendations.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
+                recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
 
     # TODO: make use of subjects of interest
     recommendations = recommendations - current_feed_contents
     recommendations = random.sample(recommendations, min(10, len(recommendations)))
     content = {"recommendations": recommendations}
     return JsonResponse(content)
-
-
 
 def recommend_related(request, item_id):
     """
@@ -496,10 +506,24 @@ def recommend_related(request, item_id):
     content = {"recommendations": [r.id for r in recommendations]}
     return JsonResponse(content)
 
-def js_templates(request, item_name):
-    if item_name == "feed_item_nunjucks.html":
-        return FileResponse(open("core/templates/core/feed_item_nunjucks.html"))
+def js_templates(request, app_name, template_name):
+    assert not "/" in template_name
+    if not app_name in ([app.label for app in cm.get_registered_participation_apps()] + ["core"]):
+        raise Exception("no such app")
     else:
-        sys.stderr.write("Unknown template requested: {}\n".format(item_name))
-        sys.stderr.flush()
-        return HttpResponse("")
+        app = cm.get_core_app()
+        try:
+            app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
+        except IndexError:
+            pass
+
+        if app == cm.get_core_app() or app.custom_feed_item_template is None:
+            if template_name == "feed_item.html":
+                return FileResponse(open("core/templates/core/feed_item.html"))
+            else:
+                sys.stderr.write("Unknown template requested: {}\n".format(template_name))
+                sys.stderr.flush()
+                return HttpResponse("")
+        else:
+            return FileResponse(open(app_name+"/templates/"+app.custom_feed_item_template))
+        
