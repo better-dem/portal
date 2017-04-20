@@ -208,9 +208,15 @@ var update_filter_display = function(){
 	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_topic_filters[i]);
 	$("#topic_filters").append(res);
     }
+    if (current_topic_filters.length == 0){
+	$("#topic_filter_default").show();
+    } else {
+	$("#topic_filter_default").hide();
+    }
 }
 
 var remove_filter = function(tag_id){
+    // remove a filter, update the filter display, and re-populate the feed
     console.log("removing filter: ", tag_id);
     var new_location_filters = current_location_filters.filter(function(item){return item.tag_id != tag_id;});
     if (new_location_filters.length == 0){
@@ -221,13 +227,36 @@ var remove_filter = function(tag_id){
     }
 
     current_topic_filters = current_topic_filters.filter(function(item){return item.tag_id != tag_id;});
-    if (current_topic_filters.length == 0){
-	$("#topic_filter_default").show();
-    } else {
-	$("#topic_filter_default").hide();
-    }
     
+    // update display, get new recommendations
     update_filter_display();
+    current_feed_contents = [];
+    $("#feed").html("<br>");
+    get_feed_recommendations_next_page()
+}
+
+var add_filter = function(suggestion){
+    // get filter details
+    var item = {"tag_id": suggestion["data"]["id"], "tag_name": suggestion["value"].split(",")[0]};
+
+    // ignore if we're already including this filter
+    if (current_location_filters.filter(function(i){return i.tag_id == item.tag_id;}).length > 0 ||
+	current_topic_filters.filter(function(i){return i.tag_id == item.tag_id;}).length > 0){
+	return;
+    }
+
+    // place the tag under the appropriate filter category
+    if (suggestion["data"]["category"] == "Location"){
+	current_location_filters.push(item);
+    } else if (suggestion["data"]["category"] == "Topic"){
+	current_topic_filters.push(item);
+    }
+
+    // update display, get new recommendations
+    update_filter_display();
+    current_feed_contents = [];
+    $("#feed").html("<br>");
+    get_feed_recommendations_next_page()
 }
 
 // format: [#, #, ...]

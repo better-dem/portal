@@ -65,7 +65,7 @@ def get_best_final_matching_tag(q):
     return possible_matches[0]
 
 matching_object_query = get_matching_tags
-suggestion_function = lambda item: item.get_name()
+suggestion_function = lambda item: {"value": item.get_name(), "data": {"id": item.id, "category": cm.get_tag_category(item)}}
 ajax_url = "/autocomplete_tags/"
 tag_aac = wf.AjaxAutocomplete(matching_object_query, suggestion_function, ajax_url)
 

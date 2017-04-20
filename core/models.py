@@ -92,6 +92,14 @@ def get_default_user():
 def get_usa():
     return GeoTag.objects.get_or_create(name="United States of America", defaults={"detail": "North America", "feature_type": "CO"})[0]
 
+
+def get_tag_category(t):
+    try:
+        m=t.geotag
+        return "Location"
+    except:
+        return "Topic"
+
 ### Start core models
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 500)
@@ -208,7 +216,6 @@ class GeoTag(Tag):
     FEATURE_TYPE_CHOICES = ((COUNTRY, "Country"),(STATE_OR_PROVINCE, "State or Province"),(CITY, "City or town"),(OTHER, "Other"),(UNKNOWN, "Unknown"))
 
     feature_type = models.CharField(max_length=2, choices=FEATURE_TYPE_CHOICES, default=UNKNOWN)
-
 
 class Event(models.Model):
     """

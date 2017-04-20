@@ -465,26 +465,40 @@ def feed_recommendations(request):
 
     #### extract content from current_feed_contents
     submission_data = json.loads(request.body.strip())
-    current_feed_contents = set(submission_data.get("current_feed_contents", []))
-    # feed size maxes out at 100
-    if len(current_feed_contents) >= 100:
+    current_feed_contents = submission_data.get("current_feed_contents", [])
+    current_location_filters = submission_data.get("current_location_filters", [])
+    current_topic_filters = submission_data.get("current_topic_filters", [])
+    # feed size maxes out at 1000
+    if len(current_feed_contents) >= 1000:
         return JsonResponse({"recommendations":[]})
 
     ### recommend diverse content to the user which doesn't overlap with current feed contents
     recommendations = set()
     subjects_of_interest = set()
     places_of_interest = set()
-    for t in profile.tags.all():
+    
+    for t in current_topic_filters:
         try:
-            geo = t.geotag
-            places_of_interest.add(t)
-        except:
-            subjects_of_interest.add(t)
+            subjects_of_interest.add(cm.Tag.objects.get(pk=t["tag_id"]))
+        except cm.Tag.DoesNotExist:
+            pass
+
+    for t in current_location_filters:
+        try:
+            places_of_interest.add(cm.Tag.objects.get(pk=t["tag_id"]))
+        except cm.Tag.DoesNotExist:
+            pass
+
+    if len(places_of_interest) == 0:
+        places_of_interest.add(cm.get_usa())
 
     for t in places_of_interest:
         for app in cm.get_registered_participation_apps():
             for item_model in cm.get_app_item_models(app):
-                recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
+                if len(subjects_of_interest) == 0:
+                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
+                else:
+                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(tags__in=subjects_of_interest).order_by('-creation_time')[:3*len(subjects_of_interest)]])
 
     # TODO: make use of subjects of interest
     recommendations = [r for r in recommendations if not r[0] in current_feed_contents]

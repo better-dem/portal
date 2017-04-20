@@ -3,10 +3,10 @@
 {% load staticfiles %}
 <div class="row">
   <div id="dashboard" class="col-sm-4 col-sm-push-8">
-    <h3>Filter Your Feed</h3>
+    <h3>Customize Your Feed</h3>
     <div class="input-group" id="update_tags_field">
       <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
-      <input id="search_input" type="text" class="form-control" placeholder="Filter locations or topics" />
+      <input id="search_input" type="text" class="form-control" placeholder="Follow locations or topics" />
     </div>
 
     <div id="filter_suggestions"></div>
@@ -17,7 +17,7 @@
     </p>
 
     <p>
-      <h4>Topics of Interest</h4>
+      <h4>Limit to Topics</h4>
       <div id="topic_filter_default">All topics</div>
       <div id="topic_filters"></div>
     </p>
@@ -43,6 +43,8 @@
   $("#search_input").autocomplete({
     serviceUrl: "/autocomplete_tags/",
     type: "POST",
+    onSelect: function(suggestion){add_filter(suggestion); $(this).val("");}
   });
+
 </script>
 {% endblock %}
