@@ -1,17 +1,48 @@
 {% extends "core/base.html" %}
 {% block content %}
 {% load staticfiles %}
-<h2>Participation Feed</h2>
-<a href="/update_tags">
-  <div class="input-group" id="update_tags_field">
-    <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
-    <input id="email" type="text" class="form-control" name="email" placeholder="See participation opportunities for more places" />
-  </div>
-</a>
-<br>
+<div class="row">
+  <div id="dashboard" class="col-sm-4 col-sm-push-8">
+    <h3>Filter Your Feed</h3>
+    <div class="input-group" id="update_tags_field">
+      <span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span>
+      <input id="search_input" type="text" class="form-control" placeholder="Filter locations or topics" />
+    </div>
 
-<div id="feed"></div>
+    <div id="filter_suggestions"></div>
+    <p>
+      <h4>Locations of Interest</h4>
+      <div id="geo_filter_warnings"></div>
+      <div id="geo_filters"></div>
+    </p>
+
+    <p>
+      <h4>Topics of Interest</h4>
+      <div id="topic_filter_default">All topics</div>
+      <div id="topic_filters"></div>
+    </p>
+
+  </div>
+  
+  <div id="feed" class="col-sm-8 col-sm-pull-4"><br></div>
+</div>
 <script>
-  $(document).ready(get_feed_recommendations_next_page);
+{% for t in geo_tags %}  current_location_filters.push({"tag_id": {{ t.id }}, "tag_name": "{{ t.name }}"});
+{% endfor %}
+{% for t in subject_tags %}  current_topic_filters.push({"tag_id": {{ t.id }}, "tag_name": "{{ t.name }}"});
+{% endfor %}
+  $(document).ready(function(){
+    update_filter_display();
+    get_feed_recommendations_next_page();
+  });
+  $(window).scroll(function() {
+  if($(window).scrollTop() + $(window).height() == $(document).height()) {
+  get_feed_recommendations_next_page();
+  }
+  });
+  $("#search_input").autocomplete({
+    serviceUrl: "/autocomplete_tags/",
+    type: "POST",
+  });
 </script>
 {% endblock %}

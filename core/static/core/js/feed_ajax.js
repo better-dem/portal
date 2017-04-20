@@ -194,9 +194,46 @@ var get_feed_recommendations_next_page = function(){
 	    display_feed_item(item_recommendations[i][0], eid, item_recommendations[i][1]);
 	}
     }
-    submit_ajax_form("/feed_recommendations/", JSON.stringify({"current_feed_contents":current_feed_contents}), cb);
+    submit_ajax_form("/feed_recommendations/", JSON.stringify({"current_feed_contents":current_feed_contents, "current_location_filters": current_location_filters, "current_topic_filters": current_topic_filters}), cb);
 }
 
+var update_filter_display = function(){
+    $("#geo_filters").empty();
+    for (i = 0; i < current_location_filters.length; i++){
+	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_location_filters[i]);
+	$("#geo_filters").append(res);
+    }
+    $("#topic_filters").empty();
+    for (i = 0; i < current_topic_filters.length; i++){
+	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_topic_filters[i]);
+	$("#topic_filters").append(res);
+    }
+}
+
+var remove_filter = function(tag_id){
+    console.log("removing filter: ", tag_id);
+    var new_location_filters = current_location_filters.filter(function(item){return item.tag_id != tag_id;});
+    if (new_location_filters.length == 0){
+	$("#geo_filter_warnings").html("<div class=\"alert alert-warning\" id=\"geo_filter_warning_1\">We need at least one location</div>")
+	$("#geo_filter_warning_1").fadeOut(3000, function() {$(this).remove();});
+    } else {
+	current_location_filters = new_location_filters;
+    }
+
+    current_topic_filters = current_topic_filters.filter(function(item){return item.tag_id != tag_id;});
+    if (current_topic_filters.length == 0){
+	$("#topic_filter_default").show();
+    } else {
+	$("#topic_filter_default").hide();
+    }
+    
+    update_filter_display();
+}
+
+// format: [#, #, ...]
 var current_feed_contents = [];
 
+// format: [{"tag_id": #, "tag_name": "..."}, ...]
+var current_location_filters = [];
+var current_topic_filters = [];
 

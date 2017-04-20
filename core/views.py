@@ -281,6 +281,17 @@ def feed2(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     context = {'site': os.environ["SITE"]}
     context.update(get_default_og_metadata(request))
+    subjects_of_interest = set()
+    places_of_interest = set()
+    for t in profile.tags.all():
+        try:
+            geo = t.geotag
+            places_of_interest.add(t)
+        except:
+            subjects_of_interest.add(t)
+
+    context["geo_tags"] = [{"id": t.id, "name": t.name} for t in places_of_interest]
+    context["subject_tags"] = [{"id": t.id, "name": t.name} for t in subjects_of_interest]
     return render(request, 'core/feed2.html', context)
 
 def get_item_details(item, get_activity=False):
@@ -476,7 +487,7 @@ def feed_recommendations(request):
                 recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
 
     # TODO: make use of subjects of interest
-    recommendations = recommendations - current_feed_contents
+    recommendations = [r for r in recommendations if not r[0] in current_feed_contents]
     recommendations = random.sample(recommendations, min(10, len(recommendations)))
     content = {"recommendations": recommendations}
     return JsonResponse(content)
