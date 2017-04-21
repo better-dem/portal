@@ -3,11 +3,15 @@ import core.models as cm
 import csv
 import sys
 from celery import shared_task
+from celery.exceptions import SoftTimeLimitExceeded
 from django.core.files.storage import default_storage
 import itertools
 from django.db.models.signals import post_save
 from django.contrib.gis.geos import Point        
 from django.db import transaction
+from django.utils import timezone
+from django.db.models import F
+import redis
 
 def finalize_project(project, current_process=False):
     """
@@ -19,8 +23,31 @@ def finalize_project(project, current_process=False):
     else:
         transaction.on_commit(lambda: item_update.delay(project.pk))
 
-### Begin: Tasks for loading data files & updating the database
+@shared_task
+def pick_and_run_long_job():
+    now = timezone.now()
+    furthest_overdue_job = cm.LongJobState.objects.annotate(time_overdue=(now-F('most_recent_update'))/F('job_period')).order_by('-time_overdue')[0]
+    if furthest_overdue_job.time_overdue > 0:
+        lock_timeout = furthest_overdue_job.update_timeout
+        lock = redis.Redis().lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
+        lock_acquired = lock.acquire()    
+        if lock_acquired:
+            try:
+                sys.stderr.write("long job lock acquired, running job\n")
+                furthest_overdue_job.most_recent_update = now
+                furthest_overdue_job.save()
+                task = cm.get_task_for_job_state(furthest_overdue_job) # task should just be a function, not a celery task
+                task()
+            except SoftTimeLimitExceeded as e:
+                # currently no special handling of soft time limits
+                traceback.print_exc()
+            except Exception as e:
+                traceback.print_exc()
+            finally:
+                lock.release()
+        
 
+### Begin: Tasks for loading data files & updating the database
 @shared_task
 def insert_uscitieslist_v0(small_test):
     filename = "/uploads/misc/tmp"

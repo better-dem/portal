@@ -210,11 +210,13 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 BROKER_URL = os.environ["REDIS_URL"]
+CELERYD_TASK_SOFT_TIME_LIMIT=60
 
 # from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
 CELERYBEAT_SCHEDULE = {
-    # 'item-update': {
-    #     'task': 'core.tasks.item_update',
-    #     'schedule': celery.schedules.schedule(run_every=2)
-    # },
+    'longjobs': {
+        'task': 'core.tasks.pick_and_run_long_job',
+        'schedule': celery.schedules.schedule(run_every=5)
+    },
+
 }

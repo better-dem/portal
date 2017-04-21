@@ -92,13 +92,16 @@ def get_default_user():
 def get_usa():
     return GeoTag.objects.get_or_create(name="United States of America", defaults={"detail": "North America", "feature_type": "CO"})[0]
 
-
 def get_tag_category(t):
     try:
         m=t.geotag
         return "Location"
     except:
         return "Topic"
+
+def get_task_for_job_state(ljs):
+    app = get_app_by_name(ljs.app_name)
+    return app.jobs[ljs.name]
 
 ### Start core models
 class ParticipationProject(models.Model):
@@ -170,6 +173,19 @@ class ParticipationItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
+
+class LongJobState(models.Model):
+    """
+    A model to track an app's state relative to the periodic long background jobs it has to perform.
+    For example, scraping / crawling jobs or pulling from APIs .
+    This is used to allow the portal to schedule these jobs while leaving an workers available for basic site functionality.
+    """
+    app_name = models.TextField(max_length = 300) # app name
+    name = models.TextField(max_length = 100) # a unique-per-app
+
+    job_period = models.IntegerField(default=60*60*24) # in seconds, default is one day. Jobs are prioritized based on how far past due they are
+    job_timeout = models.IntegerField() # in seconds
+    most_recent_update = models.DateTimeField()
 
 class Donation(models.Model):
     userprofile = models.ForeignKey(UserProfile, blank=True, null=True, on_delete = models.SET_NULL)
