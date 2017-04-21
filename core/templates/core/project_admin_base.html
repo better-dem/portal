@@ -16,12 +16,6 @@
 
     {% for item in items %}    
     <p>
-	{% if item.num_matches %}
-	Number of times this item has been recommended to users: {{ item.num_matches }}.
-	{% endif %}
-    </p>
-
-    <p>
 	{% if item.num_visits %}
 	Number of times this item has been visited: {{ item.num_visits }}.
 	{% endif %}

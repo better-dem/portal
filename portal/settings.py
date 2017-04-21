@@ -215,7 +215,7 @@ CELERYD_TASK_SOFT_TIME_LIMIT=60
 # from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
 CELERYBEAT_SCHEDULE = {
     'longjobs': {
-        'task': 'core.tasks.pick_and_run_long_job',
+        'task': 'core.tasks.pick_long_job',
         'schedule': celery.schedules.schedule(run_every=5)
     },
 

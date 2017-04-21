@@ -167,7 +167,6 @@ def update_profile_tags(request):
             if match is None: 
                 return HttpResponse("Sorry, there isn't a tag with this name")
             profile.tags.add(match)
-            tasks.feed_update_by_user_profile.delay(profile.id)
             return render(request, "core/thanks.html", {"action_description": "adding "+match.get_name()+" to your profile"})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
@@ -209,7 +208,6 @@ def app_view_relay(request, app_name, action_name, object_id):
         elif action_name == "participate":
             get_object_or_404(cm.ParticipationItem, pk=object_id, is_active=True)
             cm.ParticipationItem.objects.filter(pk=object_id).distinct().update(visits=F('visits')+1)
-            cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=object_id).update(has_been_visited=True) 
             return app.views_module.participate(request, object_id) 
 
         elif action_name == "overview":
@@ -267,18 +265,6 @@ def home(request):
 @ensure_csrf_cookie
 def feed(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
-    num_tags_followed = profile.tags.count()
-    recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
-    items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches) if i.is_active]
-    tasks.feed_update_by_user_profile.delay(profile.id)
-    context = {'items': items, 'num_tags_followed': num_tags_followed, 'site': os.environ["SITE"]}
-    context.update(get_default_og_metadata(request))
-    return render(request, 'core/feed.html', context)
-
-
-@ensure_csrf_cookie
-def feed2(request):
-    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     context = {'site': os.environ["SITE"]}
     context.update(get_default_og_metadata(request))
     subjects_of_interest = set()
@@ -292,7 +278,7 @@ def feed2(request):
 
     context["geo_tags"] = [{"id": t.id, "name": t.name} for t in places_of_interest]
     context["subject_tags"] = [{"id": t.id, "name": t.name} for t in subjects_of_interest]
-    return render(request, 'core/feed2.html', context)
+    return render(request, 'core/feed.html', context)
 
 def get_item_details(item, get_activity=False):
     """
@@ -306,7 +292,6 @@ def get_item_details(item, get_activity=False):
     if not item.display_image_file == "":
         ans["display_image_file"] = item.display_image_file
     if get_activity:
-        ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
         ans["num_visits"] = item.visits
     if app.custom_feed_item_template:
         ans["custom_template"] = app.custom_feed_item_template

@@ -10,7 +10,6 @@ class LegislatorsConfig(AppConfig):
     are_projects_editable = False
     custom_feed_item_template = None
     external_link=False
-    jobs = dict()
 
     def ready(self):
         if module_has_submodule(self.module, "views"):
@@ -22,3 +21,8 @@ class LegislatorsConfig(AppConfig):
         item_classes = [cls for name, cls in models.__dict__.items() if isinstance(cls, type) and issubclass(cls, cm.ParticipationItem)]
         for c in item_classes:
             cm.register_participation_item_subclass(c)
+
+        tasks_module_name = '%s.%s' % (self.name, "tasks")
+        tasks_module = import_module(tasks_module_name)
+        self.get_task = lambda x: tasks_module.get_task(x)
+

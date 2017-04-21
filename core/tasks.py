@@ -2,6 +2,8 @@ from __future__ import absolute_import
 import core.models as cm
 import csv
 import sys
+import traceback
+
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
 from django.core.files.storage import default_storage
@@ -10,7 +12,7 @@ from django.db.models.signals import post_save
 from django.contrib.gis.geos import Point        
 from django.db import transaction
 from django.utils import timezone
-from django.db.models import F
+from django.db.models import F, ExpressionWrapper, DurationField
 import redis
 
 def finalize_project(project, current_process=False):
@@ -23,30 +25,37 @@ def finalize_project(project, current_process=False):
     else:
         transaction.on_commit(lambda: item_update.delay(project.pk))
 
+### Tasks to manage long-running background jobs
 @shared_task
-def pick_and_run_long_job():
+def pick_long_job():
     now = timezone.now()
-    furthest_overdue_job = cm.LongJobState.objects.annotate(time_overdue=(now-F('most_recent_update'))/F('job_period')).order_by('-time_overdue')[0]
-    if furthest_overdue_job.time_overdue > 0:
-        lock_timeout = furthest_overdue_job.update_timeout
-        lock = redis.Redis().lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
-        lock_acquired = lock.acquire()    
-        if lock_acquired:
-            try:
-                sys.stderr.write("long job lock acquired, running job\n")
-                furthest_overdue_job.most_recent_update = now
-                furthest_overdue_job.save()
-                task = cm.get_task_for_job_state(furthest_overdue_job) # task should just be a function, not a celery task
-                task()
-            except SoftTimeLimitExceeded as e:
-                # currently no special handling of soft time limits
-                traceback.print_exc()
-            except Exception as e:
-                traceback.print_exc()
-            finally:
-                lock.release()
-        
+    epoch = timezone.datetime.fromtimestamp(0, tz=timezone.utc)
+    furthest_overdue_job = cm.LongJobState.objects.annotate(time_overdue=ExpressionWrapper(now - F('most_recent_update'), output_field=DurationField())).order_by('-time_overdue')[0]
+    if furthest_overdue_job.time_overdue.total_seconds() > 0:
+        job_timeout = furthest_overdue_job.job_timeout
+        run_long_job.apply_async(args=[furthest_overdue_job.id, job_timeout], soft_time_limit=job_timeout, time_limit=job_timeout+5)
 
+@shared_task
+def run_long_job(job_state_id, lock_timeout):
+    now = timezone.now()
+    lock = redis.Redis().lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
+    lock_acquired = lock.acquire()    
+    if lock_acquired:
+        try:
+            sys.stderr.write("long job lock acquired, running job\n")
+            furthest_overdue_job = cm.LongJobState.objects.get(id=job_state_id)    
+            furthest_overdue_job.most_recent_update = now
+            furthest_overdue_job.save()
+            task = cm.get_task_for_job_state(furthest_overdue_job) # task should just be a function, not a celery task
+            task()
+        except SoftTimeLimitExceeded as e:
+            # currently no special handling of soft time limits
+            traceback.print_exc()
+        except Exception as e:
+            traceback.print_exc()
+        finally:
+            lock.release()
+        
 ### Begin: Tasks for loading data files & updating the database
 @shared_task
 def insert_uscitieslist_v0(small_test):
@@ -166,11 +175,7 @@ def insert_openstates_subjects(small_test):
     sys.stdout.flush()
 
 
-
-
-
 ### Begin: Regular Background tasks
-
 @shared_task
 def item_update(project_id):
     p = cm.ParticipationProject.objects.get(pk=project_id).get_inherited_instance()
@@ -178,52 +183,4 @@ def item_update(project_id):
     num_items_created = len(item_ids)
     for item_id in item_ids:
         i = cm.ParticipationItem.objects.get(pk=item_id)
-        for t in i.tags.all():
-            feed_update_by_tag(t.id)
-            
-    # sys.stdout.write("number of items created: {}\n".format(num_items_created))
-    # sys.stdout.flush()
-
-@shared_task
-def feed_update_by_user_profile(profile_id):
-    """
-    Update feed relative to some user
-    """
-    sys.stdout.write("updating feed for user: "+str(profile_id)+"\n")
-    sys.stdout.flush()
-    profile = cm.UserProfile.objects.get(pk=profile_id)
-    for tag in profile.tags.all():
-        feed_update_by_tag(tag.id, limit_user_profile=profile_id)
-
-
-def feed_update_by_tag(tag_id, limit_user_profile=None):
-    """
-    Update feed relative to some tag
-    """
-    limit_logstr = ""
-    if not limit_user_profile is None:
-        limit_logstr = ", limit to user: "+str(limit_user_profile)
-    t = cm.Tag.objects.get(pk=tag_id)
-    recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
-    user_profiles = None
-    if limit_user_profile is None:
-        user_profiles = t.userprofile_set.all()
-    else:
-        user_profiles = [cm.UserProfile.objects.get(pk=limit_user_profile)]
-
-    # sys.stdout.write("updating feed by tag: "+str(t.name)+limit_logstr+", number of user profiles:"+str(len(user_profiles))+", number of participation items: "+str(len(recent_items))+" \n")
-    # sys.stdout.flush()
-
-    num_matches_created = 0
-
-    for (i, p) in itertools.product(recent_items, user_profiles):
-        if cm.FeedMatch.objects.filter(participation_item=i, user_profile=p).count()==0:
-            match = cm.FeedMatch()
-            match.user_profile = p
-            match.participation_item = i
-            match.save()
-            num_matches_created += 1
-
-    # sys.stdout.write("number of matches created: "+str(num_matches_created))
-    # sys.stdout.flush()
 

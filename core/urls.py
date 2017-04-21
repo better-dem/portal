@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^accounts/', include('registration.backends.hmac.urls')),
     url(r'^accounts/profile/$', views.show_profile, name="profile"),
     url(r'^$', views.home, name="home"),
-    url(r'^feed/$', views.feed2, name="feed"),
+    url(r'^feed/$', views.feed, name="feed"),
     url(r'^upload_dataset/$', views.upload_dataset, name="upload_dataset"),
     url(r'^testgeo/$', views.test_geo, name="test_geo"),
     url(r'^tags/$', views.tags, name="tags"),

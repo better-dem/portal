@@ -29,7 +29,7 @@ def get_app_item_models(app):
 
 def get_app_by_name(name):
     all_apps = apps.get_app_configs()
-    participation_apps = [a for a in all_apps if a.name==name and len(get_app_project_models(a))==1]
+    participation_apps = [a for a in all_apps if a.name==name and len(get_app_project_models(a))>=1]
     return participation_apps[0]
 
 def get_app_for_model(model):
@@ -101,7 +101,7 @@ def get_tag_category(t):
 
 def get_task_for_job_state(ljs):
     app = get_app_by_name(ljs.app_name)
-    return app.jobs[ljs.name]
+    return app.get_task(ljs.name)
 
 ### Start core models
 class ParticipationProject(models.Model):
@@ -187,6 +187,9 @@ class LongJobState(models.Model):
     job_timeout = models.IntegerField() # in seconds
     most_recent_update = models.DateTimeField()
 
+    class Meta:
+        unique_together=(("app_name", "name"),)
+
 class Donation(models.Model):
     userprofile = models.ForeignKey(UserProfile, blank=True, null=True, on_delete = models.SET_NULL)
     amount = models.FloatField()
@@ -194,12 +197,6 @@ class Donation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     stripe_customer_id = models.CharField(max_length=100)
     stripe_full_response = models.TextField() # json object returned by stripe    
-
-class FeedMatch(models.Model):
-    participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
-    user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
-    creation_time = models.DateTimeField(auto_now_add=True)
-    has_been_visited = models.BooleanField(default=False)
 
 class Tag(models.Model):
     name = models.CharField(max_length = 300)
