@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 from django.db import models
 from core import models as cm
+from core import tasks as ct
 
 class LegislatorsProject(cm.ParticipationProject):
     open_states_leg_id = models.CharField(max_length=100)
@@ -32,7 +33,11 @@ class LegislatorsItem(cm.ParticipationItem):
         self.tags.add(*self.participation_project.tags.all())
 
     def set_display_image(self):
+        # set a temporary image
         self.display_image_file = "legislators/img/default.png"
+        # scrape the provided image
+        img_url = self.participation_project.get_inherited_instance().photo_url
+        ct.scrape_image_and_set_field.delay(img_url, None, self.id, "display_image_file")
 
 class BillsProject(cm.ParticipationProject):
     open_states_bill_id = models.CharField(max_length=100)

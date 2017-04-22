@@ -75,6 +75,12 @@ def update_state(state_name, openstates_state_abbrev):
             elif result == "new":
                 num_new_legislators += 1
 
+    sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
+    sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
+    sys.stdout.write("Number of state errors: {}\n".format(num_state_errors))
+    sys.stdout.write("Number of legislator errors: {}\n".format(num_legislator_errors))
+
+
     bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
     sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
 
@@ -99,10 +105,6 @@ def update_state(state_name, openstates_state_abbrev):
     os.system("rm -rf "+workingdir+"/*")
     os.system("rm "+jsonzip)
 
-    sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
-    sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
-    sys.stdout.write("Number of state errors: {}\n".format(num_state_errors))
-    sys.stdout.write("Number of legislator errors: {}\n".format(num_legislator_errors))
     sys.stdout.write("Number of bills added: {}\n".format(num_new_bills))
     sys.stdout.write("Number of bills updated: {}\n".format(num_updated_bills))
     sys.stdout.write("DONE\n")

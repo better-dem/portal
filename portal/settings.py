@@ -216,7 +216,6 @@ CELERYD_TASK_SOFT_TIME_LIMIT=60
 CELERYBEAT_SCHEDULE = {
     'longjobs': {
         'task': 'core.tasks.pick_long_job',
-        'schedule': celery.schedules.schedule(run_every=5)
+        'schedule': celery.schedules.schedule(run_every=5),
     },
-
 }

@@ -3,6 +3,9 @@ import core.models as cm
 import csv
 import sys
 import traceback
+import requests
+from PIL import Image
+import tempfile
 
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
@@ -26,14 +29,18 @@ def finalize_project(project, current_process=False):
         transaction.on_commit(lambda: item_update.delay(project.pk))
 
 ### Tasks to manage long-running background jobs
-@shared_task
+@shared_task(expires=1)
 def pick_long_job():
     now = timezone.now()
     epoch = timezone.datetime.fromtimestamp(0, tz=timezone.utc)
-    furthest_overdue_job = cm.LongJobState.objects.annotate(time_overdue=ExpressionWrapper(now - F('most_recent_update'), output_field=DurationField())).order_by('-time_overdue')[0]
-    if furthest_overdue_job.time_overdue.total_seconds() > 0:
+    jobs = cm.LongJobState.objects.all()
+    furthest_overdue_job = sorted(jobs, key=lambda j: (now - j.most_recent_update).total_seconds() - j.job_period)[-1]
+    sys.stderr.write("furthest overdue job: {} {}\n".format(furthest_overdue_job.name, furthest_overdue_job.most_recent_update))
+    if (now - furthest_overdue_job.most_recent_update).total_seconds() - furthest_overdue_job.job_period > 0:
         job_timeout = furthest_overdue_job.job_timeout
         run_long_job.apply_async(args=[furthest_overdue_job.id, job_timeout], soft_time_limit=job_timeout, time_limit=job_timeout+5)
+    else:
+        sys.stderr.write("job isn't overdue\n")
 
 @shared_task
 def run_long_job(job_state_id, lock_timeout):
@@ -184,3 +191,38 @@ def item_update(project_id):
     for item_id in item_ids:
         i = cm.ParticipationItem.objects.get(pk=item_id)
 
+
+@shared_task
+def scrape_image_and_set_field(url, projectid, itemid, field_name):
+    """
+    Scrapes an image url and puts the local image into the appropriate field.
+    Uses the core.ParticipationProject / core.ParticipationItem .get_inherited_instance()
+    """
+    sys.stderr.write("Scraping an image: {}\n".format(url))
+    extension = "JPEG"
+
+    type_string = None
+    obj = None
+    if not projectid is None and not itemid is None:
+        raise Exception("Exactly one of the params projectid / itemid must be null")
+    if not projectid is None:
+        type_string = "project"
+        obj = cm.ParticipationProject.objects.get(id=projectid).get_inherited_instance()
+    else:
+        type_string = "item"
+        obj = cm.ParticipationItem.objects.get(id=itemid).get_inherited_instance()
+
+    date_string = ''.join([ch for ch in str(timezone.now()) if ch.isalnum() or ch in ["-", "."]])
+    filename = "uploads/scraped_images/{}_{}_{}_{}.{}".format(date_string, type_string, obj.id, field_name, extension)
+    sys.stderr.write("The image should end up here:{}\n".format(filename))
+
+    with tempfile.TemporaryFile('w') as f:
+        f = requests.get(url).raw().read()
+        f.seek(0)
+        img = Image.open(f)
+        with default_storage.open(filename, 'wb') as f2:
+            img.save(f2, extension)
+        
+    obj.__dict__[field_name] = filename
+    obj.save()
+    sys.stderr.write("Image appears to have been scraped and saved succesfully\n")
