@@ -53,6 +53,10 @@ This app delegates background tasks using celery and redis.
 This is required to make the app remain responsive, as described [here](https://devcenter.heroku.com/articles/background-jobs-queueing).
 Any app can create background tasks by following the core app's example.
 
+When you need to get rid of the task queue and redis locks, try:
+> heroku local:run celery -A portal purge
+> redis-cli
+>> flushdb
 
 ## Running The App
 

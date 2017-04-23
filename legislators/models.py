@@ -37,7 +37,8 @@ class LegislatorsItem(cm.ParticipationItem):
         self.display_image_file = "legislators/img/default.png"
         # scrape the provided image
         img_url = self.participation_project.get_inherited_instance().photo_url
-        ct.scrape_image_and_set_field.delay(img_url, None, self.id, "display_image_file")
+        if not img_url is None:
+            ct.scrape_image_and_set_field.delay(img_url, None, self.id, "display_image_file")
 
 class BillsProject(cm.ParticipationProject):
     open_states_bill_id = models.CharField(max_length=100)

@@ -6,6 +6,8 @@ import traceback
 import requests
 from PIL import Image
 import tempfile
+import io
+import shutil
 
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
@@ -35,14 +37,13 @@ def pick_long_job():
     epoch = timezone.datetime.fromtimestamp(0, tz=timezone.utc)
     jobs = cm.LongJobState.objects.all()
     furthest_overdue_job = sorted(jobs, key=lambda j: (now - j.most_recent_update).total_seconds() - j.job_period)[-1]
-    sys.stderr.write("furthest overdue job: {} {}\n".format(furthest_overdue_job.name, furthest_overdue_job.most_recent_update))
     if (now - furthest_overdue_job.most_recent_update).total_seconds() - furthest_overdue_job.job_period > 0:
         job_timeout = furthest_overdue_job.job_timeout
         run_long_job.apply_async(args=[furthest_overdue_job.id, job_timeout], soft_time_limit=job_timeout, time_limit=job_timeout+5)
     else:
         sys.stderr.write("job isn't overdue\n")
 
-@shared_task
+@shared_task(expires=3)
 def run_long_job(job_state_id, lock_timeout):
     now = timezone.now()
     lock = redis.Redis().lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
@@ -216,9 +217,17 @@ def scrape_image_and_set_field(url, projectid, itemid, field_name):
     filename = "uploads/scraped_images/{}_{}_{}_{}.{}".format(date_string, type_string, obj.id, field_name, extension)
     sys.stderr.write("The image should end up here:{}\n".format(filename))
 
-    with tempfile.TemporaryFile('w') as f:
-        f = requests.get(url).raw().read()
+    # bio = io.BytesIO()
+    # req = requests.get(url)
+    # req.raw.decode_content = True
+    # shutil.copyfileobj(req.raw, bio)
+    # bio.flush()
+    # bio.seek(0)
+    with tempfile.TemporaryFile('w+b') as f:
+        f.write(requests.get(url).raw.read())
         f.seek(0)
+        # bio = io.BytesIO(f.read())
+
         img = Image.open(f)
         with default_storage.open(filename, 'wb') as f2:
             img.save(f2, extension)
