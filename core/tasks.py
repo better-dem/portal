@@ -9,6 +9,7 @@ import tempfile
 import io
 import shutil
 import os
+import urlparse
 
 from celery import shared_task
 from celery.exceptions import SoftTimeLimitExceeded
@@ -51,9 +52,14 @@ def pick_long_job():
 @shared_task(expires=3)
 def run_long_job(job_state_id, lock_timeout):
     now = timezone.now()
-    redis_host = ":".join(os.environ["REDIS_URL"].split(":")[:-1])
-    redis_port = os.environ["REDIS_URL"].split(":")[-1]
-    lock = redis.Redis(host=redis_host, port=redis_port).lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
+    res = urlparse.urlparse(os.environ["REDIS_URL"])
+    params = {
+        "host":res.hostname, 
+        "port":res.port, 
+        "password":res.password, 
+        "db":res.path
+    }
+    lock = redis.Redis(**params).lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
     lock_acquired = lock.acquire()    
     if lock_acquired:
         try:
