@@ -22,6 +22,16 @@ from django.utils import timezone
 from django.db.models import F, ExpressionWrapper, DurationField
 import redis
 
+res = urlparse.urlparse(os.environ["REDIS_URL"])
+params = {
+    "host":res.hostname, 
+    "port":res.port, 
+    "password":res.password, 
+    "db":res.path
+}
+redis_conn = redis.Redis(**params)
+del params, res
+
 def finalize_project(project, current_process=False):
     """
     update items and recommendations for a new or newly-edited project
@@ -52,14 +62,7 @@ def pick_long_job():
 @shared_task(expires=3)
 def run_long_job(job_state_id, lock_timeout):
     now = timezone.now()
-    res = urlparse.urlparse(os.environ["REDIS_URL"])
-    params = {
-        "host":res.hostname, 
-        "port":res.port, 
-        "password":res.password, 
-        "db":res.path
-    }
-    lock = redis.Redis(**params).lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
+    lock = redis_conn.lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
     lock_acquired = lock.acquire()    
     if lock_acquired:
         try:
@@ -228,7 +231,12 @@ def scrape_image_and_set_field(url, projectid, itemid, field_name):
     date_string = ''.join([ch for ch in str(timezone.now()) if ch.isalnum() or ch in ["-", "."]])
     filename = "uploads/scraped_images/{}_{}_{}_{}.{}".format(date_string, type_string, obj.id, field_name, extension)
 
-    req = requests.get(url)
+    req = None
+    try:
+        req = requests.get(url)
+    except:
+        sys.stderr.write(u"couldn't connect to image server: {}\n".format(url))
+        return
     if req.status_code != requests.codes.ok:
         sys.stderr.write(u"couldn't fnd image: {}\n".format(url))
         return
