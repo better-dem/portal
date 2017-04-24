@@ -48,20 +48,22 @@ The main requirements of a participation app are:
 ### Continuous deployment files
 app.json, circle.yml, requirements.txt, runtime.txt, and Procfile all control various aspects of how environements are set up for this project when it is pushed to CircleCI and Heroku
 
-### Celery
+### Celery / Redis
 This app delegates background tasks using celery and redis.
 This is required to make the app remain responsive, as described [here](https://devcenter.heroku.com/articles/background-jobs-queueing).
 Any app can create background tasks by following the core app's example.
 
 When you need to get rid of the task queue and redis locks, try:
+```
 > heroku local:run celery -A portal purge
 > redis-cli
 >> flushdb
-
+```
 ## Running The App
 
 ### Environment Variables
 
+```
 DJANGO_SECRET_KEY=
 DJANGO_DEBUG_STATE=
 GMAIL_ACCOUNT_NAME=
@@ -71,7 +73,7 @@ REDIS_URL=
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_STORAGE_BUCKET_NAME=
-
+```
 ### Setting up AWS static file storage and direct uploads
 
  - Create a bucket

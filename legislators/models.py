@@ -67,5 +67,5 @@ class BillsItem(cm.ParticipationItem):
         self.tags.add(*self.participation_project.tags.all())
 
     def set_display_image(self):
-        self.display_image_file = "legislators/img/default.png"
+        self.display_image_file = "legislators/img/bills_default.png"
 
