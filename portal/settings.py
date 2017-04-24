@@ -210,6 +210,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 BROKER_URL = os.environ["REDIS_URL"]
+CELERY_RESULT_BACKEND=BROKER_URL
 CELERYD_TASK_SOFT_TIME_LIMIT=60
 
 # from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
