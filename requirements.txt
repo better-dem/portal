@@ -4,13 +4,10 @@ django-registration==2.1.2
 django-storages==1.5.1
 gunicorn==19.6.0
 psycopg2==2.6.2
-whitenoise==3.2
-celery==3.1.24
+celery==4.0.2
 redis==2.10.5
-kombu==3.0.37
 boto==2.43.0
 django-s3direct==0.4.2
-billiard==3.3.0.20
 numpy==1.12.0
 stripe==1.48.1
 django_compressor==2.1.1
