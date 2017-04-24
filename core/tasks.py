@@ -20,17 +20,6 @@ from django.contrib.gis.geos import Point
 from django.db import transaction
 from django.utils import timezone
 from django.db.models import F, ExpressionWrapper, DurationField
-import redis
-
-res = urlparse.urlparse(os.environ["REDIS_URL"])
-params = {
-    "host":res.hostname, 
-    "port":res.port, 
-    "password":res.password, 
-    "db":res.path
-}
-redis_conn = redis.Redis(**params)
-del params, res
 
 def finalize_project(project, current_process=False):
     """
@@ -52,33 +41,28 @@ def pick_long_job():
         furthest_overdue_job = sorted(jobs, key=lambda j: (now - j.most_recent_update).total_seconds() - j.job_period)[-1]
         if (now - furthest_overdue_job.most_recent_update).total_seconds() - furthest_overdue_job.job_period > 0:
             job_timeout = furthest_overdue_job.job_timeout
-            run_long_job.apply_async(args=[furthest_overdue_job.id, job_timeout], soft_time_limit=job_timeout, time_limit=job_timeout+5)
+            run_long_job.apply_async(args=[furthest_overdue_job.id], soft_time_limit=job_timeout, time_limit=job_timeout+5)
         else:
             sys.stderr.write("job isn't overdue\n")
     except IndexError:
         sys.stderr.write("No jobs in database\n")
         return
 
-@shared_task(expires=3)
-def run_long_job(job_state_id, lock_timeout):
+@shared_task(expires=1)
+def run_long_job(job_state_id):
     now = timezone.now()
-    lock = redis_conn.lock("PORTAL_LONGJOB_LOCK", blocking_timeout=0, timeout=lock_timeout)
-    lock_acquired = lock.acquire()    
-    if lock_acquired:
-        try:
-            sys.stderr.write("long job lock acquired, running job\n")
-            furthest_overdue_job = cm.LongJobState.objects.get(id=job_state_id)    
-            furthest_overdue_job.most_recent_update = now
-            furthest_overdue_job.save()
-            task = cm.get_task_for_job_state(furthest_overdue_job) # task should just be a function, not a celery task
-            task()
-        except SoftTimeLimitExceeded as e:
-            # currently no special handling of soft time limits
-            traceback.print_exc()
-        except Exception as e:
-            traceback.print_exc()
-        finally:
-            lock.release()
+    try:
+        sys.stderr.write("running long job\n")
+        furthest_overdue_job = cm.LongJobState.objects.get(id=job_state_id)    
+        furthest_overdue_job.most_recent_update = now
+        furthest_overdue_job.save()
+        task = cm.get_task_for_job_state(furthest_overdue_job) # task should just be a function, not a celery task
+        task()
+    except SoftTimeLimitExceeded as e:
+        # currently no special handling of soft time limits
+        traceback.print_exc()
+    except Exception as e:
+        traceback.print_exc()
         
 ### Begin: Tasks for loading data files & updating the database
 @shared_task
