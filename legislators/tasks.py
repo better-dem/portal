@@ -11,7 +11,8 @@ import pyopenstates
 import zipfile
 import os
 import json
-
+import tempfile
+import shutil
 
 def get_task(task_name):
     function, state_name, openstates_state_abbrev = task_name.split("|")
@@ -23,31 +24,21 @@ def update_state(state_name, openstates_state_abbrev):
     """
     This function currently uses the file system to store temporary files, so only one can be run at a time
     """
-
-    workingdir = "openstates_data_workingdir"
-    jsonzip = "state-json.zip"
-    num_new_legislators = 0
-    num_updated_legislators = 0
-    num_new_bills = 0
-    num_updated_bills = 0
-    num_state_errors = 0
-    num_legislator_errors = 0
-
-    sys.stdout.write("deleting existing state data...\n")
-    sys.stdout.flush()
-    os.system("rm -rf "+workingdir+"/*")
-    os.system("rm "+jsonzip)
-    sys.stdout.write(state_name+"\n")
-    sys.stdout.flush()
-    state_geotag = None
+    tempdir = None
     try:
+        tempdir = tempfile.mkdtemp()
+        sys.stderr.write("temporary directory: {}\n".format(tempdir))
+        workingdir = tempdir+"/openstates_data_workingdir"
+        jsonzip = tempdir+"/state-json.zip"
+        num_new_legislators = 0
+        num_updated_legislators = 0
+        num_new_bills = 0
+        num_updated_bills = 0
+
+        sys.stdout.write(state_name+"\n")
+        sys.stdout.flush()
         state_geotag = cm.GeoTag.objects.get(feature_type="SP", name=state_name)
-    except cm.GeoTag.DoesNotExist:
-        num_state_errors += 1
-        sys.stdout.write("state not in geotags\n")
-        return
 
-    try:
         with open(jsonzip, "wb") as state_zip_file:
             sys.stdout.write("downloading...\n")
             pyopenstates.download_bulk_data(openstates_state_abbrev, state_zip_file)
@@ -57,59 +48,51 @@ def update_state(state_name, openstates_state_abbrev):
         zip_ref.extractall(workingdir)
         zip_ref.close()
 
+        legislator_files = os.listdir(workingdir+"/legislators")
+        sys.stdout.write("number of legislators:"+str(len(legislator_files))+"\n")
+
+        for f in legislator_files:
+            with open(workingdir+"/legislators/"+f, 'r') as leg_file:
+                leg_json = json.loads(leg_file.read())
+                result = update_legislator(leg_json, state_geotag)
+                if result == "update":
+                    num_updated_legislators += 1
+                elif result == "new":
+                    num_new_legislators += 1
+
+        sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
+        sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
+
+        bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
+        sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
+
+        for f in bill_files:
+            with open(f, 'r') as bill_file:
+                bill_json = json.loads(bill_file.read())
+                result = update_bill(bill_json, state_geotag)
+                if result == "update":
+                    num_updated_bills += 1
+                    if num_updated_bills % 100 == 0:
+                        sys.stderr.write("Updating bill #{}\n".format(num_updated_bills))
+                elif result == "new":
+                    num_new_bills += 1
+                    if num_new_bills % 100 == 0:
+                        sys.stderr.write("Adding new bill #{}\n".format(num_new_bills))
+
+
+        committee_files = os.listdir(workingdir+"/committees")
+        sys.stdout.write("number of committees:"+str(len(committee_files))+"\n")
+        sys.stdout.write("Number of bills added: {}\n".format(num_new_bills))
+        sys.stdout.write("Number of bills updated: {}\n".format(num_updated_bills))
+        sys.stdout.write("DONE\n")
+
+    except cm.GeoTag.DoesNotExist:
+        sys.stdout.write("state not in geotags\n")
     except zipfile.BadZipfile:
-        num_state_errors += 1
         sys.stdout.write("there was a problem reading this state's zipfile\n")
+    finally:
         sys.stdout.flush()
-        return
-
-    legislator_files = os.listdir(workingdir+"/legislators")
-    sys.stdout.write("number of legislators:"+str(len(legislator_files))+"\n")
-
-    for f in legislator_files:
-        with open(workingdir+"/legislators/"+f, 'r') as leg_file:
-            leg_json = json.loads(leg_file.read())
-            result = update_legislator(leg_json, state_geotag)
-            if result == "update":
-                num_updated_legislators += 1
-            elif result == "new":
-                num_new_legislators += 1
-
-    sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
-    sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
-    sys.stdout.write("Number of state errors: {}\n".format(num_state_errors))
-    sys.stdout.write("Number of legislator errors: {}\n".format(num_legislator_errors))
-
-
-    bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
-    sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
-
-    for f in bill_files:
-        with open(f, 'r') as bill_file:
-            bill_json = json.loads(bill_file.read())
-            result = update_bill(bill_json, state_geotag)
-            if result == "update":
-                num_updated_bills += 1
-                if num_updated_bills % 100 == 0:
-                    sys.stderr.write("Updating bill #{}\n".format(num_updated_bills))
-            elif result == "new":
-                num_new_bills += 1
-                if num_new_bills % 100 == 0:
-                    sys.stderr.write("Adding new bill #{}\n".format(num_new_bills))
-
-
-    committee_files = os.listdir(workingdir+"/committees")
-    sys.stdout.write("number of committees:"+str(len(committee_files))+"\n")
-    sys.stdout.flush()
-
-    os.system("rm -rf "+workingdir+"/*")
-    os.system("rm "+jsonzip)
-
-    sys.stdout.write("Number of bills added: {}\n".format(num_new_bills))
-    sys.stdout.write("Number of bills updated: {}\n".format(num_updated_bills))
-    sys.stdout.write("DONE\n")
-    sys.stdout.flush()
-
+        shutil.rmtree(tempdir)
 
 
 @transaction.atomic
