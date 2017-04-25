@@ -19,11 +19,20 @@ def administer_project(request, project_id):
 
 def participate(request, item_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
-    item = LegislatorsItem.objects.get(pk=item_id)
+    item = None
+    project = None
+    item_type = None
+    try:
+        item = LegislatorsItem.objects.get(pk=item_id)
+        project = item.participation_project.legislatorsproject
+        item_type = "legislators"
+    except LegislatorsItem.DoesNotExist:
+        item = BillsItem.objects.get(pk=item_id)
+        project = item.participation_project.billsproject
+        item_type = "bills"
     context = cv.get_default_og_metadata(request, item)
-    project = item.participation_project.legislatorsproject
     context.update({'site': os.environ["SITE"], "item": item, "project":project})
-    return render(request, "legislators/participate.html", context)
+    return render(request, "legislators/{}_participate.html".format(item_type), context)
 
 def overview(request, item_id):
     if item_id == "-1":

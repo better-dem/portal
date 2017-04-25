@@ -154,6 +154,7 @@ def update_legislator(leg_json, state_geotag):
 def update_bill(bill_json, state_geotag):
     bill_fields = {"open_states_bill_id":"id", "name":"title", "bill_id":"bill_id"}
     bill_action_date_fields = {"first_action_date": "first", "last_action_date": "last", "passed_upper_date":"passed_upper", "passed_lower_date":"passed_lower", "signed_date":"signed"}
+    bill_document_fields = {"url":"url", "name":"name", "mimetype":"mimetype"}
 
     existing_bill = None
     try:
@@ -177,6 +178,29 @@ def update_bill(bill_json, state_geotag):
 
         p.owner_profile = cm.get_default_user().userprofile
         p.save()
+
+
+        versions = bill_json["versions"]
+        for v in versions:
+            doc_openstates_id = v["doc_id"]
+            existing_doc = None
+            try:
+                existing_doc = cm.ReferenceDocument.objects.get(external_api = "openstates", external_id=doc_openstates_id)
+            except cm.ReferenceDocument.DoesNotExist:
+                pass
+            if existing_doc is None:
+                doc = cm.ReferenceDocument()
+                doc.external_api = "openstates"
+                doc.external_id = doc_openstates_id
+                for i in bill_document_fields.items():
+                    max_len = cm.ReferenceDocument._meta.get_field(i[1]).max_length
+                    doc.__dict__[i[0]] = v.get(i[1], None)[:max_len]
+
+                doc.save()
+                p.documents.add(doc)
+            else:                
+                p.documents.add(existing_doc)
+
 
         p.tags.add(state_geotag.tag_ptr)
         subjects = bill_json["subjects"]
@@ -216,6 +240,33 @@ def update_bill(bill_json, state_geotag):
                     change_set.add(i[0])
                     p.__dict__[i[0]] = date_string
 
+        versions = bill_json["versions"]
+        current_documents = p.documents.all()
+        new_documents = set()
+        for v in versions:
+            doc_openstates_id = v["doc_id"]
+            existing_doc = None
+            try:
+                existing_doc = cm.ReferenceDocument.objects.get(external_api = "openstates", external_id=doc_openstates_id)
+            except cm.ReferenceDocument.DoesNotExist:
+                pass
+            if existing_doc is None:
+                doc = cm.ReferenceDocument()
+                doc.external_api = "openstates"
+                doc.external_id = doc_openstates_id
+                for i in bill_document_fields.items():
+                    max_len = cm.ReferenceDocument._meta.get_field(i[1]).max_length
+                    doc.__dict__[i[0]] = v.get(i[1], None)[:max_len]
+
+                doc.save()
+                new_documents.add(doc)
+            else:
+                new_documents.add(existing_doc)
+
+        if len(new_documents.symmetric_difference(current_documents)) > 0:
+            p.documents.clear()
+            p.documents.add(*new_documents)
+            change_set.add("documents")
 
         p.owner_profile = cm.get_default_user().userprofile
         p.save()
@@ -238,7 +289,7 @@ def update_bill(bill_json, state_geotag):
 
         #### propagate project changes
         if "tags" in change_set or "name" in change_set:
-            sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project")
+            sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project: {}\n".format(p.id))
             sys.stderr.flush()
             # de-activate all existing items and re-create items for this project
             BillsItem.objects.filter(participation_project=p, is_active=True).update(is_active=False)
@@ -247,6 +298,6 @@ def update_bill(bill_json, state_geotag):
         ct.finalize_project(p, True)                        
 
         if len(change_set) > 0:
-            sys.stderr.write("there are changes: {}\n".format(change_set))
+            sys.stderr.write("there are changes to project {}: {}\n".format(p.id, change_set))
             return "update"
 

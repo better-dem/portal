@@ -49,6 +49,7 @@ class BillsProject(cm.ParticipationProject):
     passed_upper_date = models.DateField(null=True, blank=True)
     passed_lower_date = models.DateField(null=True, blank=True)
     signed_date = models.DateField(null=True, blank=True)
+    documents = models.ManyToManyField(cm.ReferenceDocument)
 
     def update_items(self):
         if BillsItem.objects.filter(participation_project=self, is_active=True).count()==0:
