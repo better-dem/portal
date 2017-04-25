@@ -3,9 +3,10 @@ from s3direct.widgets import S3DirectWidget
 from widgets import forms as wf
 from core import models as cm
 
-class UploadGeoTagset(forms.Form):
+class UploadDataset(forms.Form):
+    FORMAT_CHOICES = (("states_v1", "States"), ("uscitieslist_csv_v0","Cities"), ("openstates_subjects_v1", "Openstates Subjects"))
     small_test = forms.BooleanField(required=False)
-    format_id = forms.CharField(max_length=30)
+    format_id = forms.ChoiceField(choices=FORMAT_CHOICES)
     data_file = forms.URLField(widget=S3DirectWidget(dest="data_upload"))
 
 class CreateShortcutForm(forms.Form):
@@ -64,7 +65,7 @@ def get_best_final_matching_tag(q):
     return possible_matches[0]
 
 matching_object_query = get_matching_tags
-suggestion_function = lambda item: item.get_name()
+suggestion_function = lambda item: {"value": item.get_name(), "data": {"id": item.id, "category": cm.get_tag_category(item)}}
 ajax_url = "/autocomplete_tags/"
 tag_aac = wf.AjaxAutocomplete(matching_object_query, suggestion_function, ajax_url)
 

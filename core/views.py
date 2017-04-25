@@ -4,17 +4,22 @@ from django.contrib.auth.models import Permission, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import F, Sum
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponseServerError
-import core.models as cm
-import core.tasks as tasks
-from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadGeoTagset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
-import sys
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseRedirect, HttpResponseServerError
 from django.core.files.storage import default_storage
 from django.db import transaction
-import os
-import stripe
-import random
 from django.conf import settings
+
+import core.models as cm
+import core.tasks as tasks
+from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+
+import sys
+import os
+import random
+import json
+
+import stripe
+
 stripe.api_key = os.environ["STRIPE_API_KEY"]
 
 def get_default_og_metadata(request, participation_item=None):
@@ -98,7 +103,7 @@ def upload_dataset(request):
         return HttpResponseForbidden()
 
     if request.method == 'POST':
-        form = UploadGeoTagset(request.POST, request.FILES)
+        form = UploadDataset(request.POST, request.FILES)
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
                 tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"])
@@ -106,12 +111,15 @@ def upload_dataset(request):
             elif form.cleaned_data["format_id"] == "states_v1":
                 tasks.insert_states.delay(form.cleaned_data["small_test"])
                 return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
+            elif form.cleaned_data["format_id"] == "openstates_subjects_v1":
+                tasks.insert_openstates_subjects.delay(form.cleaned_data["small_test"])
+                return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
             else:
                 return HttpResponse("Sorry, this format is not known")
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
     else:
-        form = UploadGeoTagset()
+        form = UploadDataset()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path, "enctype_data": True})
     
 
@@ -159,7 +167,6 @@ def update_profile_tags(request):
             if match is None: 
                 return HttpResponse("Sorry, there isn't a tag with this name")
             profile.tags.add(match)
-            tasks.feed_update_by_user_profile.delay(profile.id)
             return render(request, "core/thanks.html", {"action_description": "adding "+match.get_name()+" to your profile"})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
@@ -201,12 +208,21 @@ def app_view_relay(request, app_name, action_name, object_id):
         elif action_name == "participate":
             get_object_or_404(cm.ParticipationItem, pk=object_id, is_active=True)
             cm.ParticipationItem.objects.filter(pk=object_id).distinct().update(visits=F('visits')+1)
-            cm.FeedMatch.objects.filter(user_profile=profile, participation_item__pk=object_id).update(has_been_visited=True) 
             return app.views_module.participate(request, object_id) 
 
         elif action_name == "overview":
-            # object id is irrelevant
-            return app.views_module.overview(request) 
+            return app.views_module.overview(request, object_id) 
+
+        elif action_name == "item_info":
+            if not request.is_ajax() or not request.method == "POST":
+                return HttpResponse(status=500)
+            # default item info
+            item = get_object_or_404(cm.ParticipationItem, pk=object_id)
+            ans = {"item": {"id": item.id, "img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name, "label": item.get_inline_display(), "tags": [t.name for t in item.tags.all()]}, "site": os.environ["SITE"]}
+            if "item_info" in app.views_module.__dict__:
+                return app.views_module.item_info(request, object_id, ans)
+            else:
+                return JsonResponse(ans)
 
         elif action_name == "delete_project":
             if has_app_perm:
@@ -249,12 +265,19 @@ def home(request):
 @ensure_csrf_cookie
 def feed(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
-    num_tags_followed = profile.tags.count()
-    recent_matches = cm.FeedMatch.objects.filter(user_profile=profile).order_by('-creation_time')[:100]
-    items = [get_item_details(i) for i in map(lambda x: x.participation_item, recent_matches) if i.is_active]
-    tasks.feed_update_by_user_profile.delay(profile.id)
-    context = {'items': items, 'num_tags_followed': num_tags_followed, 'site': os.environ["SITE"]}
+    context = {'site': os.environ["SITE"]}
     context.update(get_default_og_metadata(request))
+    subjects_of_interest = set()
+    places_of_interest = set()
+    for t in profile.tags.all():
+        try:
+            geo = t.geotag
+            places_of_interest.add(t)
+        except:
+            subjects_of_interest.add(t)
+
+    context["geo_tags"] = [{"id": t.id, "name": t.name} for t in places_of_interest]
+    context["subject_tags"] = [{"id": t.id, "name": t.name} for t in subjects_of_interest]
     return render(request, 'core/feed.html', context)
 
 def get_item_details(item, get_activity=False):
@@ -265,11 +288,10 @@ def get_item_details(item, get_activity=False):
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
     project = item.participation_project.get_inherited_instance()
-    ans = {"label": item.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
+    ans = {"label": item.name, "app": app.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
     if not item.display_image_file == "":
         ans["display_image_file"] = item.display_image_file
     if get_activity:
-        ans["num_matches"] = cm.FeedMatch.objects.filter(participation_item=item).count()
         ans["num_visits"] = item.visits
     if app.custom_feed_item_template:
         ans["custom_template"] = app.custom_feed_item_template
@@ -381,7 +403,6 @@ def report_issues(request, *args, **kwargs):
         form = IssueReportForm(initial={"event_id":event_id})
         return render(request, 'core/generic_form.html', {"title": "Report an Issue", 'form': form, 'action_path' : request.path})
 
-
 def moderate_issues(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     app = cm.get_core_app()
@@ -418,7 +439,62 @@ def item_info(request, item_id):
     ans = {"img_url": settings.STATIC_URL+item.display_image_file, "link": item.participate_link(), "title": item.name, "external_link": external_link}
     return JsonResponse(ans)
 
+def feed_recommendations(request):
+    """
+    recommend items as a user arrives to go at the top of their feed 
+    recommendations are tuples: (ParticipationItem.id, app_name)
+    """
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not request.is_ajax() or not request.method == "POST":
+        return HttpResponse(status=500)
+
+    #### extract content from current_feed_contents
+    submission_data = json.loads(request.body.strip())
+    current_feed_contents = submission_data.get("current_feed_contents", [])
+    current_location_filters = submission_data.get("current_location_filters", [])
+    current_topic_filters = submission_data.get("current_topic_filters", [])
+    # feed size maxes out at 1000
+    if len(current_feed_contents) >= 1000:
+        return JsonResponse({"recommendations":[]})
+
+    ### recommend diverse content to the user which doesn't overlap with current feed contents
+    recommendations = set()
+    subjects_of_interest = set()
+    places_of_interest = set()
+    
+    for t in current_topic_filters:
+        try:
+            subjects_of_interest.add(cm.Tag.objects.get(pk=t["tag_id"]))
+        except cm.Tag.DoesNotExist:
+            pass
+
+    for t in current_location_filters:
+        try:
+            places_of_interest.add(cm.Tag.objects.get(pk=t["tag_id"]))
+        except cm.Tag.DoesNotExist:
+            pass
+
+    if len(places_of_interest) == 0:
+        places_of_interest.add(cm.get_usa())
+
+    for t in places_of_interest:
+        for app in cm.get_registered_participation_apps():
+            for item_model in cm.get_app_item_models(app):
+                if len(subjects_of_interest) == 0:
+                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
+                else:
+                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(tags__in=subjects_of_interest).order_by('-creation_time')[:3*len(subjects_of_interest)]])
+
+    # TODO: make use of subjects of interest
+    recommendations = [r for r in recommendations if not r[0] in current_feed_contents]
+    recommendations = random.sample(recommendations, min(10, len(recommendations)))
+    content = {"recommendations": recommendations}
+    return JsonResponse(content)
+
 def recommend_related(request, item_id):
+    """
+    recommend related items to put at the bottom of a participation page
+    """
     if not request.is_ajax() or not request.method == "POST":
         return HttpResponse(status=500)
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
@@ -436,3 +512,25 @@ def recommend_related(request, item_id):
     recommendations = random.sample(candidates, min(10, len(candidates)))
     content = {"recommendations": [r.id for r in recommendations]}
     return JsonResponse(content)
+
+def js_templates(request, app_name, template_name):
+    assert not "/" in template_name
+    if not app_name in ([app.label for app in cm.get_registered_participation_apps()] + ["core"]):
+        raise Exception("no such app")
+    else:
+        app = cm.get_core_app()
+        try:
+            app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
+        except IndexError:
+            pass
+
+        if app == cm.get_core_app() or app.custom_feed_item_template is None:
+            if template_name == "feed_item.html":
+                return FileResponse(open("core/templates/core/feed_item.html"))
+            else:
+                sys.stderr.write("Unknown template requested: {}\n".format(template_name))
+                sys.stderr.flush()
+                return HttpResponse("")
+        else:
+            return FileResponse(open(app_name+"/templates/"+app.custom_feed_item_template))
+        

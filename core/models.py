@@ -18,7 +18,7 @@ def get_core_app():
 
 def get_registered_participation_apps():
     all_apps = apps.get_app_configs()
-    participation_apps = [a for a in all_apps if not a.name=="core" and len(get_app_project_models(a))==1]
+    participation_apps = [a for a in all_apps if not a.name=="core" and len(get_app_project_models(a))>=1]
     return participation_apps
 
 def get_app_project_models(app):
@@ -29,7 +29,7 @@ def get_app_item_models(app):
 
 def get_app_by_name(name):
     all_apps = apps.get_app_configs()
-    participation_apps = [a for a in all_apps if a.name==name and len(get_app_project_models(a))==1]
+    participation_apps = [a for a in all_apps if a.name==name and len(get_app_project_models(a))>=1]
     return participation_apps[0]
 
 def get_app_for_model(model):
@@ -42,18 +42,30 @@ def get_item_subclass_test(app):
     item_models = get_app_item_models(app)
     if len(item_models) == 0:
         raise Exception("app"+app.name+" has no Participation Item models")
-    m = item_models[0]
-    subclass_name = m.__name__.lower().replace("_","")
-    return lambda x: getattr(x, subclass_name)
+    subclass_names = [m.__name__.lower().replace("_","") for m in item_models]
+    def test(x):
+        for s in subclass_names:
+            try:
+                return getattr(x, s)
+            except:
+                continue
+        raise Exception()
+    return test
 
 def get_project_subclass_test(app):
     project_models = get_app_project_models(app)
     if len(project_models) == 0:
         raise Exception("app"+app.name+" has no Participation Project models")
-    m = project_models[0]
-    subclass_name = m.__name__.lower().replace("_","")
-    return lambda x: getattr(x, subclass_name)
 
+    subclass_names = [m.__name__.lower().replace("_","") for m in project_models]
+    def test(x):
+        for s in subclass_names:
+            try:
+                return getattr(x, s)
+            except:
+                continue
+        raise Exception()
+    return test
 
 def get_provider_permission(app):
     project_model = get_app_project_models(app)[0]
@@ -79,6 +91,17 @@ def get_default_user():
 
 def get_usa():
     return GeoTag.objects.get_or_create(name="United States of America", defaults={"detail": "North America", "feature_type": "CO"})[0]
+
+def get_tag_category(t):
+    try:
+        m=t.geotag
+        return "Location"
+    except:
+        return "Topic"
+
+def get_task_for_job_state(ljs):
+    app = get_app_by_name(ljs.app_name)
+    return app.get_task(ljs.name)
 
 ### Start core models
 class ParticipationProject(models.Model):
@@ -151,6 +174,22 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
 
+class LongJobState(models.Model):
+    """
+    A model to track an app's state relative to the periodic long background jobs it has to perform.
+    For example, scraping / crawling jobs or pulling from APIs .
+    This is used to allow the portal to schedule these jobs while leaving an workers available for basic site functionality.
+    """
+    app_name = models.TextField(max_length = 300) # app name
+    name = models.TextField(max_length = 100) # a unique-per-app
+
+    job_period = models.IntegerField(default=60*60*24) # in seconds, default is one day. Jobs are prioritized based on how far past due they are
+    job_timeout = models.IntegerField() # in seconds
+    most_recent_update = models.DateTimeField()
+
+    class Meta:
+        unique_together=(("app_name", "name"),)
+
 class Donation(models.Model):
     userprofile = models.ForeignKey(UserProfile, blank=True, null=True, on_delete = models.SET_NULL)
     amount = models.FloatField()
@@ -158,12 +197,6 @@ class Donation(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     stripe_customer_id = models.CharField(max_length=100)
     stripe_full_response = models.TextField() # json object returned by stripe    
-
-class FeedMatch(models.Model):
-    participation_item = models.ForeignKey('ParticipationItem', on_delete = models.CASCADE)
-    user_profile = models.ForeignKey('UserProfile', on_delete = models.CASCADE)
-    creation_time = models.DateTimeField(auto_now_add=True)
-    has_been_visited = models.BooleanField(default=False)
 
 class Tag(models.Model):
     name = models.CharField(max_length = 300)
@@ -179,6 +212,9 @@ class Tag(models.Model):
         return self.name
 
 class GeoTag(Tag):
+    """
+    A tag which refers to a physical location / region
+    """
     polygon = models.PolygonField(geography = True, blank=True, null=True)
     polygon_area = models.FloatField(blank = True, null=True)
     point = models.PointField(geography = True, blank=True, null=True)
@@ -193,6 +229,17 @@ class GeoTag(Tag):
     FEATURE_TYPE_CHOICES = ((COUNTRY, "Country"),(STATE_OR_PROVINCE, "State or Province"),(CITY, "City or town"),(OTHER, "Other"),(UNKNOWN, "Unknown"))
 
     feature_type = models.CharField(max_length=2, choices=FEATURE_TYPE_CHOICES, default=UNKNOWN)
+
+class ReferenceDocument(models.Model):
+    """
+    A reference to some document, such as a bill, a budget document, a report, a ruling, etc.
+    """
+    name = models.CharField(max_length = 500)
+    url = models.URLField()
+    mimetype = models.CharField(max_length = 50, default="text/html")
+    first_paragraph = models.TextField(blank=True, null=True)
+    external_api = models.CharField(max_length = 100, blank=True, null=True) # if the document is pulled from an external API, this shows the API's name 
+    external_id = models.CharField(max_length = 100, blank=True, null=True) # a field used for identification from some other API
 
 class Event(models.Model):
     """

@@ -119,20 +119,28 @@ var register_event_trigger = function(b){
     }, false);
 }
 
-// register ajax form event triggers on all forms on the page
-var ajax_form_setup = function(){
-    var portal_ajax_form_submit_buttons = document.getElementsByClassName("portal_ajax_submit");
-    console.log("portal ajax form submit buttons:");
-    console.log(portal_ajax_form_submit_buttons);
-
-    for ( var i = 0; i < portal_ajax_form_submit_buttons.length; i++){
-	console.log("registering button:" + i);
-	var b = portal_ajax_form_submit_buttons[i];
-	register_event_trigger(b)
-    };
-}
-
 //// feed updating methods
+var env = new nunjucks.Environment(new nunjucks.WebLoader("/js_templates"));
+var escapeJSMap = {
+    '\\': '\\u005C',
+    '\'': '\\u0027',
+    '"': '\\u0022',
+    '>': '\\u003E',
+    '<': '\\u003C',
+    '&': '\\u0026',
+    '=': '\\u003D',
+    '-': '\\u002D',
+    ';': '\\u003B'
+};
+
+env.addFilter('escapejs', function(str) {
+    return str.replace(/["'><&=\-;\\]/g, function(ch) {
+	return escapeJSMap[ch];
+    });
+});
+
+
+// mini items go on the bottom of participate views as recommendations
 var display_item_mini = function(item_id, element_id){
     var cb = function(response_content, status){
 	console.log("ajax form response. status:"+status);
@@ -158,6 +166,103 @@ var display_item_mini = function(item_id, element_id){
     submit_ajax_form("/item_info/"+item_id+"/", "", cb);
 }
 
-$(document).ready(ajax_form_setup);
+// feed items populate news feeds, admin views, and are also used within participate pages
+var display_feed_item = function(item_id, element_id, app_name){
+    var cb = function(response_content, status){
+	console.log("ajax form response. status:"+status);
+	console.log("ajax form response. response_content:"+response_content);
+	console.log(JSON.stringify(response_content));
+        // TODO: update html and content
 
+	var res = env.render(app_name+"/feed_item.html", response_content);
+	$("#"+element_id).html(res)
+        // TODO: call javascript methods for inline displays, set up ajax within items, etc.
+    }
+    submit_ajax_form("/apps/"+app_name+"/item_info/"+item_id, "", cb);
+}
+
+var get_feed_recommendations_next_page = function(){
+    var cb = function(response_content, status){
+	console.log("ajax form response. status:"+status);
+	console.log("ajax form response. response_content:"+response_content);
+	console.log(JSON.stringify(response_content));
+	var item_recommendations = response_content["recommendations"]
+	for (i = 0; i < item_recommendations.length; i++){
+	    current_feed_contents.push(item_recommendations[i][0])
+	    var eid = "feed_item_"+(item_recommendations[i][0]);
+	    $("#feed").append("<div id=\""+eid+"\"></div>");
+	    display_feed_item(item_recommendations[i][0], eid, item_recommendations[i][1]);
+	}
+    }
+    submit_ajax_form("/feed_recommendations/", JSON.stringify({"current_feed_contents":current_feed_contents, "current_location_filters": current_location_filters, "current_topic_filters": current_topic_filters}), cb);
+}
+
+var update_filter_display = function(){
+    $("#geo_filters").empty();
+    for (i = 0; i < current_location_filters.length; i++){
+	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_location_filters[i]);
+	$("#geo_filters").append(res);
+    }
+    $("#topic_filters").empty();
+    for (i = 0; i < current_topic_filters.length; i++){
+	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_topic_filters[i]);
+	$("#topic_filters").append(res);
+    }
+    if (current_topic_filters.length == 0){
+	$("#topic_filter_default").show();
+    } else {
+	$("#topic_filter_default").hide();
+    }
+}
+
+var remove_filter = function(tag_id){
+    // remove a filter, update the filter display, and re-populate the feed
+    console.log("removing filter: ", tag_id);
+    var new_location_filters = current_location_filters.filter(function(item){return item.tag_id != tag_id;});
+    if (new_location_filters.length == 0){
+	$("#geo_filter_warnings").html("<div class=\"alert alert-warning\" id=\"geo_filter_warning_1\">We need at least one location</div>")
+	$("#geo_filter_warning_1").fadeOut(3000, function() {$(this).remove();});
+    } else {
+	current_location_filters = new_location_filters;
+    }
+
+    current_topic_filters = current_topic_filters.filter(function(item){return item.tag_id != tag_id;});
+    
+    // update display, get new recommendations
+    update_filter_display();
+    current_feed_contents = [];
+    $("#feed").html("<br>");
+    get_feed_recommendations_next_page()
+}
+
+var add_filter = function(suggestion){
+    // get filter details
+    var item = {"tag_id": suggestion["data"]["id"], "tag_name": suggestion["value"].split(",")[0]};
+
+    // ignore if we're already including this filter
+    if (current_location_filters.filter(function(i){return i.tag_id == item.tag_id;}).length > 0 ||
+	current_topic_filters.filter(function(i){return i.tag_id == item.tag_id;}).length > 0){
+	return;
+    }
+
+    // place the tag under the appropriate filter category
+    if (suggestion["data"]["category"] == "Location"){
+	current_location_filters.push(item);
+    } else if (suggestion["data"]["category"] == "Topic"){
+	current_topic_filters.push(item);
+    }
+
+    // update display, get new recommendations
+    update_filter_display();
+    current_feed_contents = [];
+    $("#feed").html("<br>");
+    get_feed_recommendations_next_page()
+}
+
+// format: [#, #, ...]
+var current_feed_contents = [];
+
+// format: [{"tag_id": #, "tag_name": "..."}, ...]
+var current_location_filters = [];
+var current_topic_filters = [];
 

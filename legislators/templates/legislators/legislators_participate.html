@@ -1,0 +1,26 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+
+<h2>{{ project.name }}</h2>
+<p>
+  <a href="{{ project.webpage_url }}">Visit {{ project.name }}'s website</a>
+</p>
+
+<table class="table">
+  <tr><td>State</td><td> {{ project.open_states_state }}</td></tr>
+  <tr><td>Chamber</td><td> {{ project.chamber }}</td></tr>
+  <tr><td>District</td><td> {{ project.district }}</td></tr>
+  <tr><td>Is Active?</td><td> {{ project.open_states_active }}</td></tr>
+</table>
+
+<p>
+  <figure>
+    <img class="img-responsive" src="{% static item.display_image_file %}"/>
+    <figcaption>An official photo of {{ project.name }}.</figcaption>
+  </figure>
+</p>
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}

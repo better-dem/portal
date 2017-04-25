@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'ballot_decider.apps.BallotDeciderConfig',
     'interactive_visualization.apps.InteractiveVisualizationConfig',
     'beat_the_bullshit.apps.BeatTheBullshitConfig',
+    'legislators.apps.LegislatorsConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -209,11 +210,16 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 BROKER_URL = os.environ["REDIS_URL"]
+CELERY_RESULT_BACKEND=BROKER_URL
+CELERYD_TASK_SOFT_TIME_LIMIT=60
+CELERY_REDIS_MAX_CONNECTIONS=1
+BROKER_POOL_LIMIT=1
+CELERYD_PREFETCH_MULTIPLIER=1
 
 # from http://stackoverflow.com/questions/20116573/in-celery-3-1-making-django-periodic-task
 CELERYBEAT_SCHEDULE = {
-    # 'item-update': {
-    #     'task': 'core.tasks.item_update',
-    #     'schedule': celery.schedules.schedule(run_every=2)
-    # },
+    'longjobs': {
+        'task': 'core.tasks.pick_long_job',
+        'schedule': celery.schedules.schedule(run_every=5),
+    },
 }

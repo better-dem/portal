@@ -1,0 +1,115 @@
+{% load staticfiles %}
+{% load compress %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      {% include "core/head.html" %}
+{% compress css %}
+      <style>
+	.filter_input {
+	width: 100%; /* Full-width */
+	padding: 2px 2px 2px 2px; /* Add some padding */
+	border: 1px solid #ddd; /* Add a grey border */
+	}
+
+	#filterable_table {
+	border-collapse: collapse; /* Collapse borders */
+	width: 100%; /* Full-width */
+	border: 1px solid #ddd; /* Add a grey border */
+	}
+
+	#filterable_table th, #filterable_table td {
+	text-align: left; /* Left-align text */
+	padding: 12px; /* Add padding */
+	}
+
+	#filterable_table tr {
+	/* Add a bottom border to all table rows */
+	border-bottom: 1px solid #ddd;
+	}
+
+	#filterable_table tr.header, #filterable_table tr:hover {
+	/* Add a grey background color to the table header and on hover */
+	background-color: #f1f1f1;
+	}
+      </style>
+{% endcompress %}
+    </head>
+    <body>
+
+      {% include "core/navbar.html" %}
+
+      <div class="container">
+      <h2>Bills Browser</h2>
+
+      <table id="filterable_table">
+	<tr class="header">
+	  <th>Name</th>
+	  <th>Description</th>
+	  <th>Tags</th>
+	  <th style="width: 150px;">Photo</th>
+	  <th>Contact / website</th>
+	</tr>
+	<tr class="filters">
+	  <th><input type="text" id="name_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by name.."></th>
+	  <th><input type="text" id="description_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by description.."></th>
+	  <th><input type="text" id="tags_filter_input" class="filter_input" onkeyup="filter_table()" placeholder="Filter by tags.."></th>
+	  <th></th>
+	  <th></th>
+	</tr>
+	{% for item in items %}
+	<tr>
+	  <td><a href="{{ item.link }}">{{ item.projectobj.name }}</a></td>
+	  <td>Serving {{ item.projectobj.chamber }} chamber, District {{ item.projectobj.district }}</td>
+	  <td>{% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}</td>
+	  <td>
+	    {% if item.projectobj.photo_url %}
+	    <span>
+	      <img src="{{ item.projectobj.photo_url }}" width="90" height="90">
+	    </span>
+	    {% endif %}
+	  </td>
+	  <td>{% if item.projectobj.email %}<a href="mailto:{{ item.projectobj.email }}">{{ item.projectobj.email }}</a><br>{% endif %}{% if item.projectobj.webpage_url %}<a href="{{ item.projectobj.webpage_url }}">website</a>{% endif %}</td>
+	</tr>	
+	{% endfor %}
+      </table>
+      </div>
+
+{% compress js %}
+<script>
+  var filters = {"name": "", "description": "", "tags":""}
+
+  function filter_table() {
+  filters["name"] = document.getElementById("name_filter_input").value.toUpperCase();
+  filters["description"] = document.getElementById("description_filter_input").value.toUpperCase();
+  filters["tags"] = document.getElementById("tags_filter_input").value.toUpperCase();
+
+  var table = document.getElementById("filterable_table");
+  var tr = table.getElementsByTagName("tr");
+
+  var included_rows = []
+  for (var i = 0; i < tr.length; i++){
+        td_name = tr[i].getElementsByTagName("td")[0];
+        td_description = tr[i].getElementsByTagName("td")[1];
+        td_tags = tr[i].getElementsByTagName("td")[2];
+        if (td_name && td_description && td_tags) {
+            if (td_name.textContent.toUpperCase().indexOf(filters["name"]) > -1 && 
+                td_description.textContent.toUpperCase().indexOf(filters["description"]) > -1 &&
+                td_tags.textContent.toUpperCase().indexOf(filters["tags"]) > -1){
+                included_rows.push(i);
+            }
+        }
+  }
+  for (var i = 2; i < tr.length; i++){ //dont' change the display for the title and filter rows
+      if (included_rows.indexOf(i) > -1){
+          tr[i].style.display="";
+      } else {
+          tr[i].style.display="none";
+      }
+  }
+}
+</script>
+{% endcompress %}
+    </body>
+</html>
+

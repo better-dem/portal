@@ -2,21 +2,69 @@ from __future__ import absolute_import
 import core.models as cm
 import csv
 import sys
+import traceback
+import requests
+from PIL import Image
+import tempfile
+import io
+import shutil
+import os
+import urlparse
+
 from celery import shared_task
+from celery.exceptions import SoftTimeLimitExceeded
 from django.core.files.storage import default_storage
 import itertools
 from django.db.models.signals import post_save
 from django.contrib.gis.geos import Point        
 from django.db import transaction
+from django.utils import timezone
+from django.db.models import F, ExpressionWrapper, DurationField
 
-def finalize_project(project):
+def finalize_project(project, current_process=False):
     """
     update items and recommendations for a new or newly-edited project
+    optional flag current_process allows this to be run in the current process instead of queued and run by celery worker
     """
-    transaction.on_commit(lambda: item_update.delay(project.pk))
+    if current_process:
+        transaction.on_commit(lambda: item_update(project.pk))
+    else:
+        transaction.on_commit(lambda: item_update.delay(project.pk))
 
+### Tasks to manage long-running background jobs
+@shared_task(expires=1)
+def pick_long_job():
+    now = timezone.now()
+    epoch = timezone.datetime.fromtimestamp(0, tz=timezone.utc)
+    jobs = cm.LongJobState.objects.all()
+    try:
+        furthest_overdue_job = sorted(jobs, key=lambda j: (now - j.most_recent_update).total_seconds() - j.job_period)[-1]
+        if (now - furthest_overdue_job.most_recent_update).total_seconds() - furthest_overdue_job.job_period > 0:
+            job_timeout = furthest_overdue_job.job_timeout
+            run_long_job.apply_async(args=[furthest_overdue_job.id], soft_time_limit=job_timeout, time_limit=job_timeout+5)
+        else:
+            sys.stderr.write("job isn't overdue\n")
+    except IndexError:
+        sys.stderr.write("No jobs in database\n")
+        return
+
+@shared_task(expires=1)
+def run_long_job(job_state_id):
+    now = timezone.now()
+    try:
+        sys.stderr.write("running long job\n")
+        furthest_overdue_job = cm.LongJobState.objects.get(id=job_state_id)    
+        furthest_overdue_job.most_recent_update = now
+        furthest_overdue_job.save()
+        task = cm.get_task_for_job_state(furthest_overdue_job) # task should just be a function, not a celery task
+        task()
+    except SoftTimeLimitExceeded as e:
+        # currently no special handling of soft time limits
+        traceback.print_exc()
+    except Exception as e:
+        traceback.print_exc()
+        
 ### Begin: Tasks for loading data files & updating the database
-
 @shared_task
 def insert_uscitieslist_v0(small_test):
     filename = "/uploads/misc/tmp"
@@ -100,8 +148,42 @@ def insert_states(small_test):
     sys.stdout.write("Number of changes: "+str(num_changes)+"\n")
     sys.stdout.flush()
 
-### Begin: Regular Background tasks
 
+@shared_task
+def insert_openstates_subjects(small_test):
+    filename = "/uploads/misc/tmp"
+    sys.stdout.write("Processing csv for file: "+str(filename)+"\n")
+    i = 0
+    num_changes = 0
+    with default_storage.open(filename, 'r') as f:
+        reader = csv.reader(f, delimiter=",", quotechar='"')
+        first_row = True
+        for row in reader:
+            if small_test and i > 100:
+                break
+            if i % 1000 == 0:
+                sys.stdout.write("Processing row "+str(i)+"\n")
+
+            i += 1
+            if first_row:
+                first_row = False
+                continue
+
+            name = row[0]
+
+            if not cm.Tag.objects.filter(name=name, detail="Openstates Subject").exists():
+                t = cm.Tag.objects.create(name=name, detail="Openstates Subject")
+                t.save()
+                num_changes += 1
+
+    default_storage.delete(filename)
+    sys.stdout.write("Done updating Openstates Subjects\n")
+    sys.stdout.write("Number of rows processed: "+str(i)+"\n")
+    sys.stdout.write("Number of changes: "+str(num_changes)+"\n")
+    sys.stdout.flush()
+
+
+### Begin: Regular Background tasks
 @shared_task
 def item_update(project_id):
     p = cm.ParticipationProject.objects.get(pk=project_id).get_inherited_instance()
@@ -109,52 +191,52 @@ def item_update(project_id):
     num_items_created = len(item_ids)
     for item_id in item_ids:
         i = cm.ParticipationItem.objects.get(pk=item_id)
-        for t in i.tags.all():
-            feed_update_by_tag(t.id)
-            
-    sys.stdout.write("number of items created: "+str(num_items_created))
-    sys.stdout.flush()
+
 
 @shared_task
-def feed_update_by_user_profile(profile_id):
+def scrape_image_and_set_field(url, projectid, itemid, field_name):
     """
-    Update feed relative to some user
+    Scrapes an image url and puts the local image into the appropriate field.
+    Uses the core.ParticipationProject / core.ParticipationItem .get_inherited_instance()
     """
-    sys.stdout.write("updating feed for user: "+str(profile_id)+"\n")
-    sys.stdout.flush()
-    profile = cm.UserProfile.objects.get(pk=profile_id)
-    for tag in profile.tags.all():
-        feed_update_by_tag(tag.id, limit_user_profile=profile_id)
+    extension = "JPEG"
 
-
-def feed_update_by_tag(tag_id, limit_user_profile=None):
-    """
-    Update feed relative to some tag
-    """
-    limit_logstr = ""
-    if not limit_user_profile is None:
-        limit_logstr = ", limit to user: "+str(limit_user_profile)
-    t = cm.Tag.objects.get(pk=tag_id)
-    recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
-    user_profiles = None
-    if limit_user_profile is None:
-        user_profiles = t.userprofile_set.all()
+    type_string = None
+    obj = None
+    if not projectid is None and not itemid is None:
+        raise Exception("Exactly one of the params projectid / itemid must be null")
+    if not projectid is None:
+        type_string = "project"
+        obj = cm.ParticipationProject.objects.get(id=projectid).get_inherited_instance()
     else:
-        user_profiles = [cm.UserProfile.objects.get(pk=limit_user_profile)]
+        type_string = "item"
+        obj = cm.ParticipationItem.objects.get(id=itemid).get_inherited_instance()
 
-    sys.stdout.write("updating feed by tag: "+str(t.name)+limit_logstr+", number of user profiles:"+str(len(user_profiles))+", number of participation items: "+str(len(recent_items))+" \n")
-    sys.stdout.flush()
+    date_string = ''.join([ch for ch in str(timezone.now()) if ch.isalnum() or ch in ["-", "."]])
+    filename = "uploads/scraped_images/{}_{}_{}_{}.{}".format(date_string, type_string, obj.id, field_name, extension)
 
-    num_matches_created = 0
+    req = None
+    try:
+        req = requests.get(url)
+    except:
+        sys.stderr.write(u"couldn't connect to image server: {}\n".format(url))
+        return
+    if req.status_code != requests.codes.ok:
+        sys.stderr.write(u"couldn't fnd image: {}\n".format(url))
+        return
+    img=None
+    try:
+        img = Image.open(io.BytesIO(req.content))
+        bio = io.BytesIO()
+        img.convert('RGB').save(bio, extension)
+        bio.seek(0)
 
-    for (i, p) in itertools.product(recent_items, user_profiles):
-        if cm.FeedMatch.objects.filter(participation_item=i, user_profile=p).count()==0:
-            match = cm.FeedMatch()
-            match.user_profile = p
-            match.participation_item = i
-            match.save()
-            num_matches_created += 1
+        with default_storage.open(filename, 'wb') as f:
+            f.write(bio.read())
 
-    sys.stdout.write("number of matches created: "+str(num_matches_created))
-    sys.stdout.flush()
+        obj.__dict__[field_name] = filename
+        obj.save()
+        sys.stderr.write(u"{} {} new image, scraped from: {}\n".format(type_string, obj.id, url))
 
+    except:
+        sys.stderr.write(u"PIL couldn't read this image: {}\n".format(url))

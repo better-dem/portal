@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+
+<h2>{{ project.bill_id }}: {{ project.name }}</h2>
+<p>
+    {% for tag in item.tags.all %}<span class="label label-default">{{ tag.name }}</span> {% endfor %}
+</p>
+
+<h3>Versions of this bill:</h3>
+<p>
+    {% for document in project.documents.all %}<a href="{{ document.url }}">Version: {{ document.name }}</a><br>{% endfor %}
+</p>
+
+<h3>Important dates for of this bill:</h3>
+<table class="table">
+  <tr><td>First Action Date</td><td> {{ project.first_action_date }}</td></tr>
+  <tr><td>Last Action Date</td><td> {{ project.last_action_date }}</td></tr>
+  <tr><td>Passed Upper Chamber Date</td><td> {{ project.passed_upper_date }}</td></tr>
+  <tr><td>Passed Lower Chamber Date</td><td> {{ project.passed_lower_date }}</td></tr>
+  <tr><td>Signed Date</td><td> {{ project.signed_date }}</td></tr>
+</table>
+
+
+{% include "core/item_recommendations.html" %}
+{% endblock %}

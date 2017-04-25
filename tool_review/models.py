@@ -38,5 +38,3 @@ class ToolReviewItem(cm.ParticipationItem):
             self.display_image_file = self.participation_project.screenshot_filename
         # else:
         #     self.display_image_file = "tool_review/img/default.png"
-
-
