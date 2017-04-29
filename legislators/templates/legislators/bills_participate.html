@@ -10,7 +10,8 @@
 
 <h3>Versions of this bill:</h3>
 <p>
-    {% for document in project.documents.all %}<a href="{{ document.url }}">Version: {{ document.name }}</a><br>{% endfor %}
+    {% if project.documents.all|length < 1 %}No documents available{% endif %}
+    {% for document in project.documents.all %}<a target="_blank" href="{{ document.url }}">Version: {{ document.name }}</a><br>{% endfor %}
 </p>
 
 <h3>Important dates for of this bill:</h3>

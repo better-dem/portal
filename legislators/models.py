@@ -56,11 +56,16 @@ class BillsProject(cm.ParticipationProject):
             item = BillsItem()
             item.name = self.name
             item.participation_project = self
+            item.last_action_date = self.last_action_date
             item.save()
             return set([item.id])
         return set()
 
 class BillsItem(cm.ParticipationItem):
+    last_action_date = models.DateField(null=True, blank=True)
+    class Meta:
+        get_latest_by="last_action_date"
+
     def get_inline_display(self):
         return self.participation_project.get_inherited_instance().name
 
