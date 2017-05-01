@@ -480,10 +480,13 @@ def feed_recommendations(request):
     for t in places_of_interest:
         for app in cm.get_registered_participation_apps():
             for item_model in cm.get_app_item_models(app):
+                order_field = getattr(item_model._meta, 'get_latest_by')
+                if order_field is None:
+                    order_field = "creation_time"
                 if len(subjects_of_interest) == 0:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).order_by('-creation_time')[:3]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
                 else:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(tags__in=subjects_of_interest).order_by('-creation_time')[:3*len(subjects_of_interest)]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
 
     # TODO: make use of subjects of interest
     recommendations = [r for r in recommendations if not r[0] in current_feed_contents]
@@ -498,19 +501,29 @@ def recommend_related(request, item_id):
     if not request.is_ajax() or not request.method == "POST":
         return HttpResponse(status=500)
     item = get_object_or_404(cm.ParticipationItem, pk=item_id)
-    candidates = []
+    candidates = set()
     recommendations = []
+    
     for t in item.tags.all():
-        recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
-        candidates.extend([i for i in recent_items if not i.pk == item.pk])
+        try:
+            g = t.geotag
+        except:
+            continue
+        else:
+            for app in cm.get_registered_participation_apps():
+                for item_model in cm.get_app_item_models(app):
+                    order_field = getattr(item_model._meta, 'get_latest_by')
+                    if order_field is None:
+                        order_field = "creation_time"
+                    candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
 
     if len(candidates) < 3:
         t = cm.get_usa()
         recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
-        candidates.extend([i for i in recent_items if not i.pk == item.pk])
+        candidates.extend([i.id for i in recent_items if not i.id == item.id])
 
     recommendations = random.sample(candidates, min(10, len(candidates)))
-    content = {"recommendations": [r.id for r in recommendations]}
+    content = {"recommendations": recommendations}
     return JsonResponse(content)
 
 def js_templates(request, app_name, template_name):

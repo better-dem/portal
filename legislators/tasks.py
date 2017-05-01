@@ -288,7 +288,7 @@ def update_bill(bill_json, state_geotag):
             change_set.add("tags")
 
         #### propagate project changes
-        if "tags" in change_set or "name" in change_set:
+        if "tags" in change_set or "name" in change_set or "last_action_date" in change_set:
             sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project: {}\n".format(p.id))
             sys.stderr.flush()
             # de-activate all existing items and re-create items for this project
