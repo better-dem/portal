@@ -4,6 +4,7 @@
 
 
 <h2>{{ project.name }}</h2>
+
 <p>
   <a href="{{ project.webpage_url }}">Visit {{ project.name }}'s website</a>
 </p>
@@ -21,6 +22,9 @@
     <figcaption>An official photo of {{ project.name }}.</figcaption>
   </figure>
 </p>
+
+<i>This page presents data from the <a href="https://openstates.org">openstates.org API</a>, which is available under a <a href="https://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution license</a></i>
+
 
 {% include "core/item_recommendations.html" %}
 {% endblock %}

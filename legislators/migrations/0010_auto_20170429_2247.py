@@ -8,7 +8,7 @@ import sys
 def copy_last_action_date(apps, schema_editor):
     BI = apps.get_model("legislators", "BillsItem")
     num_items_updated = 0
-    for i in BI.objects.all():
+    for i in BI.objects.all().iterator():
         i.last_action_date = i.participation_project.billsproject.last_action_date
         i.save()
         num_items_updated += 1
