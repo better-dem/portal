@@ -103,6 +103,13 @@ def get_task_for_job_state(ljs):
     app = get_app_by_name(ljs.app_name)
     return app.get_task(ljs.name)
 
+def get_overviews():
+    ans = []
+    for app in get_registered_participation_apps():
+        for index, description in getattr(app, "overviews", []):
+            ans.append(["/apps/{}/overview/{}".format(app.name, index), description])
+    return ans
+
 ### Start core models
 class ParticipationProject(models.Model):
     name = models.CharField(max_length = 500)

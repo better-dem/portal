@@ -23,7 +23,17 @@
   <tr><td>Signed Date</td><td> {{ project.signed_date }}</td></tr>
 </table>
 
-<i>This page presents data from the <a href="https://openstates.org">openstates.org API</a>, which is available under a <a href="https://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution license</a></i>
+<h3>Find Your Representative</h3>
+<form method="post" action="/apps/legislators/overview/-1" class="inline">
+  {% csrf_token %}
+  <input type="hidden" name="query_text" value="">
+  <input type="hidden" name="state_id" value="{{ state.id }}">
+  <button type="submit" class="link-button">
+    Contact your {{ state.name }} legislator about {{ project.bill_id }}
+  </button>
+</form>
+
+<i>This page presents data from the <a target="_blank" href="https://openstates.org">openstates.org API</a>, which is available under a <a target="_blank" href="https://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution license</a></i>
 
 {% include "core/item_recommendations.html" %}
 {% endblock %}

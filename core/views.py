@@ -278,6 +278,7 @@ def feed(request):
 
     context["geo_tags"] = [{"id": t.id, "name": t.name} for t in places_of_interest]
     context["subject_tags"] = [{"id": t.id, "name": t.name} for t in subjects_of_interest]
+    context["overviews"] = cm.get_overviews()
     return render(request, 'core/feed.html', context)
 
 def get_item_details(item, get_activity=False):
