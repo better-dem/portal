@@ -52,6 +52,7 @@ def overview(request, item_id):
                 state = [s for s in states if s.tag_ptr.id == form.cleaned_data["state_id"]][0]
                 results = LegislatorsItem.objects.filter(is_active=True, tags__in=[state.tag_ptr]).distinct()
                 context["results"] = [r for r in results if not r.participation_project.legislatorsproject.district is None and not r.participation_project.legislatorsproject.chamber is None]
+                context["query_description"] = "State of {}".format(state.name)
                 return render(request, "legislators/overview.html", context)
             else:
                 raise Exception("error in form, this shouldn't happen through normal usage of the site")
@@ -69,6 +70,7 @@ def overview(request, item_id):
                 query = SearchQuery(form.cleaned_data['query_text'])
                 results = BillsItem.objects.filter(is_active=True, tags__in=[state.tag_ptr]).annotate(rank=SearchRank(vector, query)).distinct().order_by('-rank')[:100]
                 context["results"] = results
+                context["query_description"] = "'{}' in the state of {}".format(query, state.name)
                 return render(request, "legislators/bills_overview.html", context)
             else:
                 raise Exception("error in form, this shouldn't happen through normal usage of the site")
