@@ -12,9 +12,12 @@
   <input type="submit" value="Submit" />
 </form>
 
-{% if results %}
-<h3>Results</h3>
-<i>Search: {{ query_description }}</i>
+<p>
+  <i>This page presents data from the <a target="_blank" href="https://openstates.org">openstates.org API</a>, which is available under a <a target="_blank" href="https://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution license</a></i>
+</p>
+
+{% if query_description %}
+<h3>Results: {{ query_description }}</h3>
 <table class="table">
   <thead>
     <th style="width: 100px;">Bill ID</th>

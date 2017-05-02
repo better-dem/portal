@@ -70,7 +70,7 @@ def overview(request, item_id):
                 query = SearchQuery(form.cleaned_data['query_text'])
                 results = BillsItem.objects.filter(is_active=True, tags__in=[state.tag_ptr]).annotate(rank=SearchRank(vector, query)).distinct().order_by('-rank')[:100]
                 context["results"] = results
-                context["query_description"] = "'{}' in the state of {}".format(query, state.name)
+                context["query_description"] = "\"{}\" in the state of {}".format(form.cleaned_data["query_text"], state.name)
                 return render(request, "legislators/bills_overview.html", context)
             else:
                 raise Exception("error in form, this shouldn't happen through normal usage of the site")

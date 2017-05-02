@@ -24,16 +24,20 @@
 </table>
 
 <h3>Find Your Representative</h3>
-<form method="post" action="/apps/legislators/overview/-1" class="inline">
-  {% csrf_token %}
-  <input type="hidden" name="query_text" value="">
-  <input type="hidden" name="state_id" value="{{ state.id }}">
-  <button type="submit" class="link-button">
-    Contact your {{ state.name }} legislator about {{ project.bill_id }}
-  </button>
-</form>
+<p>
+  <form method="post" action="/apps/legislators/overview/-1" class="inline">
+    {% csrf_token %}
+    <input type="hidden" name="query_text" value="">
+    <input type="hidden" name="state_id" value="{{ state.id }}">
+    <button type="submit" class="btn btn-primary">
+      Contact your {{ state.name }} legislator about {{ project.bill_id }}
+    </button>
+  </form>
+</p>
 
-<i>This page presents data from the <a target="_blank" href="https://openstates.org">openstates.org API</a>, which is available under a <a target="_blank" href="https://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution license</a></i>
+<p>
+  <i>This page presents data from the <a target="_blank" href="https://openstates.org">openstates.org API</a>, which is available under a <a target="_blank" href="https://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution license</a></i>
+</p>
 
 {% include "core/item_recommendations.html" %}
 {% endblock %}
