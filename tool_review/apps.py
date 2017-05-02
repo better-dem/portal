@@ -10,6 +10,7 @@ class ToolReviewConfig(AppConfig):
     are_projects_editable = True
     custom_feed_item_template = None
     external_link=False
+    overviews = [[-1, "External Tool Database"],]
 
     def ready(self):
         if module_has_submodule(self.module, "views"):
