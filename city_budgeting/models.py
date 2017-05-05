@@ -74,13 +74,16 @@ class CityBudgetingProject(cm.ParticipationProject):
     budget_url = models.URLField(blank=False)
     
     def update_items(self):
-        if CityBudgetingItem.objects.filter(participation_project=self, is_active=True).count()==0:
+        existing_query_set = CityBudgetingItem.objects.filter(participation_project=self, is_active=True)
+        num_existing_items = existing_query_set.update(name=self.name)
+        if num_existing_items == 0:
             item = CityBudgetingItem()
             item.name = self.name
             item.participation_project = self
             item.save()
-            return set([item.id])
-        return set()
+        else:
+            for item in existing_query_set:
+                item.set_relevant_tags()
 
     def set_name(self):
         self.name = "City Budget Outreach Project for "+self.city.get_name()
@@ -99,6 +102,6 @@ class CityBudgetingItem(cm.ParticipationItem):
         self.display_image_file = 'city_budgeting/img/default.png'
 
     def set_relevant_tags(self):
-        self.tags.add(self.participation_project.city)
+        self.tags.set([self.participation_project.get_inherited_instance().city.id])
 
 

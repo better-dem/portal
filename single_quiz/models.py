@@ -30,7 +30,7 @@ class SingleQuizItem(cm.ParticipationItem):
         return "single quiz " + str(self.id)
 
     def set_relevant_tags(self):
-        self.tags.add(*self.participation_project.tags.all())
+        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
 
     def set_display_image(self):
         self.display_image_file = "single_quiz/img/default.png"

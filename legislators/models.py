@@ -4,6 +4,8 @@ from django.db import models
 from core import models as cm
 from core import tasks as ct
 
+DEFAULT_LEG_IMG = "legislators/img/default.png"
+
 class LegislatorsProject(cm.ParticipationProject):
     open_states_leg_id = models.CharField(max_length=100)
     open_states_active = models.BooleanField()
@@ -17,24 +19,30 @@ class LegislatorsProject(cm.ParticipationProject):
     tags = models.ManyToManyField(cm.Tag)
     
     def update_items(self):
-        if LegislatorsItem.objects.filter(participation_project=self, is_active=True).count()==0:
+        existing_query_set = LegislatorsItem.objects.filter(participation_project=self, is_active=True)
+        num_existing_items = existing_query_set.update(name=self.name)
+        if num_existing_items == 0:
             item = LegislatorsItem()
             item.name = self.name
             item.participation_project = self
             item.save()
-            return set([item.id])
-        return set()
+        else:
+            for item in existing_query_set:
+                item.set_relevant_tags()
+                if item.display_image_file == DEFAULT_LEG_IMG:
+                    item.set_display_image()
 
 class LegislatorsItem(cm.ParticipationItem):
     def get_inline_display(self):
         return self.participation_project.get_inherited_instance().name
 
     def set_relevant_tags(self):
-        self.tags.add(*self.participation_project.tags.all())
+        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
 
     def set_display_image(self):
         # set a temporary image
-        self.display_image_file = "legislators/img/default.png"
+        if self.display_image_file is None or self.display_image_file == "":
+            self.display_image_file = DEFAULT_LEG_IMG
         # scrape the provided image
         img_url = self.participation_project.get_inherited_instance().photo_url
         if not img_url is None:
@@ -52,14 +60,17 @@ class BillsProject(cm.ParticipationProject):
     documents = models.ManyToManyField(cm.ReferenceDocument)
 
     def update_items(self):
-        if BillsItem.objects.filter(participation_project=self, is_active=True).count()==0:
+        existing_query_set = BillsItem.objects.filter(participation_project=self, is_active=True)
+        num_existing_items = existing_query_set.update(name=self.name, last_action_date=self.last_action_date)
+        if num_existing_items == 0:
             item = BillsItem()
             item.name = self.name
             item.participation_project = self
             item.last_action_date = self.last_action_date
             item.save()
-            return set([item.id])
-        return set()
+        else:
+            for item in existing_query_set:
+                item.set_relevant_tags()
 
 class BillsItem(cm.ParticipationItem):
     last_action_date = models.DateField(null=True, blank=True)
@@ -70,7 +81,7 @@ class BillsItem(cm.ParticipationItem):
         return self.participation_project.get_inherited_instance().name
 
     def set_relevant_tags(self):
-        self.tags.add(*self.participation_project.tags.all())
+        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
 
     def set_display_image(self):
         self.display_image_file = "legislators/img/bills_default.png"

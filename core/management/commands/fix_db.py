@@ -41,6 +41,12 @@ class Command(BaseCommand):
                         o.delete()
                         sys.stdout.write("object deleted\n")
 
+            elif trouble_type=="clear_inactive":
+                items_deleted = cm.ParticipationItem.objects.filter(is_active=False).delete()
+                projects_deleted = cm.ParticipationProject.objects.filter(is_active=False).delete()
+                sys.stdout.write("Number of items deleted:{}, number of projects deleted: {}\n".format(items_deleted, projects_deleted))
+                sys.stdout.flush()
+
             else:
                 raise Exception("unknown trouble type:"+str(trouble_type))
         elif mode == "display":
@@ -59,6 +65,12 @@ class Command(BaseCommand):
                     except:
                         sys.stdout.write("participation project found whose inherited instance can't be determined:{}".format(o.name)+"\n")
                         sys.stdout.flush()
+
+            elif trouble_type=="clear_inactive":
+                items_deleted = cm.ParticipationItem.objects.filter(is_active=False).count()
+                projects_deleted = cm.ParticipationProject.objects.filter(is_active=False).count()
+                sys.stdout.write("Number of inactive items to delete:{}, number of inactive projects to delete: {}\n".format(items_deleted, projects_deleted))
+                sys.stdout.flush()
 
             else:
                 raise Exception("unknown trouble type:"+str(trouble_type))

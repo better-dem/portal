@@ -35,14 +35,6 @@ def new_project(request):
         form = CreateProjectForm()
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
 
-
-def propagate_project_changes(project, change_set):
-    if "city" in change_set or "name" in change_set:
-        sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project")
-        sys.stderr.flush()
-        # de-activate all existing items and re-create items for this project
-        CityBudgetingItem.objects.filter(participation_project=project, is_active=True).update(is_active=False)
-
 def edit_project(request, project_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     project = get_object_or_404(CityBudgetingProject, pk=project_id) 
@@ -64,8 +56,8 @@ def edit_project(request, project_id):
                 changes.add("name")
             project.save()
 
-            propagate_project_changes(project, changes)
-            ct.finalize_project(project)
+            if "name" in changes or "city" in changes:
+                ct.finalize_project(project)
             return render(request, 'core/thanks.html', {"action_description": "editing your city budget project", "link": "/apps/city_budgeting/administer_project/"+str(project.id)})
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})

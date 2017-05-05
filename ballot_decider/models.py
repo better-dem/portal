@@ -19,13 +19,16 @@ class BallotDeciderProject(cm.ParticipationProject):
     tags = models.ManyToManyField(cm.Tag)
 
     def update_items(self):
-        if BallotDeciderItem.objects.filter(participation_project=self, is_active=True).count()==0:
+        existing_query_set = BallotDeciderItem.objects.filter(participation_project=self, is_active=True)
+        num_existing_items = existing_query_set.update(name=self.name)
+        if num_existing_items == 0:
             item = BallotDeciderItem()
             item.name = self.name
             item.participation_project = self
             item.save()
-            return set([item.id])
-        return set()
+        else:
+            for item in existing_query_set:
+                item.set_relevant_tags()
 
 class PointOfView(models.Model):
     quote = models.TextField()
@@ -36,7 +39,7 @@ class BallotDeciderItem(cm.ParticipationItem):
         return "Ballot decider for " + str(self.name)
 
     def set_relevant_tags(self):
-        self.tags.add(*self.participation_project.tags.all())
+        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
 
     def set_display_image(self):
         self.display_image_file = "single_quiz/img/default.png"

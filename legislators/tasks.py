@@ -137,17 +137,11 @@ def update_legislator(leg_json, state_geotag):
             p.tags.add(*new_tags)
             change_set.add("tags")
 
-        #### propagate project changes
-        if "tags" in change_set or "name" in change_set:
-            sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project")
-            sys.stderr.flush()
-            # de-activate all existing items and re-create items for this project
-            LegislatorsItem.objects.filter(participation_project=p, is_active=True).update(is_active=False)
-
         #### finalize
-        ct.finalize_project(p, True)                        
+        if "name" in change_set or "photo_url" in change_set or "tags" in change_set:
+            sys.stderr.write("there are changes requiring item updates: {}\n".format(change_set))
+            ct.finalize_project(p, True)                        
         if len(change_set) > 0:
-            sys.stderr.write("there are changes: {}\n".format(change_set))
             return "updated"
 
 @transaction.atomic
@@ -179,7 +173,6 @@ def update_bill(bill_json, state_geotag):
         p.owner_profile = cm.get_default_user().userprofile
         p.save()
 
-
         versions = bill_json["versions"]
         for v in versions:
             doc_openstates_id = v["doc_id"]
@@ -200,7 +193,6 @@ def update_bill(bill_json, state_geotag):
                 p.documents.add(doc)
             else:                
                 p.documents.add(existing_doc)
-
 
         p.tags.add(state_geotag.tag_ptr)
         subjects = bill_json["subjects"]
@@ -289,15 +281,10 @@ def update_bill(bill_json, state_geotag):
 
         #### propagate project changes
         if "tags" in change_set or "name" in change_set or "last_action_date" in change_set:
-            sys.stderr.write("changes are significant, we have to de-activate and re-create items for this project: {}\n".format(p.id))
+            sys.stderr.write("changes are significant, we have to update items for this project: {}\n".format(p.id))
             sys.stderr.flush()
-            # de-activate all existing items and re-create items for this project
-            BillsItem.objects.filter(participation_project=p, is_active=True).update(is_active=False)
-
-        #### finalize
-        ct.finalize_project(p, True)                        
+            ct.finalize_project(p, True)                        
 
         if len(change_set) > 0:
-            sys.stderr.write("there are changes to project {}: {}\n".format(p.id, change_set))
             return "update"
 

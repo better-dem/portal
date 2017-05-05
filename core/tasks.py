@@ -187,11 +187,7 @@ def insert_openstates_subjects(small_test):
 @shared_task
 def item_update(project_id):
     p = cm.ParticipationProject.objects.get(pk=project_id).get_inherited_instance()
-    item_ids = p.update_items()
-    num_items_created = len(item_ids)
-    for item_id in item_ids:
-        i = cm.ParticipationItem.objects.get(pk=item_id)
-
+    p.update_items()
 
 @shared_task
 def scrape_image_and_set_field(url, projectid, itemid, field_name):
