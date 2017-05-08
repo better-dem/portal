@@ -199,7 +199,7 @@ def update_bill(bill_json, state_geotag):
                 p.documents.add(existing_doc)
 
         p.tags.add(state_geotag.tag_ptr)
-        subjects = bill_json["subjects"]
+        subjects = bill_json.get("subjects",[])
         for s in subjects:
             try:
                 t = cm.Tag.objects.get(name=s, detail="Openstates Subject")
@@ -271,7 +271,7 @@ def update_bill(bill_json, state_geotag):
         current_tags = p.tags.all()
         new_tags = set()
         new_tags.add(state_geotag.tag_ptr)
-        subjects = bill_json["subjects"]
+        subjects = bill_json.get("subjects",[])
         for s in subjects:
             try:
                 t = cm.Tag.objects.get(name=s, detail="Openstates Subject")
