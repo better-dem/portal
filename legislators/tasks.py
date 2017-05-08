@@ -32,8 +32,10 @@ def update_state(state_name, openstates_state_abbrev):
         jsonzip = tempdir+"/state-json.zip"
         num_new_legislators = 0
         num_updated_legislators = 0
+        num_legislator_exceptions = 0
         num_new_bills = 0
         num_updated_bills = 0
+        num_bill_exceptions = 0
 
         sys.stdout.write(state_name+"\n")
         sys.stdout.flush()
@@ -62,6 +64,7 @@ def update_state(state_name, openstates_state_abbrev):
 
         sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
         sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
+        sys.stdout.write("Number of exceptions updating a legislator: {}\n".format(num_legislator_exceptions))
 
         bill_files = [os.path.join(root, name) for root, dirs, files in os.walk(workingdir+"/bills") for name in files]
         sys.stdout.write("number of bills:"+str(len(bill_files))+"\n")
@@ -126,8 +129,8 @@ def update_legislator(leg_json, state_geotag):
             p.__dict__[i[0]] = leg_json.get(i[1], None)
 
         p.open_states_state = state_geotag.name
-        p.owner_profile = cm.get_default_user().userprofile
-        p.save()
+        if len(change_set) > 0:
+            p.save()
 
         current_tags = p.tags.all()
         new_tags = set()
@@ -160,7 +163,8 @@ def update_bill(bill_json, state_geotag):
         p = BillsProject()
         # sys.stderr.write("Bill title:{}\n".format(bill_json['title']))
         for i in bill_fields.items():
-            p.__dict__[i[0]] = bill_json.get(i[1], None)[:500]
+            max_len = BillsProject._meta.get_field(i[0]).max_length
+            p.__dict__[i[0]] = bill_json.get(i[1], None)[:max_len]
 
         for i in bill_action_date_fields.items():
             date_string = bill_json["action_dates"].get(i[1], None)
@@ -186,7 +190,7 @@ def update_bill(bill_json, state_geotag):
                 doc.external_api = "openstates"
                 doc.external_id = doc_openstates_id
                 for i in bill_document_fields.items():
-                    max_len = cm.ReferenceDocument._meta.get_field(i[1]).max_length
+                    max_len = cm.ReferenceDocument._meta.get_field(i[0]).max_length
                     doc.__dict__[i[0]] = v.get(i[1], None)[:max_len]
 
                 doc.save()
@@ -210,9 +214,10 @@ def update_bill(bill_json, state_geotag):
         change_set = set()
         p = existing_bill
         for i in bill_fields.items():
-            if not p.__dict__[i[0]] == bill_json.get(i[1], None)[:500]:
+            max_len = BillsProject._meta.get_field(i[0]).max_length
+            if not p.__dict__[i[0]] == bill_json.get(i[1], None)[:max_len]:
                 change_set.add(i[0])
-            p.__dict__[i[0]] = bill_json.get(i[1], None)[:500]
+            p.__dict__[i[0]] = bill_json.get(i[1], None)[:max_len]
 
         for i in bill_action_date_fields.items():
             date_string = bill_json["action_dates"].get(i[1], None)
@@ -247,7 +252,7 @@ def update_bill(bill_json, state_geotag):
                 doc.external_api = "openstates"
                 doc.external_id = doc_openstates_id
                 for i in bill_document_fields.items():
-                    max_len = cm.ReferenceDocument._meta.get_field(i[1]).max_length
+                    max_len = cm.ReferenceDocument._meta.get_field(i[0]).max_length
                     doc.__dict__[i[0]] = v.get(i[1], None)[:max_len]
 
                 doc.save()
@@ -260,8 +265,8 @@ def update_bill(bill_json, state_geotag):
             p.documents.add(*new_documents)
             change_set.add("documents")
 
-        p.owner_profile = cm.get_default_user().userprofile
-        p.save()
+        if len(change_set)>0:
+            p.save()
 
         current_tags = p.tags.all()
         new_tags = set()
