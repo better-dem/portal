@@ -521,7 +521,7 @@ def recommend_related(request, item_id):
     if len(candidates) < 3:
         t = cm.get_usa()
         recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
-        candidates.extend([i.id for i in recent_items if not i.id == item.id])
+        candidates.update([i.id for i in recent_items if not i.id == item.id])
 
     recommendations = random.sample(candidates, min(10, len(candidates)))
     content = {"recommendations": recommendations}

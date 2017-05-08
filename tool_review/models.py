@@ -18,20 +18,23 @@ class ToolReviewProject(cm.ParticipationProject):
     project_category = models.CharField(max_length=2, choices=PROJECT_CATEGORIES, default="UN")
     
     def update_items(self):
-        if ToolReviewItem.objects.filter(participation_project=self, is_active=True).count()==0:
+        existing_query_set = ToolReviewItem.objects.filter(participation_project=self, is_active=True)
+        num_existing_items = existing_query_set.update(name=self.name)
+        if num_existing_items == 0:
             item = ToolReviewItem()
             item.name = self.name
             item.participation_project = self
             item.save()
-            return set([item.id])
-        return set()
+        else:
+            for item in existing_query_set:
+                item.set_relevant_tags()
 
 class ToolReviewItem(cm.ParticipationItem):
     def get_inline_display(self):
         return self.participation_project.get_inherited_instance().summary
 
     def set_relevant_tags(self):
-        self.tags.add(*self.participation_project.tags.all())
+        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
 
     def set_display_image(self):
         if not self.participation_project.screenshot_filename is None:

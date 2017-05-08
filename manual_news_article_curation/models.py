@@ -14,13 +14,16 @@ class ManualNewsCurationProject(cm.ParticipationProject):
     tags = models.ManyToManyField(cm.Tag)
 
     def update_items(self):
-        if NewsArticleItem.objects.filter(participation_project=self, is_active=True).count() == 0:
+        existing_query_set = NewsArticleItem.objects.filter(participation_project=self, is_active=True)
+        num_existing_items = existing_query_set.update(name=self.name)
+        if num_existing_items == 0:
             item = NewsArticleItem()
             item.name = self.name
             item.participation_project = self
             item.save()
-            return set([item.id])
-        return set()
+        else:
+            for item in existing_query_set:
+                item.set_relevant_tags()
 
 class NewsArticleItem(cm.ParticipationItem):
     def get_inline_display(self):
@@ -37,4 +40,4 @@ class NewsArticleItem(cm.ParticipationItem):
         self.display_image_file = 'manual_news_article_curation/img/default.png'
 
     def set_relevant_tags(self):
-        self.tags.add(*self.participation_project.tags.all())
+        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
