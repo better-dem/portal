@@ -14,11 +14,13 @@ import json
 import tempfile
 import shutil
 
+pyopenstates.session.headers.update({"X-API-KEY":os.environ["OPENSTATES_KEY"]})
+
 def get_task(task_name):
     function, state_name, openstates_state_abbrev = task_name.split("|")
     if function == "update_state":
         return lambda : update_state_recent(state_name, openstates_state_abbrev)
-        # return lambda : update_state(state_name, openstates_state_abbrev)
+        # return lambda : update_state_bulk(state_name, openstates_state_abbrev)
 
 def update_state_recent(state_name, openstates_state_abbrev):
     """
@@ -39,9 +41,23 @@ def update_state_recent(state_name, openstates_state_abbrev):
     num_updated_bills = 0
     num_bill_exceptions = 0
 
-    sys.stdout.write(state_name+"\n")
+    sys.stdout.write("Updating state legislators and bills: {}\n".format(state_name))
     try:
         state_geotag = cm.GeoTag.objects.get(feature_type="SP", name=state_name)
+
+
+        all_legislators = pyopenstates.search_legislators(state=openstates_state_abbrev)
+        for leg_json in all_legislators:
+            result = update_legislator(leg_json, state_geotag)
+            if result == "updated":
+                num_updated_legislators += 1
+            elif result == "new":
+                num_new_legislators += 1
+
+        sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
+        sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
+        sys.stdout.write("Number of exceptions updating a legislator: {}\n".format(num_legislator_exceptions))
+
         recently_updated_bills = None
         # try to get recent bills up to 1 year old. If the API thinks it's too big of a request, try shorter periods
         try:
@@ -57,7 +73,7 @@ def update_state_recent(state_name, openstates_state_abbrev):
 
         for bill_json in recently_updated_bills:
             result = update_bill(bill_json, state_geotag)
-            if result == "update":
+            if result == "updated":
                 num_updated_bills += 1
                 if num_updated_bills % 100 == 0:
                     sys.stderr.write("Updating bill #{}\n".format(num_updated_bills))
@@ -69,17 +85,6 @@ def update_state_recent(state_name, openstates_state_abbrev):
         sys.stdout.write("Number of bills added: {}\n".format(num_new_bills))
         sys.stdout.write("Number of bills updated: {}\n".format(num_updated_bills))
 
-        all_legislators = pyopenstates.search_legislators(state=openstates_state_abbrev)
-        for leg_json in all_legislators:
-            result = update_legislator(leg_json, state_geotag)
-            if result == "update":
-                num_updated_legislators += 1
-            elif result == "new":
-                num_new_legislators += 1
-
-        sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
-        sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
-        sys.stdout.write("Number of exceptions updating a legislator: {}\n".format(num_legislator_exceptions))
         sys.stdout.write("DONE\n")
 
     except cm.GeoTag.DoesNotExist:
@@ -87,8 +92,9 @@ def update_state_recent(state_name, openstates_state_abbrev):
     finally:
         sys.stdout.flush()
 
-def update_state(state_name, openstates_state_abbrev):
+def update_state_bulk(state_name, openstates_state_abbrev):
     """
+    This method is deprecated
     Update state information using bulk data, which appears to be aggregiously outdated
     """
     tempdir = None
@@ -180,7 +186,7 @@ def update_legislator(leg_json, state_geotag):
         for i in legislator_fields.items():
             max_len = LegislatorsProject._meta.get_field(i[0]).max_length
             val = leg_json.get(i[1], None)
-            p.__dict__[i[0]] = val if val is None else val[:max_len]
+            p.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
         p.open_states_state = state_geotag.name
         p.owner_profile = cm.get_default_user().userprofile
@@ -195,7 +201,7 @@ def update_legislator(leg_json, state_geotag):
         for i in legislator_fields.items():
             max_len = LegislatorsProject._meta.get_field(i[0]).max_length
             val = leg_json.get(i[1], None)
-            val = val if val is None else val[:max_len]
+            val = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
             if not p.__dict__[i[0]] == val:
                 change_set.add(i[0])
                 p.__dict__[i[0]] = val
@@ -237,7 +243,7 @@ def update_bill(bill_json, state_geotag):
         for i in bill_fields.items():
             max_len = BillsProject._meta.get_field(i[0]).max_length
             val = bill_json.get(i[1], None)
-            p.__dict__[i[0]] = val if val is None else val[:max_len]
+            p.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
         for i in bill_action_date_fields.items():
             date_object = bill_json["action_dates"].get(i[1], None)
@@ -271,7 +277,7 @@ def update_bill(bill_json, state_geotag):
                 for i in bill_document_fields.items():
                     max_len = cm.ReferenceDocument._meta.get_field(i[0]).max_length
                     val = v.get(i[1], None)
-                    doc.__dict__[i[0]] = val if val is None else val[:max_len]
+                    doc.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
                 doc.save()
                 p.documents.add(doc)
@@ -296,28 +302,36 @@ def update_bill(bill_json, state_geotag):
         for i in bill_fields.items():
             max_len = BillsProject._meta.get_field(i[0]).max_length
             val = bill_json.get(i[1], None)
-            val = val if val is None else val[:max_len]
+            val = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
             if not p.__dict__[i[0]] == val:
                 change_set.add(i[0])
                 p.__dict__[i[0]] = val
 
         for i in bill_action_date_fields.items():
-            date_string = bill_json["action_dates"].get(i[1], None)
+
+            date_object = bill_json["action_dates"].get(i[1], None)
             current_val = p.__dict__[i[0]]
-            if current_val is None and not date_string is None:
-                change_set.add(i[0])
-                p.__dict__[i[0]] = date_string
-
-            elif date_string is None and not current_val is None:
-                change_set.add(i[0])
-                p.__dict__[i[0]] = date_string
-
-            elif not date_string is None:
+            if isinstance(date_object, unicode) or isinstance(date_object, str):
+                date_string = date_object
                 if " " in date_string:
                     date_string = date_string.split(" ")[0]
+
                 if not str(current_val).strip() == date_string:
                     change_set.add(i[0])
                     p.__dict__[i[0]] = date_string
+
+            elif isinstance(date_object, datetime.datetime):
+                if current_val != date_object:
+                    change_set.add(i[0])
+                    p.__dict__[i[0]] = date_object
+
+            elif date_object is None:
+                if not current_val is None:
+                    change_set.add(i[0])
+                    p.__dict__[i[0]] = date_string
+            else:
+                sys.stderr.write("update_bill. Don't know how to handle this date object:{}\n".format(date_object))
+
 
         versions = bill_json["versions"]
         current_documents = p.documents.all()
@@ -336,7 +350,7 @@ def update_bill(bill_json, state_geotag):
                 for i in bill_document_fields.items():
                     max_len = cm.ReferenceDocument._meta.get_field(i[0]).max_length
                     val = v.get(i[1], None)
-                    doc.__dict__[i[0]] = val if val is None else val[:max_len]
+                    doc.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
                 doc.save()
                 new_documents.add(doc)
@@ -369,10 +383,11 @@ def update_bill(bill_json, state_geotag):
 
         #### propagate project changes
         if "tags" in change_set or "name" in change_set or "last_action_date" in change_set:
-            sys.stderr.write("changes are significant, we have to update items for this project: {}\n".format(p.id))
+            sys.stderr.write("there are changes requiring item updates to project {}: {}\n".format(p.id, change_set))
+
             sys.stderr.flush()
             ct.finalize_project(p, True)                        
 
         if len(change_set) > 0:
-            return "update"
+            return "updated"
 
