@@ -14,15 +14,88 @@ import json
 import tempfile
 import shutil
 
+pyopenstates.session.headers.update({"X-API-KEY":os.environ["OPENSTATES_KEY"]})
+
 def get_task(task_name):
     function, state_name, openstates_state_abbrev = task_name.split("|")
     if function == "update_state":
-        return lambda : update_state(state_name, openstates_state_abbrev)
-    
+        return lambda : update_state_recent(state_name, openstates_state_abbrev)
+        # return lambda : update_state_bulk(state_name, openstates_state_abbrev)
 
-def update_state(state_name, openstates_state_abbrev):
+def update_state_recent(state_name, openstates_state_abbrev):
     """
-    This function currently uses the file system to store temporary files, so only one can be run at a time
+    Update state information using repeated hits to the openstates API.
+    Does not use bulk data, which appears to be aggregiously outdated
+    (Bulk data only goes through mid 2016 (as of May 9, 2017))
+    """
+    current_year = datetime.datetime.now().year
+    current_month = datetime.datetime.now().month
+    one_year_ago = "{}-{}-01".format(current_year-1,str(current_month).zfill(2))
+    six_months_ago = "{}-{}-01".format(current_year if current_month>6 else current_year-1, str(current_month - 6 if current_month>6 else current_month + 6).zfill(2))
+    one_month_ago = "{}-{}-01".format(current_year if current_month>1 else current_year-1, str(current_month - 1 if current_month>1 else 12).zfill(2))
+
+    num_new_legislators = 0
+    num_updated_legislators = 0
+    num_legislator_exceptions = 0
+    num_new_bills = 0
+    num_updated_bills = 0
+    num_bill_exceptions = 0
+
+    sys.stdout.write("Updating state legislators and bills: {}\n".format(state_name))
+    try:
+        state_geotag = cm.GeoTag.objects.get(feature_type="SP", name=state_name)
+
+
+        all_legislators = pyopenstates.search_legislators(state=openstates_state_abbrev)
+        for leg_json in all_legislators:
+            result = update_legislator(leg_json, state_geotag)
+            if result == "updated":
+                num_updated_legislators += 1
+            elif result == "new":
+                num_new_legislators += 1
+
+        sys.stdout.write("Number of legislators added: {}\n".format(num_new_legislators))
+        sys.stdout.write("Number of legislators updated: {}\n".format(num_updated_legislators))
+        sys.stdout.write("Number of exceptions updating a legislator: {}\n".format(num_legislator_exceptions))
+
+        recently_updated_bills = None
+        # try to get recent bills up to 1 year old. If the API thinks it's too big of a request, try shorter periods
+        try:
+            recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=one_year_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
+        except pyopenstates.APIError as e:
+            sys.stderr.write("Handling openstates APIError: {}\n trying a more recent update period\n".format(unicode(e)))
+            recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=six_months_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
+        except pyopenstates.APIError as e:
+            sys.stderr.write("Handling openstates APIError: {}\n trying a more recent update period\n".format(unicode(e)))
+            recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=one_month_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
+
+        sys.stderr.write("Number of recently-updated bills: {}\n".format(len(recently_updated_bills)))
+
+        for bill_json in recently_updated_bills:
+            result = update_bill(bill_json, state_geotag)
+            if result == "updated":
+                num_updated_bills += 1
+                if num_updated_bills % 100 == 0:
+                    sys.stderr.write("Updating bill #{}\n".format(num_updated_bills))
+            elif result == "new":
+                num_new_bills += 1
+                if num_new_bills % 100 == 0:
+                    sys.stderr.write("Adding new bill #{}\n".format(num_new_bills))
+
+        sys.stdout.write("Number of bills added: {}\n".format(num_new_bills))
+        sys.stdout.write("Number of bills updated: {}\n".format(num_updated_bills))
+
+        sys.stdout.write("DONE\n")
+
+    except cm.GeoTag.DoesNotExist:
+        sys.stdout.write("state not in geotags\n")
+    finally:
+        sys.stdout.flush()
+
+def update_state_bulk(state_name, openstates_state_abbrev):
+    """
+    This method is deprecated
+    Update state information using bulk data, which appears to be aggregiously outdated
     """
     tempdir = None
     try:
@@ -111,7 +184,9 @@ def update_legislator(leg_json, state_geotag):
     if existing_leg is None:
         p = LegislatorsProject()
         for i in legislator_fields.items():
-            p.__dict__[i[0]] = leg_json.get(i[1], None)
+            max_len = LegislatorsProject._meta.get_field(i[0]).max_length
+            val = leg_json.get(i[1], None)
+            p.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
         p.open_states_state = state_geotag.name
         p.owner_profile = cm.get_default_user().userprofile
@@ -124,9 +199,12 @@ def update_legislator(leg_json, state_geotag):
         change_set = set()
         p = existing_leg
         for i in legislator_fields.items():
-            if not p.__dict__[i[0]] == leg_json.get(i[1], None):
+            max_len = LegislatorsProject._meta.get_field(i[0]).max_length
+            val = leg_json.get(i[1], None)
+            val = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
+            if not p.__dict__[i[0]] == val:
                 change_set.add(i[0])
-            p.__dict__[i[0]] = leg_json.get(i[1], None)
+                p.__dict__[i[0]] = val
 
         p.open_states_state = state_geotag.name
         if len(change_set) > 0:
@@ -164,15 +242,22 @@ def update_bill(bill_json, state_geotag):
         # sys.stderr.write("Bill title:{}\n".format(bill_json['title']))
         for i in bill_fields.items():
             max_len = BillsProject._meta.get_field(i[0]).max_length
-            p.__dict__[i[0]] = bill_json.get(i[1], None)[:max_len]
+            val = bill_json.get(i[1], None)
+            p.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
         for i in bill_action_date_fields.items():
-            date_string = bill_json["action_dates"].get(i[1], None)
-            if not date_string is None:
-                # sys.stdout.write("{}: {}\n".format(i[1], date_string))
+            date_object = bill_json["action_dates"].get(i[1], None)
+            if isinstance(date_object, unicode) or isinstance(date_object, str):
+                date_string = date_object
                 if " " in date_string:
                     date_string = date_string.split(" ")[0]
                 p.__dict__[i[0]] = date_string
+            elif isinstance(date_object, datetime.datetime):
+                p.__dict__[i[0]] = date_object
+            elif date_object is None:
+                pass
+            else:
+                sys.stderr.write("update_bill. Don't know how to handle this date object:{}\n".format(date_object))
 
         p.owner_profile = cm.get_default_user().userprofile
         p.save()
@@ -191,7 +276,8 @@ def update_bill(bill_json, state_geotag):
                 doc.external_id = doc_openstates_id
                 for i in bill_document_fields.items():
                     max_len = cm.ReferenceDocument._meta.get_field(i[0]).max_length
-                    doc.__dict__[i[0]] = v.get(i[1], None)[:max_len]
+                    val = v.get(i[1], None)
+                    doc.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
                 doc.save()
                 p.documents.add(doc)
@@ -215,27 +301,37 @@ def update_bill(bill_json, state_geotag):
         p = existing_bill
         for i in bill_fields.items():
             max_len = BillsProject._meta.get_field(i[0]).max_length
-            if not p.__dict__[i[0]] == bill_json.get(i[1], None)[:max_len]:
+            val = bill_json.get(i[1], None)
+            val = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
+            if not p.__dict__[i[0]] == val:
                 change_set.add(i[0])
-            p.__dict__[i[0]] = bill_json.get(i[1], None)[:max_len]
+                p.__dict__[i[0]] = val
 
         for i in bill_action_date_fields.items():
-            date_string = bill_json["action_dates"].get(i[1], None)
+
+            date_object = bill_json["action_dates"].get(i[1], None)
             current_val = p.__dict__[i[0]]
-            if p.__dict__[i[0]] is None and not date_string is None:
-                change_set.add(i[0])
-                p.__dict__[i[0]] = date_string
-
-            elif date_string is None and not p.__dict__[i[0]] is None:
-                change_set.add(i[0])
-                p.__dict__[i[0]] = date_string
-
-            elif not date_string is None:
+            if isinstance(date_object, unicode) or isinstance(date_object, str):
+                date_string = date_object
                 if " " in date_string:
                     date_string = date_string.split(" ")[0]
+
                 if not str(current_val).strip() == date_string:
                     change_set.add(i[0])
                     p.__dict__[i[0]] = date_string
+
+            elif isinstance(date_object, datetime.datetime):
+                if current_val != date_object:
+                    change_set.add(i[0])
+                    p.__dict__[i[0]] = date_object
+
+            elif date_object is None:
+                if not current_val is None:
+                    change_set.add(i[0])
+                    p.__dict__[i[0]] = date_string
+            else:
+                sys.stderr.write("update_bill. Don't know how to handle this date object:{}\n".format(date_object))
+
 
         versions = bill_json["versions"]
         current_documents = p.documents.all()
@@ -253,7 +349,8 @@ def update_bill(bill_json, state_geotag):
                 doc.external_id = doc_openstates_id
                 for i in bill_document_fields.items():
                     max_len = cm.ReferenceDocument._meta.get_field(i[0]).max_length
-                    doc.__dict__[i[0]] = v.get(i[1], None)[:max_len]
+                    val = v.get(i[1], None)
+                    doc.__dict__[i[0]] = val if not isinstance(val, unicode) and not isinstance(val, str) else val[:max_len]
 
                 doc.save()
                 new_documents.add(doc)
@@ -286,10 +383,11 @@ def update_bill(bill_json, state_geotag):
 
         #### propagate project changes
         if "tags" in change_set or "name" in change_set or "last_action_date" in change_set:
-            sys.stderr.write("changes are significant, we have to update items for this project: {}\n".format(p.id))
+            sys.stderr.write("there are changes requiring item updates to project {}: {}\n".format(p.id, change_set))
+
             sys.stderr.flush()
             ct.finalize_project(p, True)                        
 
         if len(change_set) > 0:
-            return "update"
+            return "updated"
 
