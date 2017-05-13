@@ -61,7 +61,7 @@ When you need to get rid of the task queue and redis locks, try:
 > redis-cli
 >> flushdb
 ```
-## Running The App
+## Setting Up Requirements
 
 ### Environment Variables
 
@@ -125,6 +125,21 @@ I manually set these buildacks from heroku, which seems to ignore app.json?
 >>> CREATE EXTENSION postgis;
 >>> [ctrl-D]
 
+### Nunjucks
+
+> apt-get install nodejs-legacy npm
+> npm install nunjucks
+
+to pre-compile templates once they change, do:
+> cd utils
+> ./compile_nunjucks_templates.sh
+
+This will modify core/static/core/js/templates.js , so we need to re-release in development
+
+## Running the app
+
+> heroku local release
+> heroku local
 
 ### Setting up the initial data
  - see Procfile's release steps, these include loading data fixtures for any participation apps that have them
@@ -138,5 +153,4 @@ The rest is done from the /upload_dataset page
  - upload us cities (Requires us-cities which can be bought from uscitieslist.org): format: uscitieslist_csv_v0
 
 Confirm state is reasonable by going to /tags
-
 

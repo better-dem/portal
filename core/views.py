@@ -485,9 +485,9 @@ def feed_recommendations(request):
                 if order_field is None:
                     order_field = "creation_time"
                 if len(subjects_of_interest) == 0:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
                 else:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
 
     # TODO: make use of subjects of interest
     recommendations = [r for r in recommendations if not r[0] in current_feed_contents]

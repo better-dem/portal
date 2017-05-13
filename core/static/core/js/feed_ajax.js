@@ -120,7 +120,7 @@ var register_event_trigger = function(b){
 }
 
 //// feed updating methods
-var env = new nunjucks.Environment(new nunjucks.WebLoader("/js_templates"));
+var env = nunjucks.configure()
 var escapeJSMap = {
     '\\': '\\u005C',
     '\'': '\\u0027',
@@ -167,14 +167,20 @@ var display_item_mini = function(item_id, element_id){
 }
 
 // feed items populate news feeds, admin views, and are also used within participate pages
-var display_feed_item = function(item_id, element_id, app_name){
+var display_feed_item = function(item_id, element_id, app_name, custom_template){
     var cb = function(response_content, status){
 	console.log("ajax form response. status:"+status);
 	console.log("ajax form response. response_content:"+response_content);
 	console.log(JSON.stringify(response_content));
         // TODO: update html and content
 
-	var res = env.render(app_name+"/feed_item.html", response_content);
+	var res;
+	if (custom_template){
+	    res = env.render(app_name+"/feed_item.html", response_content);
+	} else {
+	    res = env.render("core/feed_item.html", response_content);
+	}
+	
 	$("#"+element_id).html(res)
         // TODO: call javascript methods for inline displays, set up ajax within items, etc.
     }
@@ -191,7 +197,7 @@ var get_feed_recommendations_next_page = function(){
 	    current_feed_contents.push(item_recommendations[i][0])
 	    var eid = "feed_item_"+(item_recommendations[i][0]);
 	    $("#feed").append("<div id=\""+eid+"\"></div>");
-	    display_feed_item(item_recommendations[i][0], eid, item_recommendations[i][1]);
+	    display_feed_item(item_recommendations[i][0], eid, item_recommendations[i][1], item_recommendations[i][2]);
 	}
     }
     submit_ajax_form("/feed_recommendations/", JSON.stringify({"current_feed_contents":current_feed_contents, "current_location_filters": current_location_filters, "current_topic_filters": current_topic_filters}), cb);
