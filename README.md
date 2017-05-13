@@ -125,7 +125,14 @@ I manually set these buildacks from heroku, which seems to ignore app.json?
 
 ### Nunjucks
 
+> apt-get install nodejs-legacy npm
 > npm install nunjucks
+
+to pre-compile templates once they change, do:
+> cd utils
+> ./compile_nunjucks_templates.sh
+
+This will modify core/static/core/js/templates.js , so we need to re-release in development
 
 ## Running the app
 
