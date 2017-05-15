@@ -83,10 +83,14 @@ WSGI_APPLICATION = 'portal.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'portal',
     }
 }
+
+## Update database configuration with $DATABASE_URL.
+# trying to use GIS database. Sortof following instructions from https://devcenter.heroku.com/articles/postgis
+DATABASES['default'].update(dj_database_url.config())
+DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -111,14 +115,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
-## Update database configuration with $DATABASE_URL.
-# db_from_env = dj_database_url.config(conn_max_age=500)
-# DATABASES['default'].update(db_from_env)
-
-# trying to use GIS database. Sortof following instructions from https://devcenter.heroku.com/articles/postgis
-DATABASES['default'].update(dj_database_url.config())
-DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
 
 SECURE_SSL_REDIRECT = os.environ["SECURE_SSL_REDIRECT"]=="True"
 PREPEND_WWW = os.environ["PREPEND_WWW"]=="True"
