@@ -7,7 +7,7 @@ from core import tasks as ct
 DEFAULT_LEG_IMG = "legislators/img/default.png"
 
 class LegislatorsProject(cm.ParticipationProject):
-    open_states_leg_id = models.CharField(max_length=100)
+    open_states_leg_id = models.CharField(max_length=100, db_index=True)
     open_states_active = models.BooleanField()
     open_states_state = models.CharField(max_length=50)
     photo_url = models.URLField(null=True, blank=True)
@@ -49,7 +49,7 @@ class LegislatorsItem(cm.ParticipationItem):
             ct.scrape_image_and_set_field.delay(img_url, None, self.id, "display_image_file")
 
 class BillsProject(cm.ParticipationProject):
-    open_states_bill_id = models.CharField(max_length=100)
+    open_states_bill_id = models.CharField(max_length=100, db_index=True)
     bill_id = models.CharField(max_length=100)
     tags = models.ManyToManyField(cm.Tag)
     first_action_date = models.DateField(null=True, blank=True)

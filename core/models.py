@@ -246,7 +246,7 @@ class ReferenceDocument(models.Model):
     mimetype = models.CharField(max_length = 50, default="text/html")
     first_paragraph = models.TextField(blank=True, null=True)
     external_api = models.CharField(max_length = 100, blank=True, null=True) # if the document is pulled from an external API, this shows the API's name 
-    external_id = models.CharField(max_length = 100, blank=True, null=True) # a field used for identification from some other API
+    external_id = models.CharField(max_length = 100, blank=True, null=True, db_index=True) # a field used for identification from some other API
 
 class Event(models.Model):
     """
