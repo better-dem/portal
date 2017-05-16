@@ -463,17 +463,8 @@ def feed_recommendations(request):
     subjects_of_interest = set()
     places_of_interest = set()
     
-    for t in current_topic_filters:
-        try:
-            subjects_of_interest.add(cm.Tag.objects.get(pk=t["tag_id"]))
-        except cm.Tag.DoesNotExist:
-            pass
-
-    for t in current_location_filters:
-        try:
-            places_of_interest.add(cm.Tag.objects.get(pk=t["tag_id"]))
-        except cm.Tag.DoesNotExist:
-            pass
+    subjects_of_interest = cm.Tag.objects.filter(id__in=tuple([t["tag_id"] for t in current_topic_filters]))
+    places_of_interest = cm.Tag.objects.filter(id__in=tuple([t["tag_id"] for t in current_location_filters]))
 
     if len(places_of_interest) == 0:
         places_of_interest.add(cm.get_usa())
@@ -505,18 +496,13 @@ def recommend_related(request, item_id):
     candidates = set()
     recommendations = []
     
-    for t in item.tags.all():
-        try:
-            g = t.geotag
-        except:
-            continue
-        else:
-            for app in cm.get_registered_participation_apps():
-                for item_model in cm.get_app_item_models(app):
-                    order_field = getattr(item_model._meta, 'get_latest_by')
-                    if order_field is None:
-                        order_field = "creation_time"
-                    candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
+    for t in item.tags.all().prefetch_related("geotag"):
+        for app in cm.get_registered_participation_apps():
+            for item_model in cm.get_app_item_models(app):
+                order_field = getattr(item_model._meta, 'get_latest_by')
+                if order_field is None:
+                    order_field = "creation_time"
+                candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
 
     if len(candidates) < 3:
         t = cm.get_usa()

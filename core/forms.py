@@ -40,9 +40,9 @@ def pre_process_query(q):
 def get_matching_tags(q):
     name, detail = pre_process_query(q)
     if not detail is None:
-        return cm.Tag.objects.filter(name__istartswith=name).filter(detail__istartswith=detail)
+        return cm.Tag.objects.filter(name__istartswith=name).filter(detail__istartswith=detail)[:100]
     else:
-        return cm.Tag.objects.filter(name__istartswith=name)
+        return cm.Tag.objects.filter(name__istartswith=name)[:100]
 
 def get_best_final_matching_tag(q):
     if len(q) == 0:
