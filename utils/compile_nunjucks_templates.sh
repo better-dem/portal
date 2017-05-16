@@ -7,8 +7,8 @@ echo $cmd
 
 destination_file=`pwd`/../core/static/core/js/templates.js
 # avoiding 2-d arrays
-template_apps=(core interactive_visualization single_quiz manual_news_article_curation)
-template_names=(feed_item.html feed_item.html feed_item.html feed_item.html)
+template_apps=(core interactive_visualization single_quiz manual_news_article_curation core)
+template_names=(feed_item.html feed_item.html feed_item.html feed_item.html portal_ux/tag_remove.html)
 
 rm -rf $destination_file
 

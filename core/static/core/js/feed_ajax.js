@@ -206,12 +206,12 @@ var get_feed_recommendations_next_page = function(){
 var update_filter_display = function(){
     $("#geo_filters").empty();
     for (i = 0; i < current_location_filters.length; i++){
-	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_location_filters[i]);
+	var res = env.render("core/portal_ux/tag_remove.html", current_location_filters[i]);
 	$("#geo_filters").append(res);
     }
     $("#topic_filters").empty();
     for (i = 0; i < current_topic_filters.length; i++){
-	var res = env.renderString("<span class=\"label label-default\">{{ tag_name }} <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter({{ tag_id }})\"></span></span> ", current_topic_filters[i]);
+	var res = env.render("core/portal_ux/tag_remove.html", current_topic_filters[i]);
 	$("#topic_filters").append(res);
     }
     if (current_topic_filters.length == 0){

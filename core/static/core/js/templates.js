@@ -722,3 +722,32 @@ root: root
 })();
 })();
 
+(function() {(window.nunjucksPrecompiled = window.nunjucksPrecompiled || {})["core/portal_ux/tag_remove.html"] = (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var parentTemplate = null;
+output += "<span class=\"label label-default\">";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "tag_name"), env.opts.autoescape);
+output += " <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter(";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "tag_id"), env.opts.autoescape);
+output += ")\"></span></span> \n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+
+})();
+})();
+
