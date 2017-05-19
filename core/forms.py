@@ -87,3 +87,9 @@ class StripePaymentForm(forms.Form):
     donation_amount=forms.CharField(max_length=10)
     recurring=forms.CharField(max_length=10)
     email=forms.EmailField(max_length=500)
+
+class InlineParticipationItemField(forms.Field):
+    pass
+
+class InlineParticipationItemWidget(forms.Widget):
+    pass
