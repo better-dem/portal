@@ -88,8 +88,65 @@ class StripePaymentForm(forms.Form):
     recurring=forms.CharField(max_length=10)
     email=forms.EmailField(max_length=500)
 
-class InlineParticipationItemField(forms.Field):
-    pass
 
 class InlineParticipationItemWidget(forms.Widget):
-    pass
+    """
+    Widget to display a participation item inline inside a form
+    """
+    def render(self, name, value, *args, **kwargs):
+        """
+        value is participation_item_id
+        """
+        participation_item_id = value
+        app = cm.get_app_for_model(cm.ParticipationItem.get(id=participation_item_id).get_inherited_instance().__class__)
+        app_name = app.name
+        is_custom_template = getattr(app, custom_template, False)
+        participation_item_id, app_name, is_custom_template = value
+        div_id = 'poly_map_' + kwargs['attrs']['id']
+        input_name = name
+        input_id = kwargs['attrs']['id']
+
+        render_html = """
+        <div id="{}"></div>
+        <input type='hidden' name='{}' id='{}' value='' />
+
+        <script type="text/javascript">
+        display_feed_item({},"{}","{}",{})
+        </script>
+        """
+        render_html_with_id = render_html.format(div_id, input_name, input_id,
+                                                 participation_item_id, div_id, app_name, is_custom_template)
+        return render_html_with_id
+
+    def __init__(self, *args, **kwargs):
+        super(ShowPolygonWidget, self).__init__(*args, **kwargs)
+
+class InlineParticipationItemField(forms.Field):
+    def __init__(self,
+        required= True,
+        widget=InlineParticipationItemWidget,          
+        label=None,
+        initial=None,
+        help_text="",
+        validators=[],
+        *args,
+        **kwargs):
+        super(InlineParticipationItemField, self).__init__(required=required,
+            widget=widget,
+            label=label,
+            initial=initial,
+            help_text=help_text,
+            validators=validators,
+            *args,
+            **kwargs)
+        self.disabled = True
+
+    def to_python(self, value):
+        return None
+
+    def validate(self, value):
+        super(InlineParticipationItemField, self).validate(value)
+
+    def widget_attrs(self, widget):
+        attrs = super(InlineParticipationItemField, self).widget_attrs(widget)
+        return attrs

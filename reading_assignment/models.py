@@ -4,7 +4,6 @@ from core import models as cm
 import sys
 
 class ReadingAssignmentProject(cm.ParticipationProject):
-    tags = models.ManyToManyField(cm.Tag)
 
     def update_items(self):
         if ReadingAssignmentItem.objects.filter(participation_project=self).count() == 0:
@@ -27,20 +26,22 @@ class ReadingAssignmentItem(cm.ParticipationItem):
         self.display_image_file = 'reading_assignment/img/default.png'
 
     def set_relevant_tags(self):
-        self.tags.set([x.id for x in self.participation_project.get_inherited_instance().tags.all()])
+        # no tags
+        pass
+
+class TextQuestion(models.Model):
+    question_text = models.TextField()
 
 class OrderedAssignmentItem(models.Model):
     number = models.PositiveIntegerField()
     text_question = models.ForeignKey(TextQuestion)
     participation_item = models.ForeignKey(cm.ParticipationItem)
+    assignment = models.ForeignKey(ReadingAssignmentProject, on_delete = models.CASCADE)
 
 class Submission(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
-    participation_item = models.ForeignKey(ReadingAssignmentItem, on_delete = models.CASCADE)
+    participation_project = models.ForeignKey(ReadingAssignmentProject, on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
-
-class TextQuestion(models.Model):
-    question_text = models.TextField()
 
 class TextQuestionResponse(models.Model):
     question = models.ForeignKey(TextQuestion)
