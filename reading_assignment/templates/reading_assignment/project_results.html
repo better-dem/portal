@@ -1,0 +1,23 @@
+{% extends "core/project_admin_base.html" %}
+{% block item_detail %}
+
+<h2>Submission Results</h2>
+<p>
+    Number of submissions: {{ item.num_submissions }}
+</p>
+
+{% for submission_detail in item.submission_details %}
+<p>
+    <h3>{{ submission_detail.user_email }}</h3>
+    <table class="table">
+	<thead><th>Question</th><th>Response</th></thead>
+	<tbody>
+	    {% for response in submission_detail.responses %}
+	    <tr><td>{{ response.question }}</td><td>{{ response.response }}</td></tr>	    
+	    {% endfor %}
+	</tbody>
+    </table>
+</p>
+{% endfor %}
+
+{% endblock %}

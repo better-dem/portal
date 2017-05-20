@@ -98,10 +98,9 @@ class InlineParticipationItemWidget(forms.Widget):
         value is participation_item_id
         """
         participation_item_id = value
-        app = cm.get_app_for_model(cm.ParticipationItem.get(id=participation_item_id).get_inherited_instance().__class__)
+        app = cm.get_app_for_model(cm.ParticipationItem.objects.get(id=participation_item_id).get_inherited_instance().__class__)
         app_name = app.name
-        is_custom_template = getattr(app, custom_template, False)
-        participation_item_id, app_name, is_custom_template = value
+        is_custom_template = "true" if getattr(app, "custom_template", False) else "false" # javascript bools
         div_id = 'poly_map_' + kwargs['attrs']['id']
         input_name = name
         input_id = kwargs['attrs']['id']
@@ -119,7 +118,7 @@ class InlineParticipationItemWidget(forms.Widget):
         return render_html_with_id
 
     def __init__(self, *args, **kwargs):
-        super(ShowPolygonWidget, self).__init__(*args, **kwargs)
+        super(InlineParticipationItemWidget, self).__init__(*args, **kwargs)
 
 class InlineParticipationItemField(forms.Field):
     def __init__(self,

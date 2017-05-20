@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
-from reading_assignment.models import ReadingAssignmentProject, ReadingAssignmentItem, Submission
+from reading_assignment.models import ReadingAssignmentProject, OrderedAssignmentItem, ReadingAssignmentItem, TextQuestion, TextQuestionResponse, Submission
 from .forms import CreateProjectForm, SubmitAssignmentForm
 from django.db.models import Count
 import os
@@ -17,8 +17,13 @@ def new_project(request):
         form = CreateProjectForm(request.POST)
         if form.is_valid():
             project = ReadingAssignmentProject()
+            project.owner_profile = profile
+            project.name = form.cleaned_data["assignment_name"]
+            project.save()
             num = 0
             for k in form.cleaned_data.keys():
+                sys.stderr.write("key:{}\n".format(k))
+                sys.stderr.flush()
                 if k.startswith("text_question_"):
                     num += 1
                     q = TextQuestion()
@@ -33,15 +38,10 @@ def new_project(request):
                     num += 1
                     oai = OrderedAssignmentItem()
                     oai.number = num
-                    oai.text_question = q
-                    oai.participation_item = cm.ParticipationItem.get(id=form.cleaned_data[k], is_active=True)
+                    oai.participation_item = cm.ParticipationItem.objects.get(id=form.cleaned_data[k], is_active=True)
                     oai.assignment=project
                     oai.save()
             
-            project.owner_profile = profile
-            project.name = form.cleaned_data["assignment_name"]
-            project.save()
-
             ct.finalize_project(project)
             
             return render(request, 'core/thanks.html', {"action_description": "creating a new reading assignment", "link": "/apps/reading_assignment/administer_project/"+str(project.id)})
@@ -53,15 +53,22 @@ def new_project(request):
 
 def administer_project(request, project_id):
     project = get_object_or_404(ReadingAssignmentProject, pk=project_id)
-    items = ReadingAssignmentItem.objects.filter(participation_project=project,  is_active=True).distinct()
+    items = ReadingAssignmentItem.objects.filter(participation_project=project, is_active=True).distinct()
     item_details = []
 
     for item in items:
         current_item_detail = cv.get_item_details(item, True)
-        responses = ItemResponse.objects.filter(participation_item=item)
-        num_responses = responses.count()
-        current_item_detail["question_summaries"] = question_summaries
-        current_item_detail["num_responses"] = num_responses
+        submissions = Submission.objects.filter(participation_project=project)
+        num_submissions = submissions.count()
+        current_item_detail["num_submissions"] = num_submissions
+        submission_details = []
+        for s in submissions:
+            submission_detail = {"user_email": s.user_profile.user.email, "responses": []}
+            for tqr in s.textquestionresponse_set.all():
+                qr_detail = {"question": tqr.question.question_text, "response":tqr.response}
+                submission_detail["responses"].append(qr_detail)
+            submission_details.append(submission_detail)
+        current_item_detail["submission_details"] = submission_details
         item_details.append(current_item_detail)
 
     return render(request, 'reading_assignment/project_results.html', {"items": item_details, "project":project, 'site': os.environ["SITE"]})
@@ -72,7 +79,7 @@ def participate(request, item_id):
 
     item = ReadingAssignmentItem.objects.get(pk=item_id)
     context = cv.get_default_og_metadata(request, item)
-    project = item.participation_project.landuseproject
+    project = item.participation_project.readingassignmentproject
     title = project.name
 
     if request.method == 'POST':
@@ -83,22 +90,7 @@ def participate(request, item_id):
             item_response.participation_item = item
             item_response.save()
             
-            # TODO: instead, use ReadingAssignmentProject.get_questions()
-            for key in form.cleaned_data:
-                if "field_prf_" in key:
-                    question_id = key.lstrip("field_prf_")
-                    question = get_object_or_404(Question, pk=question_id)
-                    try:
-                        tmcq = question.tmcq
-                    except:
-                        raise Exception("Invalid question type. Only TMCQ supported")
-                    else:
-                        qr = TMCQResponse()
-                        qr.item_response = item_response
-                        qr.question = question
-                        qr.option_index = int(form.cleaned_data[key])
-                        qr.save()
-                        
+            # save responses to questions
             context.update({"action_description": "submitting this reading assignment", "item": item})
             return render(request, 'core/thanks_participate.html', context)
         else:

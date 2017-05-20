@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.contrib.gis.db import models
+from django.core.exceptions import ValidationError
 from core import models as cm
 import sys
 
@@ -16,12 +17,6 @@ class ReadingAssignmentProject(cm.ParticipationProject):
 
 
 class ReadingAssignmentItem(cm.ParticipationItem):
-    def get_inline_display(self):
-        ans = "Land use planning project"
-        if self.tags.all().count() > 0:
-            ans += " for "+self.tags.all()[0].get_name()
-        return ans
-
     def set_display_image(self):
         self.display_image_file = 'reading_assignment/img/default.png'
 
@@ -34,9 +29,14 @@ class TextQuestion(models.Model):
 
 class OrderedAssignmentItem(models.Model):
     number = models.PositiveIntegerField()
-    text_question = models.ForeignKey(TextQuestion)
-    participation_item = models.ForeignKey(cm.ParticipationItem)
+    text_question = models.ForeignKey(TextQuestion, blank=True, null=True)
+    participation_item = models.ForeignKey(cm.ParticipationItem, blank=True, null=True)
     assignment = models.ForeignKey(ReadingAssignmentProject, on_delete = models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        if bool(self.text_question) == bool(self.participation_item):
+            raise ValidationError('Exactly one of (text question, participation item) is required.')
+        return super(OrderedAssignmentItem, self).save(*args, **kwargs)
 
 class Submission(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
