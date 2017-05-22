@@ -1,0 +1,56 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>Portal Edu</h2>
+<h3>Tools for Students and Educators</h3>
+
+<h3>Browse Our Data</h3>
+<div>
+    {% for o in overviews %}<a href="{{ o.0 }}">{{ o.1 }}</a><br>
+{% endfor %}
+</div>
+
+{% if student %}
+<h3>Your Assignments</h3>
+{% for assignment in assignments %}
+{% if assignment.submitted %}
+Completed assignment: {{ assignment.name }}
+{% else %}
+<a href="{{ assignment.participate_link }}" class="btn btn-default" role="button">Do assignment: {{ assignment.name }}</a>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if teacher %}
+<h3>Manage Your Assignments</h3>
+<p>
+    <a href="{{ app.new_project_link }}" class="btn btn-primary" role="button">New Assignment</a>
+</p>
+{% for project in app.existing_projects %}
+<p>
+    <a href="{{ project.administer_project_link }}" class="btn btn-default" role="button">Administer {{ project.name }}</a>
+</p>
+{% endfor %}
+{% endif %}
+
+{% for app in profile_apps %}
+<div class="panel panel-default">
+    <div class="panel-heading">{{ app.label }}</div>
+    <div class="panel-body">
+	{% if app.new_project_link %}
+	<p>
+	    <a href="{{ app.new_project_link }}" class="btn btn-primary" role="button">New Project</a>
+	</p>
+	{% endif %}
+	{% for project in app.existing_projects %}
+	<p>
+	    <a href="{{ project.administer_project_link }}" class="btn btn-default" role="button">Administer {{ project.name }}</a>
+	</p>
+	{% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+
+{% endblock %}

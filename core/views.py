@@ -281,6 +281,52 @@ def feed(request):
     context["overviews"] = cm.get_overviews()
     return render(request, 'core/feed.html', context)
 
+@ensure_csrf_cookie
+def edu(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    context = {'site': os.environ["SITE"]}
+    context.update(get_default_og_metadata(request))
+    subjects_of_interest = set()
+    places_of_interest = set()
+    for t in profile.tags.all():
+        try:
+            geo = t.geotag
+            places_of_interest.add(t)
+        except:
+            subjects_of_interest.add(t)
+
+    context["geo_tags"] = [{"id": t.id, "name": t.name} for t in places_of_interest]
+    context["subject_tags"] = [{"id": t.id, "name": t.name} for t in subjects_of_interest]
+    context["overviews"] = cm.get_overviews()
+    return render(request, 'core/feed.html', context)
+
+    profile_apps = []
+    for app in cm.get_registered_participation_apps():
+        perm = cm.get_provider_permission(app)
+        if app.label+"."+perm.codename in permissions:
+            profile_app = dict()
+            profile_app["label"] = app.label.replace("_", " ").title()
+            profile_app["existing_projects"] = []
+            profile_app["label"] = profile_app["label"]
+            profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
+            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
+            for ep in existing_projects:
+                proj = dict()
+                proj["name"] = ep.name
+                proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)
+                profile_app["existing_projects"].append(proj)
+                
+            profile_apps.append(profile_app)
+
+    content = {'profile_apps': profile_apps, 'tags': tags}
+    # add "core" if the user has core permission
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if app.label+"."+perm.codename in permissions:
+        content["core"] = True
+    return render(request, 'core/profile.html', content)
+
+
 def get_item_details(item, get_activity=False):
     """
     Return a dict describing the properties of some ParticipationItem,
