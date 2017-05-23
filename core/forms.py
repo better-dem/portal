@@ -22,6 +22,10 @@ class CreateShortcutForm(forms.Form):
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
+
+class ManageGroupForm(forms.Form):
+    new_invitation_name = forms.CharField(required=True)
+    new_invitation_email = forms.EmailField(required=False)
     
 
 # create aac in advance

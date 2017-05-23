@@ -1,0 +1,36 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>Portal Edu</h2>
+<h3>Tools for Students and Educators</h3>
+
+<h3>Register for a Class</h3>
+
+<form action="{{ action_path }}" method="post">
+    {% csrf_token %}
+    <input id="course_registration_code" type="text" class="form-control" placeholder="Enter your registration code" />
+    <input type="submit" value="Submit" />
+</form>
+
+<h3>Your Courses and Assignments</h3>
+{% for course in courses %}
+<h4>{{ course.name }}</h4>
+{% for assignment in course.assignments %}
+{% if assignment.submitted %}
+Completed assignment: {{ assignment.name }}
+{% else %}
+<a href="{{ assignment.participate_link }}" class="btn btn-default" role="button">Do assignment: {{ assignment.name }}</a>
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+
+<h3>Browse Our Data</h3>
+<div>
+    {% for o in overviews %}<a href="{{ o.0 }}">{{ o.1 }}</a><br>
+{% endfor %}
+</div>
+
+{% endblock %}
+

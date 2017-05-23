@@ -10,6 +10,7 @@ class BallotDeciderConfig(AppConfig):
     are_projects_editable = True
     custom_feed_item_template = None
     external_link=False
+    creator_user_roles_allowed = ["Journalist"]
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

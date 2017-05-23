@@ -180,6 +180,32 @@ class ParticipationItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
+    TEACHER = "Teacher"
+    STUDENT = "Student"
+    JOURNALIST = "Journalist"
+    OC = "Ordinary Citizen"
+    role = models.CharField(max_length=50, choices= ((i,i) for i in [TEACHER, STUDENT, JOURNALIST, OC]), default=OC) 
+
+class UserGroup(models.Model):
+    name = models.CharField(max_length=200)
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    COURSE = "Course"
+    group_type = models.CharField(max_length=50, choices= ((i,i) for i in [COURSE]), default=COURSE) 
+    max_invitations = models.PositiveIntegerField(default=25)
+
+class GroupMembership(models.Model):
+    """
+    This class is to support group membership and related flows
+    some examples:
+     - a group moderator should be able to invite people by entering a list of emails
+     - a member should be able to claim an invitation by using a code even if they aren't registered with the invitation email
+     - a registered user should be able to claim an invitation without the code if their email matches
+    """
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+    member = models.ForeignKey(UserProfile, on_delete=models.CASCADE, blank=True, null=True)
+    member_name = models.CharField(max_length=100) # the name used by the group admin to identify this member
+    invitation_code = models.CharField(max_length=100)
+    invitation_email = models.EmailField()
 
 class LongJobState(models.Model):
     """

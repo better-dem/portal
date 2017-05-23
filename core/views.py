@@ -8,15 +8,17 @@ from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseFo
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
 import core.models as cm
 import core.tasks as tasks
-from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+from core.forms import CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
 
 import sys
 import os
 import random
 import json
+import uuid
 
 import stripe
 
@@ -265,6 +267,9 @@ def home(request):
 @ensure_csrf_cookie
 def feed(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not is_default_user:
+        profile.role = cm.UserProfile.OC
+        profile.save()
     context = {'site': os.environ["SITE"]}
     context.update(get_default_og_metadata(request))
     subjects_of_interest = set()
@@ -282,49 +287,94 @@ def feed(request):
     return render(request, 'core/feed.html', context)
 
 @ensure_csrf_cookie
-def edu(request):
+def teacher_home(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
-    context = {'site': os.environ["SITE"]}
-    context.update(get_default_og_metadata(request))
-    subjects_of_interest = set()
-    places_of_interest = set()
-    for t in profile.tags.all():
-        try:
-            geo = t.geotag
-            places_of_interest.add(t)
-        except:
-            subjects_of_interest.add(t)
+    if not is_default_user:
+        profile.role = cm.UserProfile.TEACHER
+        profile.save()
+    else:
+        return render(request, "core/please_login.html")
 
-    context["geo_tags"] = [{"id": t.id, "name": t.name} for t in places_of_interest]
-    context["subject_tags"] = [{"id": t.id, "name": t.name} for t in subjects_of_interest]
-    context["overviews"] = cm.get_overviews()
-    return render(request, 'core/feed.html', context)
-
-    profile_apps = []
+    edu_apps = []
     for app in cm.get_registered_participation_apps():
+        if not profile.role in app.creator_user_roles_allowed:
+            continue
         perm = cm.get_provider_permission(app)
         if app.label+"."+perm.codename in permissions:
-            profile_app = dict()
-            profile_app["label"] = app.label.replace("_", " ").title()
-            profile_app["existing_projects"] = []
-            profile_app["label"] = profile_app["label"]
-            profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
+            edu_app = dict()
+            edu_app["label"] = app.label.replace("_", " ").title()
+            edu_app["existing_projects"] = []
+            edu_app["label"] = edu_app["label"]
+            edu_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
             existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
             for ep in existing_projects:
                 proj = dict()
                 proj["name"] = ep.name
                 proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)
-                profile_app["existing_projects"].append(proj)
+                edu_app["existing_projects"].append(proj)
                 
-            profile_apps.append(profile_app)
+            edu_apps.append(edu_app)
 
-    content = {'profile_apps': profile_apps, 'tags': tags}
-    # add "core" if the user has core permission
-    app = cm.get_core_app()
-    perm = cm.get_provider_permission(app)
-    if app.label+"."+perm.codename in permissions:
-        content["core"] = True
-    return render(request, 'core/profile.html', content)
+    courses = cm.UserGroup.objects.filter(owner=profile, group_type=cm.UserGroup.COURSE)
+
+    context = get_default_og_metadata(request)
+    context['site'] = os.environ["SITE"]
+    context["overviews"] = cm.get_overviews()
+    context['edu_apps'] = edu_apps
+    context['courses'] = courses
+    return render(request, 'core/teacher_home.html', context)
+
+@ensure_csrf_cookie
+def manage_group(request, group_id):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    group = get_object_or_404(cm.UserGroup, id=group_id, owner=profile)
+    context = dict()
+    context["group"] = group
+    context["action_path"] = request.path
+
+    if request.method == 'POST':
+        form = ManageGroupForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["new_invitation_name"]
+            email = form.cleaned_data["new_invitation_email"]
+            num_invitations = cm.GroupMembership.objects.filter(group=group).count()
+            if num_invitations >= group.max_invitations:
+                return HttpResponse("You have reached the maximum number of invitations for this {}. Contact admin to increase this".format(group.group_type))
+            try:
+                existing_invitation = cm.GroupMembership.objects.get(member_name=name, group = group)
+                return HttpResponse("You already have an invitation for {} in the {}: {}.".format(name, group.group_type, group.name))
+            except cm.GroupMembership.DoesNotExist:
+                inv = cm.GroupMembership()
+                inv.member_name = name
+                inv.group = group
+                inv.invitation_email = email
+                inv.invitation_code = uuid.uuid1()
+                inv.save()
+                return HttpResponseRedirect("/manage_group/{}".format(group_id))
+        else:
+            return render(request, 'core/manage_group.html', context)
+
+    return render(request, 'core/manage_group.html', context)
+
+
+@ensure_csrf_cookie
+def student_home(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not is_default_user:
+        profile.role = cm.UserProfile.STUDENT
+        profile.save()
+    else:
+        return render(request, "core/please_login.html")
+
+    # TODO: iterate through assignments and courses
+
+    context = get_default_og_metadata(request)
+    context['site'] = os.environ["SITE"]
+    context["overviews"] = cm.get_overviews()
+    # context['edu_apps'] = edu_apps
+    return render(request, 'core/student_home.html', context)
 
 
 def get_item_details(item, get_activity=False):

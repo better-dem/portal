@@ -1,0 +1,23 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>Manage {{ group.group_type }}: {{ group.name }}</h2>
+
+<h3>Invite a new member</h3>
+<form action="{{ action_path }}" method="post">
+    {% csrf_token %}
+    <input id="new_invitation_name" type="text" class="form-control" placeholder="Invitee's name" />
+    <input id="new_invitation_email" type="text" class="form-control" placeholder="Invitee's email" />
+    <input type="submit" value="Submit" />
+</form>
+
+<table class="table">
+  <thead><th>Member Name</th><th>Invitation Accepted?</th><th>Invitation Token</th></thead>
+  <tbody>
+    {% for membership in group.groupmembership_set.all %}<tr><td>{{ membership.member_name }}</td><td>{% if membership.member is not None %}True{% else %}False{% endif %}</td><td>{{ membership.invitation_code }}</td></tr>
+{% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
