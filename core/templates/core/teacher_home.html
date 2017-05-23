@@ -2,27 +2,11 @@
 {% block content %}
 {% load staticfiles %}
 
-<h2>Portal Edu</h2>
-<h3>Tools for Students and Educators</h3>
+<h2>Teacher Portal</h2>
 
 <h3>Manage Your Courses</h3>
 {% for course in courses %}
-<h4>{{ course.name }}</h4>
-<a href="/manage_group/{{ course.id }}">Manage students for {{ course.name }}</a>
-{% endfor %}
-
-<h3>Manage Your Assignments</h3>
-{% for app in edu_apps %}
-<h4>{{ app.name }}</h4>
-<p>
-    <a href="{{ app.new_project_link }}" class="btn btn-primary" role="button">New Assignment</a>
-</p>
-{% for project in app.existing_projects %}
-<p>
-    <a href="{{ project.administer_project_link }}" class="btn btn-default" role="button">Administer {{ project.name }}</a>
-</p>
-{% endfor %}
-{% endfor %}
+<p><a href="/manage_group/{{ course.id }}" class="btn btn-primary">Manage {{ course.name }}</a></p>{% endfor %}
 
 
 <h3>Browse Our Data</h3>

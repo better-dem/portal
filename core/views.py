@@ -296,6 +296,22 @@ def teacher_home(request):
     else:
         return render(request, "core/please_login.html")
 
+    courses = cm.UserGroup.objects.filter(owner=profile, group_type=cm.UserGroup.COURSE)
+
+    context = get_default_og_metadata(request)
+    context['site'] = os.environ["SITE"]
+    context["overviews"] = cm.get_overviews()
+    context['courses'] = courses
+    return render(request, 'core/teacher_home.html', context)
+
+@ensure_csrf_cookie
+@transaction.atomic
+def manage_group(request, group_id):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    group = get_object_or_404(cm.UserGroup, id=group_id, owner=profile)
+
     edu_apps = []
     for app in cm.get_registered_participation_apps():
         if not profile.role in app.creator_user_roles_allowed:
@@ -316,25 +332,12 @@ def teacher_home(request):
                 
             edu_apps.append(edu_app)
 
-    courses = cm.UserGroup.objects.filter(owner=profile, group_type=cm.UserGroup.COURSE)
-
-    context = get_default_og_metadata(request)
-    context['site'] = os.environ["SITE"]
-    context["overviews"] = cm.get_overviews()
-    context['edu_apps'] = edu_apps
-    context['courses'] = courses
-    return render(request, 'core/teacher_home.html', context)
-
-@ensure_csrf_cookie
-@transaction.atomic
-def manage_group(request, group_id):
-    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
-    if is_default_user:
-        return render(request, "core/please_login.html")
-    group = get_object_or_404(cm.UserGroup, id=group_id, owner=profile)
     context = dict()
     context["group"] = group
     context["action_path"] = request.path
+    context['edu_apps'] = edu_apps
+    context["content_class_word"] = "content" if not group.group_type == cm.UserGroup.COURSE else "assignments"
+    context["member_word"] = "member" if not group.group_type == cm.UserGroup.COURSE else "student"
 
     if request.method == 'POST':
         form = ManageGroupForm(request.POST)
