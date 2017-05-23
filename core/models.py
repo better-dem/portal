@@ -115,6 +115,7 @@ class ParticipationProject(models.Model):
     name = models.CharField(max_length = 500)
     owner_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
+    group = models.ForeignKey('UserGroup', blank=True, null=True)
 
     def update_items(self):
         raise Exception("Please overwrite the update_items() method for your participation app")

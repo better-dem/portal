@@ -2,8 +2,7 @@
 {% block content %}
 {% load staticfiles %}
 
-<h2>Portal Edu</h2>
-<h3>Tools for Students and Educators</h3>
+<h2>Student Portal</h2>
 
 <h3>Register for a Class</h3>
 
@@ -13,17 +12,10 @@
     <input type="submit" value="Submit" />
 </form>
 
-<h3>Your Courses and Assignments</h3>
+
+<h3>Your Courses</h3>
 {% for course in courses %}
-<h4>{{ course.name }}</h4>
-{% for assignment in course.assignments %}
-{% if assignment.submitted %}
-Completed assignment: {{ assignment.name }}
-{% else %}
-<a href="{{ assignment.participate_link }}" class="btn btn-default" role="button">Do assignment: {{ assignment.name }}</a>
-{% endif %}
-{% endfor %}
-{% endfor %}
+<p><a href="/group_member_home/{{ course.id }}" class="btn btn-primary">{{ course.name }}</a></p>{% endfor %}
 
 
 <h3>Browse Our Data</h3>

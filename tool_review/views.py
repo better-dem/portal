@@ -13,7 +13,7 @@ import core.tasks as ct
 from urlparse import urlsplit
 import csv, io
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -34,6 +34,7 @@ def new_project(request):
 
             project.summary = form.cleaned_data["summary"]
             project.owner_profile = profile
+            project.group = group
             project.save()
 
             t1 = cf.get_best_final_matching_tag(form.cleaned_data["tag1"])

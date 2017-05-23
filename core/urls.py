@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^teacher_home/$', views.teacher_home, name="teacher_home"),
     url(r'^student_home/$', views.student_home, name="student_home"),
     url(r'^manage_group/(?P<group_id>.+)$', views.manage_group, name="manage_group"),
+    url(r'^group_member_home/(?P<group_id>.+)$', views.group_member_home, name="group_member_home"),
     url(r'^report_issues/$', views.report_issues, name="report_issues"),
     url(r'^report_issues/apps/(?P<app_name>.+)/(?P<action_name>.+)/(?P<object_id>.+)$', views.report_issues, name="report_issues"),
     url(r'^moderate_issues/$', views.moderate_issues, name="moderate_issues"),

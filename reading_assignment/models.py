@@ -5,7 +5,6 @@ from core import models as cm
 import sys
 
 class ReadingAssignmentProject(cm.ParticipationProject):
-
     def update_items(self):
         if ReadingAssignmentItem.objects.filter(participation_project=self).count() == 0:
             item = ReadingAssignmentItem()
@@ -14,7 +13,6 @@ class ReadingAssignmentProject(cm.ParticipationProject):
             item.save()
             return set([item.id])
         return set()
-
 
 class ReadingAssignmentItem(cm.ParticipationItem):
     def set_display_image(self):

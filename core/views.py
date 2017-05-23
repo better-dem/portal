@@ -196,7 +196,10 @@ def app_view_relay(request, app_name, action_name, object_id):
         
         if action_name == "new_project":
             if has_app_perm:
-                return app.views_module.new_project(request) 
+                group=None
+                if object_id != -1:
+                    group = get_object_or_404(cm.UserGroup, pk=object_id, owner=profile)
+                return app.views_module.new_project(request, group)
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "create a new project"})
 
@@ -304,6 +307,28 @@ def teacher_home(request):
     context['courses'] = courses
     return render(request, 'core/teacher_home.html', context)
 
+def group_member_home(request, group_id):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    group = get_object_or_404(cm.UserGroup, id=group_id)
+    membership = get_object_or_404(cm.GroupMembership, group=group, member=profile)
+    assignments = cm.ParticipationItem.objects.filter(participation_project__group=group, is_active=True)
+    assignment_contexts = []
+    for assignment in assignments:
+        ctx = dict()
+        ctx["name"] = assignment.name
+        ctx["participate_link"] = assignment.participate_link()
+        # TODO: determine whether the student has already submitted the assignment
+        # ctx["submitted"] = ....exists()?
+        assignment_contexts.append(ctx)
+
+    context = dict()
+    context["group"]=group
+    context["assignments"]=assignment_contexts
+    return render(request, 'core/group_member_home.html', context)
+
+
 @ensure_csrf_cookie
 @transaction.atomic
 def manage_group(request, group_id):
@@ -322,8 +347,8 @@ def manage_group(request, group_id):
             edu_app["label"] = app.label.replace("_", " ").title()
             edu_app["existing_projects"] = []
             edu_app["label"] = edu_app["label"]
-            edu_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
-            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
+            edu_app["new_project_link"] = "/apps/{}/new_project/{}".format(app.label, group_id)
+            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, group=group, is_active=True)
             for ep in existing_projects:
                 proj = dict()
                 proj["name"] = ep.name
@@ -590,9 +615,9 @@ def feed_recommendations(request):
                 if order_field is None:
                     order_field = "creation_time"
                 if len(subjects_of_interest) == 0:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(tags__in=[t], is_active=True, participation_project__group__isnull=True).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
                 else:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(tags__in=[t], is_active=True, participation_project__group__isnull=True).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
 
     # TODO: make use of subjects of interest
     recommendations = [r for r in recommendations if not r[0] in current_feed_contents]
@@ -616,11 +641,11 @@ def recommend_related(request, item_id):
                 order_field = getattr(item_model._meta, 'get_latest_by')
                 if order_field is None:
                     order_field = "creation_time"
-                candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
+                candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(tags__in=[t], is_active=True, participation_project__group__isnull=True).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
 
     if len(candidates) < 3:
         t = cm.get_usa()
-        recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
+        recent_items = t.participationitem_set.filter(is_active=True, participation_project__group__isnull=True).order_by('-creation_time')[:100]
         candidates.update([i.id for i in recent_items if not i.id == item.id])
 
     recommendations = random.sample(candidates, min(10, len(candidates)))

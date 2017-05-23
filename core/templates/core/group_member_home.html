@@ -1,0 +1,19 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>{{ group.name }}</h2>
+
+<h3>{{ group.group_type }} {{ content_class_word|capfirst }}</h3>
+
+{% for assignment in assignments %}
+
+{% if assignment.submitted %}
+Completed assignment: {{ assignment.name }}
+{% else %}
+<a href="{{ assignment.participate_link }}" class="btn btn-default" role="button">Do assignment: {{ assignment.name }}</a>
+{% endif %}
+
+{% endfor %}
+
+{% endblock %}

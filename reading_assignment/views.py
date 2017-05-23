@@ -10,7 +10,7 @@ import core.views as cv
 import core.tasks as ct
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -19,6 +19,7 @@ def new_project(request):
             project = ReadingAssignmentProject()
             project.owner_profile = profile
             project.name = form.cleaned_data["assignment_name"]
+            project.group = group
             project.save()
             num = 0
             for k in form.cleaned_data.keys():
