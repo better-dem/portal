@@ -204,8 +204,14 @@ class GroupMembership(models.Model):
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
     member = models.ForeignKey(UserProfile, on_delete=models.CASCADE, blank=True, null=True)
     member_name = models.CharField(max_length=100) # the name used by the group admin to identify this member
-    invitation_code = models.CharField(max_length=100)
-    invitation_email = models.EmailField()
+    invitation_code = models.CharField(max_length=100, blank=True, null=True)
+    invitation_email = models.EmailField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if bool(self.invitation_code) == bool(self.member):
+            raise ValidationError('Exactly one of (member, invitation_code) is required.')
+        return super(GroupMembership, self).save(*args, **kwargs)
+
 
 class LongJobState(models.Model):
     """

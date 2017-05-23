@@ -9,7 +9,7 @@
 
 <form action="{{ action_path }}" method="post">
     {% csrf_token %}
-    <input id="course_registration_code" type="text" class="form-control" placeholder="Enter your registration code" />
+    <input name="course_registration_code" type="text" placeholder="Enter your registration code" />
     <input type="submit" value="Submit" />
 </form>
 

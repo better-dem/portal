@@ -7,8 +7,8 @@
 <h3>Invite a new member</h3>
 <form action="{{ action_path }}" method="post">
     {% csrf_token %}
-    <input id="new_invitation_name" type="text" class="form-control" placeholder="Invitee's name" />
-    <input id="new_invitation_email" type="text" class="form-control" placeholder="Invitee's email" />
+    <input name="new_invitation_name" type="text" placeholder="Invitee's name" />
+    <input name="new_invitation_email" type="text" placeholder="Invitee's email" />
     <input type="submit" value="Submit" />
 </form>
 

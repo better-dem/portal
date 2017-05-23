@@ -12,7 +12,7 @@ from django.utils import timezone
 
 import core.models as cm
 import core.tasks as tasks
-from core.forms import CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+from core.forms import RegisterGroupForm, CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
 
 import sys
 import os
@@ -287,6 +287,7 @@ def feed(request):
     return render(request, 'core/feed.html', context)
 
 @ensure_csrf_cookie
+@transaction.atomic
 def teacher_home(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if not is_default_user:
@@ -325,6 +326,7 @@ def teacher_home(request):
     return render(request, 'core/teacher_home.html', context)
 
 @ensure_csrf_cookie
+@transaction.atomic
 def manage_group(request, group_id):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if is_default_user:
@@ -354,12 +356,15 @@ def manage_group(request, group_id):
                 inv.save()
                 return HttpResponseRedirect("/manage_group/{}".format(group_id))
         else:
+            sys.stderr.write("Form errors: {}\n".format(form.errors))
+            sys.stderr.flush()
             return render(request, 'core/manage_group.html', context)
 
     return render(request, 'core/manage_group.html', context)
 
 
 @ensure_csrf_cookie
+@transaction.atomic
 def student_home(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
     if not is_default_user:
@@ -368,14 +373,24 @@ def student_home(request):
     else:
         return render(request, "core/please_login.html")
 
-    # TODO: iterate through assignments and courses
-
     context = get_default_og_metadata(request)
     context['site'] = os.environ["SITE"]
     context["overviews"] = cm.get_overviews()
-    # context['edu_apps'] = edu_apps
-    return render(request, 'core/student_home.html', context)
+    memberships = cm.GroupMembership.objects.filter(member=profile)
+    context["courses"] = set([m.group for m in memberships if m.group.group_type==cm.UserGroup.COURSE])    
 
+    if request.method == 'POST':
+        form = RegisterGroupForm(request.POST)
+        if form.is_valid():
+            registration_code = form.cleaned_data["course_registration_code"]
+            corresponding_membership = cm.GroupMembership.objects.filter(invitation_code = registration_code).update(invitation_code=None, member=profile)
+            return HttpResponseRedirect("/student_home/")
+        else:
+            sys.stderr.write("Form errors: {}\n".format(form.errors))
+            sys.stderr.flush()
+            return render(request, 'core/student_home.html', context)
+
+    return render(request, 'core/student_home.html', context)
 
 def get_item_details(item, get_activity=False):
     """

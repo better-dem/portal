@@ -27,6 +27,8 @@ class ManageGroupForm(forms.Form):
     new_invitation_name = forms.CharField(required=True)
     new_invitation_email = forms.EmailField(required=False)
     
+class RegisterGroupForm(forms.Form):
+    course_registration_code = forms.CharField(required=True)
 
 # create aac in advance
 # form is imported by urls, 
