@@ -7,15 +7,15 @@
 <h3>Invite a new member</h3>
 <form action="{{ action_path }}" method="post">
     {% csrf_token %}
-    <input name="new_invitation_name" type="text" placeholder="Invitee's name" />
-    <input name="new_invitation_email" type="text" placeholder="Invitee's email" />
-    <input type="submit" value="Submit" />
+    <p><input name="new_invitation_name" type="text" placeholder="Invitee's name" /></p>
+    <p><input name="new_invitation_email" type="text" placeholder="Invitee's email (optional)" /></p>
+    <p><input type="submit" value="Submit" /></p>
 </form>
 
 <table class="table">
   <thead><th>Member Name</th><th>Invitation Accepted?</th><th>Invitation Token</th></thead>
   <tbody>
-    {% for membership in group.groupmembership_set.all %}<tr><td>{{ membership.member_name }}</td><td>{% if membership.member is not None %}True{% else %}False{% endif %}</td><td>{{ membership.invitation_code }}</td></tr>
+    {% for membership in group.groupmembership_set.all %}<tr><td>{{ membership.member_name }}</td>{% if membership.member is not None %}<td>True</td><td></td>{% else %}<td>False</td><td>{{ membership.invitation_code }}</td>{% endif %}</tr>
 {% endfor %}
   </tbody>
 </table>

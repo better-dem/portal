@@ -1,4 +1,4 @@
-<nav class="navbar navbar-inverse navbar-fixed-top">
+<nav class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -7,7 +7,17 @@
 	<span class="icon-bar"></span>
 	<span class="icon-bar"></span>
       </button>
+      {% if user.userprofile.role == "Student" %}
+      <a class="navbar-brand" href="/student_home" data-toggle="tooltip" title="Visit the student portal">Better Democracy Portal</a>
+      {% elif user.userprofile.role == "Teacher" %}
+      <a class="navbar-brand" href="/teacher_home" data-toggle="tooltip" title="Visit the teacher portal">Better Democracy Portal</a>
+      {% elif user.userprofile.role == "Journalist" %}
       <a class="navbar-brand" href="/feed" data-toggle="tooltip" title="Visit your participation feed">Better Democracy Portal</a>
+      {% elif user.userprofile.role == "Ordinary Citizen" %}
+      <a class="navbar-brand" href="/feed" data-toggle="tooltip" title="Visit your participation feed">Better Democracy Portal</a>
+      {% else %}
+      <a class="navbar-brand" href="/feed" data-toggle="tooltip" title="Visit your participation feed">Better Democracy Portal</a>
+      {% endif %}
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
@@ -22,6 +32,16 @@
 	{% endif %}
 	
   	<li class="dropdown">
+	  <a class="dropdown-toggle" data-toggle="dropdown" href="#">More<span class="caret"></span></a>
+	  <ul class="dropdown-menu">
+	    <li><a href="/student_home"><span class="glyphicon glyphicon-education"></span> Student Portal</a></li>
+	    <li><a href="/teacher_home"><span class="glyphicon glyphicon-apple"></span> Teacher Portal</a></li>
+	    <li><a href="/feed"><span class="glyphicon glyphicon-globe"></span> Ordinary Citizens Feed</a></li>
+	    <li><a href="/report_issues" data-toggle="tooltip" title="Report bugs, biased or inaccurate content, and more"><span class="glyphicon glyphicon-ban-circle"></span> Report An Issue</a></li>
+	  </ul>
+	</li>
+
+  	<li class="dropdown">
 	  <a class="dropdown-toggle" data-toggle="dropdown" href="#">About Us<span class="caret"></span></a>
 	  <ul class="dropdown-menu">
 	    <li><a href="http://betterdem.org"><span class="glyphicon glyphicon-info-sign"></span> Better Democracy Network</a></li>
@@ -31,7 +51,6 @@
 	  </ul>
 	</li>
 	
-	<li><a href="/report_issues" data-toggle="tooltip" title="Report bugs, biased or inaccurate content, and more"><span class="glyphicon glyphicon-ban-circle"></span> Report An Issue</a></li>
       </ul>
     </div>
   </div>
