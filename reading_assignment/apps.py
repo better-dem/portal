@@ -6,7 +6,7 @@ from importlib import import_module
 
 class ReadingAssignmentConfig(AppConfig):
     name = 'reading_assignment'
-    are_projects_editable = True
+    are_projects_editable = False
     custom_feed_item_template = None
     external_link=False
     creator_user_roles_allowed = ["Teacher"]

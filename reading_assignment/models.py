@@ -38,7 +38,7 @@ class OrderedAssignmentItem(models.Model):
 
 class Submission(models.Model):
     user_profile = models.ForeignKey(cm.UserProfile, on_delete = models.CASCADE)
-    participation_project = models.ForeignKey(ReadingAssignmentProject, on_delete = models.CASCADE)
+    participation_item = models.ForeignKey(ReadingAssignmentItem, on_delete = models.CASCADE)
     creation_time = models.DateTimeField(auto_now_add=True)
 
 class TextQuestionResponse(models.Model):

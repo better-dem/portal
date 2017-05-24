@@ -10,7 +10,7 @@ import core.models as cm
 import core.tasks as ct
 import json
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -24,6 +24,7 @@ def new_project(request):
             project.set_name()
             project.budget_url = form.cleaned_data["budget_url"]
             project.owner_profile = profile
+            project.group=group
             project.save()
 
             ct.finalize_project(project)

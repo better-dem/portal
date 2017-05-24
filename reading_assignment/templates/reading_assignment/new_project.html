@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+{% load staticfiles %}
+{% block content %}
+<h2>Create a new assignment form</h2>
+
+<form action="" method="post">
+    {% csrf_token %}
+    {% if project_form.non_field_errors %}
+    <div class="alert alert-warning">{{ project_form.non_field_errors }}</div>
+    {% endif %}
+    {% for field in project_form %}
+    <p>
+        {% if field.errors %}
+        <div class="alert alert-warning">{{ field.errors }}</div>
+        {% endif %}
+        <h4>{{ field.label_tag }}</h4>
+        {% if field.help_text %}
+        <h5>{{ field.help_text|safe }}</h5>
+        {% endif %}
+	{{ field }}
+    </p>
+    {% endfor %}
+    {{ items_formset.management_form }}
+    {% for form in items_formset %}
+    <div class="items-formset">
+      <div>
+	<button type="button" class="btn" onclick="flip_to_sibling(this, '.text_question')">New Question</button><br>
+	<button type="button" class="btn" onclick="flip_to_sibling(this, '.participation_item')">New Study Item</button><br>
+	<div class="participation_item" style="display:none;">
+          {% if form.participation_item.errors %}
+          <div class="alert alert-warning">{{ form.participation_item.errors }}</div>
+          {% endif %}
+          <h4>{{ form.participation_item.label_tag }}</h4>
+          {% if form.participation_item.help_text %}
+          <h5>{{ form.participation_item.help_text|safe }}</h5>
+          {% endif %}
+
+	  {{ form.participation_item }}
+	</div>
+	<div class="text_question" style="display:none;">
+          {% if form.text_question.errors %}
+          <div class="alert alert-warning">{{ form.text_question.errors }}</div>
+          {% endif %}
+          <h4>{{ form.text_question.label_tag }}</h4>
+          {% if form.text_question.help_text %}
+          <h5>{{ form.text_question.help_text|safe }}</h5>
+          {% endif %}
+
+	  {{ form.text_question }}
+	</div>
+      </div>
+    </div>
+    {% endfor %}
+    <input type="submit" value="Submit">
+</form>
+
+<script type="text/javascript" src="{{ STATIC_URL }}core/js/jquery.formset.js"></script>
+<script>
+    $('.items-formset').formset({
+        addText: 'add item',
+        deleteText: 'remove'
+    });
+
+var flip_to_sibling = function(elem, selection){
+    $(elem.parentElement).children().hide();
+    $(elem.parentElement).children(selection).show();
+}
+
+</script>
+
+{% endblock %}

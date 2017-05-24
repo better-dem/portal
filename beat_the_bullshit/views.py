@@ -12,13 +12,14 @@ import json
 import numpy as np
 from urlparse import urlsplit
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     if request.method == 'POST':
         form = CreateProjectForm(request.POST)
         if form.is_valid():
             project = BeatTheBullshitProject()
             project.name = form.cleaned_data["name"]
+            project.group = group
             project.owner_profile = profile
             project.topic_overview = form.cleaned_data["topic_overview"]
             for i in range(1,4):

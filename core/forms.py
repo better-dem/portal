@@ -106,8 +106,8 @@ class InlineParticipationItemWidget(forms.Widget):
         participation_item_id = value
         app = cm.get_app_for_model(cm.ParticipationItem.objects.get(id=participation_item_id).get_inherited_instance().__class__)
         app_name = app.name
-        is_custom_template = "true" if getattr(app, "custom_template", False) else "false" # javascript bools
-        div_id = 'poly_map_' + kwargs['attrs']['id']
+        is_custom_template = "true" if getattr(app, "custom_feed_item_template", False) else "false" # javascript bools
+        div_id = 'inline_form_field_item_' + kwargs['attrs']['id']
         input_name = name
         input_id = kwargs['attrs']['id']
 
@@ -128,7 +128,7 @@ class InlineParticipationItemWidget(forms.Widget):
 
 class InlineParticipationItemField(forms.Field):
     def __init__(self,
-        required= True,
+        required= False,
         widget=InlineParticipationItemWidget,          
         label=None,
         initial=None,

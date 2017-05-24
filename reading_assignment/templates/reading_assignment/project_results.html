@@ -8,15 +8,15 @@
 
 {% for submission_detail in item.submission_details %}
 <p>
-    <h3>{{ submission_detail.user_email }}</h3>
-    <table class="table">
-	<thead><th>Question</th><th>Response</th></thead>
-	<tbody>
-	    {% for response in submission_detail.responses %}
-	    <tr><td>{{ response.question }}</td><td>{{ response.response }}</td></tr>	    
-	    {% endfor %}
-	</tbody>
-    </table>
+  <h3>{{ submission_detail.user_id }}</h3>
+  <table class="table">
+    <thead><th>Question</th><th>Response</th></thead>
+    <tbody>
+      {% for response in submission_detail.responses %}
+      <tr><td>{{ response.question }}</td><td>{{ response.response }}</td></tr>	    
+      {% endfor %}
+    </tbody>
+  </table>
 </p>
 {% endfor %}
 

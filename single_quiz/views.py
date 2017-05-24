@@ -10,7 +10,7 @@ import core.forms as cf
 import core.tasks as ct
 import json
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -18,6 +18,7 @@ def new_project(request):
         if form.is_valid():
             project = SingleQuizProject()
             project.name = form.cleaned_data["question_text"]
+            project.group = group
             project.question_text = form.cleaned_data["question_text"]
 
             project.option1=form.cleaned_data["option1"]

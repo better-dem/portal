@@ -428,7 +428,7 @@ def get_item_details(item, get_activity=False):
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
     project = item.participation_project.get_inherited_instance()
-    ans = {"label": item.name, "app": app.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
+    ans = {"label": item.name, "app": app.name, "custom_feed_item_template": app.custom_feed_item_template, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
     if not item.display_image_file == "":
         ans["display_image_file"] = item.display_image_file
     if get_activity:
