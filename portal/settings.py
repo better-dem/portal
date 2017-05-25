@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'interactive_visualization.apps.InteractiveVisualizationConfig',
     'beat_the_bullshit.apps.BeatTheBullshitConfig',
     'legislators.apps.LegislatorsConfig',
+    'reading_assignment.apps.ReadingAssignmentConfig',
     'widgets.apps.WidgetsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # use the storages app
     'storages',
     's3direct',
     'compressor'

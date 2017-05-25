@@ -4,12 +4,12 @@ from django.apps import AppConfig
 from django.utils.module_loading import module_has_submodule
 from importlib import import_module
 
-
 class BeatTheBullshitConfig(AppConfig):
     name = 'beat_the_bullshit'
     are_projects_editable = True
     custom_feed_item_template = None
     external_link=False
+    creator_user_roles_allowed = ["Journalist"]
 
     def ready(self):
         if module_has_submodule(self.module, "views"):

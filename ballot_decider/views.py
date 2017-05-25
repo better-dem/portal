@@ -11,7 +11,7 @@ import core.tasks as ct
 import json
 import numpy as np
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -27,6 +27,7 @@ def new_project(request):
                 project.basics_notes = form.cleaned_data["basics_notes"]
             if "effects_notes" in form.cleaned_data and not form.cleaned_data["effects_notes"] == "":
                 project.effects_notes = form.cleaned_data["effects_notes"]
+            project.group=group
             project.save()
 
             for i in range(1,4):

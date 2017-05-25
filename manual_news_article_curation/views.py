@@ -10,7 +10,7 @@ import sys
 from urlparse import urlsplit
 import os
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -25,6 +25,7 @@ def new_project(request):
             path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
             project.screenshot_filename = path_without_bucket
             project.owner_profile = profile
+            project.group=group
             project.save()
 
             # iterate through form adding tags

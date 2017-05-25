@@ -31,7 +31,11 @@ class Command(BaseCommand):
                         sys.stdout.write("object deleted\n")
 
             elif trouble_type=="abstract_projects":
+                num = 0
                 for o in cm.ParticipationProject.objects.all():
+                    num += 1
+                    if num % 1000 == 0:
+                        sys.stdout.write("{}\n".format(num))
                     try:
                         i = o.get_inherited_instance()
                     except:
@@ -59,7 +63,11 @@ class Command(BaseCommand):
                         sys.stdout.flush()
 
             elif trouble_type=="abstract_projects":
-                for o in cm.ParticipationProject.objects.all():
+                num = 0
+                for o in cm.ParticipationProject.objects.all().iterator():
+                    num += 1
+                    if num % 1000 == 0:
+                        sys.stdout.write("{}\n".format(num))
                     try:
                         i = o.get_inherited_instance()
                     except:

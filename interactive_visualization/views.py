@@ -11,13 +11,14 @@ import core.tasks as ct
 import json
 import os
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     if request.method == 'POST':
         form = CreateProjectForm(request.POST)
         if form.is_valid():
             project = InteractiveVisualizationProject()
             project.owner_profile = profile
+            project.group = group
             # first time through, create the project
             for key, val in form.cleaned_data.items():
                 if key == "visualization_title":

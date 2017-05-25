@@ -42,7 +42,9 @@ output += "</span> ";
 }
 }
 frame = frame.pop();
-output += "\n      <a style=\"float: right; padding-left: 10px;\" href=\"/report_issues";
+output += "\n      <a style=\"float: right; padding-left: 10px;\" data-toggle=\"tooltip\" title=\"Bookmark this item\" onclick=\"submit_ajax_form('/add_bookmark/', JSON.stringify({'item_id':";
+output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
+output += "}));\"><span class=\"glyphicon glyphicon-bookmark\"></span></a>\n      <a style=\"float: right; padding-left: 10px;\" href=\"/report_issues";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"link"), env.opts.autoescape);
 output += "\" data-toggle=\"tooltip\" title=\"Report a problem with this item\"><span class=\"glyphicon glyphicon-ban-circle\"></span></a>\n      <a style=\"float: right; padding-left: 10px;\" data-toggle=\"tooltip\" title=\"Share this item on Facebook\" onclick=\"share_og('";
 output += runtime.suppressValue(env.getFilter("escapejs").call(context, runtime.contextOrFrameLookup(context, frame, "site")), env.opts.autoescape);
@@ -716,6 +718,35 @@ cb(null, output);
 }
 return {
 b_custom_link_content: b_custom_link_content,
+root: root
+};
+
+})();
+})();
+
+(function() {(window.nunjucksPrecompiled = window.nunjucksPrecompiled || {})["core/portal_ux/tag_remove.html"] = (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var parentTemplate = null;
+output += "<span class=\"label label-default\">";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "tag_name"), env.opts.autoescape);
+output += " <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter(";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "tag_id"), env.opts.autoescape);
+output += ")\"></span></span> \n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
 root: root
 };
 

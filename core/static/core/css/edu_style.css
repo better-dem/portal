@@ -1,0 +1,153 @@
+.page-header h1 a {
+    color: black;
+}
+
+.page-header a {
+    padding-right: 10px;
+}
+
+.panel-body img {
+    float: left;
+    margin-right: 15px;
+}
+
+/* to prevent the nav bar from covering the top of the page */
+body {
+  padding-top: 50px;
+}
+
+/* to prevent buttons from getting really long */
+/* if they do, they can drag the nav bar off screen from small devices */
+.btn {
+    white-space: normal;
+}
+
+.flex-container {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.item-mini-container {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+
+.item-mini {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    display: inline-block; 
+    width: 163px; 
+    /* height: 400px;  */
+    vertical-align:top; 
+    margin: 10px;
+}
+
+.item-mini img {
+    height: 150px;
+    width: 150px;
+    display: block;
+    margin: auto;
+}
+
+.item-mini:hover {
+    background-color: #CCCCCC;
+}
+
+/* The following borrowed from https://css-tricks.com/NetMag/FluidWidthVideo/Article-FluidWidthVideo.php */
+.videoWrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    padding-top: 25px;
+    height: 0;
+}
+
+.videoWrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* The following was generated automatically at https://work.smarchal.com/twbscolor/css/e74c3cc0392becf0f1ffbbbc0 */
+
+.navbar-default {
+  background-color: #44302e;
+  border-color: #000000;
+}
+.navbar-default .navbar-brand {
+  color: #959595;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #ffffff;
+}
+.navbar-default .navbar-text {
+  color: #959595;
+}
+.navbar-default .navbar-nav > li > a {
+  color: #959595;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #ffffff;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #ffffff;
+  background-color: #000000;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+  color: #ffffff;
+  background-color: #000000;
+}
+.navbar-default .navbar-toggle {
+  border-color: #000000;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: #000000;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #959595;
+}
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+  border-color: #959595;
+}
+.navbar-default .navbar-link {
+  color: #959595;
+}
+.navbar-default .navbar-link:hover {
+  color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #959595;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #ffffff;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #ffffff;
+    background-color: #000000;
+  }
+}

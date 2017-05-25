@@ -10,7 +10,7 @@ import core.views as cv
 import core.tasks as ct
 from django.contrib.gis.geos import GEOSGeometry, Polygon, LinearRing
 
-def new_project(request):
+def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
     if request.method == 'POST':
@@ -18,6 +18,7 @@ def new_project(request):
         if form.is_valid():
             project = LandUseProject()
             project.name = form.cleaned_data["project_name"]
+            project.group = group
             # !!! Warning, Google lists geo data lat,lon.
             # everyone else, including better dem portal, does lon, lat
             poly_data = [(x[1], x[0]) for x in form.cleaned_data["polygon_field"]]

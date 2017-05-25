@@ -22,7 +22,16 @@ class CreateShortcutForm(forms.Form):
         except:
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
+
+class ManageGroupForm(forms.Form):
+    new_invitation_name = forms.CharField(required=True)
+    new_invitation_email = forms.EmailField(required=False)
     
+class RegisterGroupForm(forms.Form):
+    course_registration_code = forms.CharField(required=True)
+
+class AddBookmarkForm(forms.Form):
+    item_id = forms.IntegerField(required=True)
 
 # create aac in advance
 # form is imported by urls, 
@@ -87,3 +96,65 @@ class StripePaymentForm(forms.Form):
     donation_amount=forms.CharField(max_length=10)
     recurring=forms.CharField(max_length=10)
     email=forms.EmailField(max_length=500)
+
+
+class InlineParticipationItemWidget(forms.Widget):
+    """
+    Widget to display a participation item inline inside a form
+    """
+    def render(self, name, value, *args, **kwargs):
+        """
+        value is participation_item_id
+        """
+        participation_item_id = value
+        app = cm.get_app_for_model(cm.ParticipationItem.objects.get(id=participation_item_id).get_inherited_instance().__class__)
+        app_name = app.name
+        is_custom_template = "true" if getattr(app, "custom_feed_item_template", False) else "false" # javascript bools
+        div_id = 'inline_form_field_item_' + kwargs['attrs']['id']
+        input_name = name
+        input_id = kwargs['attrs']['id']
+
+        render_html = """
+        <div id="{}"></div>
+        <input type='hidden' name='{}' id='{}' value='' />
+
+        <script type="text/javascript">
+        display_feed_item({},"{}","{}",{})
+        </script>
+        """
+        render_html_with_id = render_html.format(div_id, input_name, input_id,
+                                                 participation_item_id, div_id, app_name, is_custom_template)
+        return render_html_with_id
+
+    def __init__(self, *args, **kwargs):
+        super(InlineParticipationItemWidget, self).__init__(*args, **kwargs)
+
+class InlineParticipationItemField(forms.Field):
+    def __init__(self,
+        required= False,
+        widget=InlineParticipationItemWidget,          
+        label=None,
+        initial=None,
+        help_text="",
+        validators=[],
+        *args,
+        **kwargs):
+        super(InlineParticipationItemField, self).__init__(required=required,
+            widget=widget,
+            label=label,
+            initial=initial,
+            help_text=help_text,
+            validators=validators,
+            *args,
+            **kwargs)
+        self.disabled = True
+
+    def to_python(self, value):
+        return None
+
+    def validate(self, value):
+        super(InlineParticipationItemField, self).validate(value)
+
+    def widget_attrs(self, widget):
+        attrs = super(InlineParticipationItemField, self).widget_attrs(widget)
+        return attrs

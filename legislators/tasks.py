@@ -63,10 +63,15 @@ def update_state_recent(state_name, openstates_state_abbrev):
         try:
             recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=one_year_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
         except pyopenstates.APIError as e:
-            sys.stderr.write("Handling openstates APIError: {}\n trying a more recent update period\n".format(unicode(e)))
-            recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=six_months_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
-        except pyopenstates.APIError as e:
-            sys.stderr.write("Handling openstates APIError: {}\n trying a more recent update period\n".format(unicode(e)))
+            sys.stderr.write("Surviving openstates APIError: {}\n trying a more recent update period\n".format(unicode(e)))
+ 
+        if recently_updated_bills is None:
+            try:
+                recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=six_months_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
+            except pyopenstates.APIError as e:
+                sys.stderr.write("Surviving openstates APIError: {}\n trying a more recent update period\n".format(unicode(e)))
+
+        if recently_updated_bills is None:
             recently_updated_bills = pyopenstates.search_bills(state=openstates_state_abbrev, updated_since=one_month_ago, fields=["title", "id", "bill_id", "subjects", "versions", "action_dates"])
 
         sys.stderr.write("Number of recently-updated bills: {}\n".format(len(recently_updated_bills)))

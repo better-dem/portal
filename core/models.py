@@ -115,6 +115,7 @@ class ParticipationProject(models.Model):
     name = models.CharField(max_length = 500)
     owner_profile = models.ForeignKey('UserProfile', on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
+    group = models.ForeignKey('UserGroup', blank=True, null=True)
 
     def update_items(self):
         raise Exception("Please overwrite the update_items() method for your participation app")
@@ -180,6 +181,39 @@ class ParticipationItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tags = models.ManyToManyField('Tag')
+    TEACHER = "Teacher"
+    STUDENT = "Student"
+    JOURNALIST = "Journalist"
+    OC = "Ordinary Citizen"
+    role = models.CharField(max_length=50, choices= ((i,i) for i in [TEACHER, STUDENT, JOURNALIST, OC]), default=OC) 
+    bookmarks = models.ManyToManyField(ParticipationItem)
+
+class UserGroup(models.Model):
+    name = models.CharField(max_length=200)
+    owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    COURSE = "Course"
+    group_type = models.CharField(max_length=50, choices= ((i,i) for i in [COURSE]), default=COURSE) 
+    max_invitations = models.PositiveIntegerField(default=25)
+
+class GroupMembership(models.Model):
+    """
+    This class is to support group membership and related flows
+    some examples:
+     - a group moderator should be able to invite people by entering a list of emails
+     - a member should be able to claim an invitation by using a code even if they aren't registered with the invitation email
+     - a registered user should be able to claim an invitation without the code if their email matches
+    """
+    group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
+    member = models.ForeignKey(UserProfile, on_delete=models.CASCADE, blank=True, null=True)
+    member_name = models.CharField(max_length=100) # the name used by the group admin to identify this member
+    invitation_code = models.CharField(max_length=100, blank=True, null=True)
+    invitation_email = models.EmailField(blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if bool(self.invitation_code) == bool(self.member):
+            raise ValidationError('Exactly one of (member, invitation_code) is required.')
+        return super(GroupMembership, self).save(*args, **kwargs)
+
 
 class LongJobState(models.Model):
     """

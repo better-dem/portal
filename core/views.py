@@ -8,15 +8,17 @@ from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseFo
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.conf import settings
+from django.utils import timezone
 
 import core.models as cm
 import core.tasks as tasks
-from core.forms import CreateShortcutForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+from core.forms import RegisterGroupForm, CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm, AddBookmarkForm
 
 import sys
 import os
 import random
 import json
+import uuid
 
 import stripe
 
@@ -194,7 +196,10 @@ def app_view_relay(request, app_name, action_name, object_id):
         
         if action_name == "new_project":
             if has_app_perm:
-                return app.views_module.new_project(request) 
+                group=None
+                if object_id != -1:
+                    group = get_object_or_404(cm.UserGroup, pk=object_id, owner=profile)
+                return app.views_module.new_project(request, group)
             else:
                 return render(request, 'core/no_permissions.html', {"title": "No Permission", "app_name": app_name, "action_description": "create a new project"})
 
@@ -265,6 +270,9 @@ def home(request):
 @ensure_csrf_cookie
 def feed(request):
     (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not is_default_user:
+        profile.role = cm.UserProfile.OC
+        profile.save()
     context = {'site': os.environ["SITE"]}
     context.update(get_default_og_metadata(request))
     subjects_of_interest = set()
@@ -281,6 +289,137 @@ def feed(request):
     context["overviews"] = cm.get_overviews()
     return render(request, 'core/feed.html', context)
 
+@ensure_csrf_cookie
+@transaction.atomic
+def teacher_home(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not is_default_user:
+        profile.role = cm.UserProfile.TEACHER
+        profile.save()
+    else:
+        return render(request, "core/please_login.html")
+
+    courses = cm.UserGroup.objects.filter(owner=profile, group_type=cm.UserGroup.COURSE)
+
+    context = get_default_og_metadata(request)
+    context['site'] = os.environ["SITE"]
+    context["overviews"] = cm.get_overviews()
+    context['courses'] = courses
+    return render(request, 'core/teacher_home.html', context)
+
+def group_member_home(request, group_id):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    group = get_object_or_404(cm.UserGroup, id=group_id)
+    membership = get_object_or_404(cm.GroupMembership, group=group, member=profile)
+    assignments = cm.ParticipationItem.objects.filter(participation_project__group=group, is_active=True)
+    assignment_contexts = []
+    for assignment in assignments:
+        ctx = dict()
+        ctx["name"] = assignment.name
+        ctx["participate_link"] = assignment.participate_link()
+        # TODO: determine whether the student has already submitted the assignment
+        # ctx["submitted"] = ....exists()?
+        assignment_contexts.append(ctx)
+
+    context = dict()
+    context["group"]=group
+    context["assignments"]=assignment_contexts
+    return render(request, 'core/group_member_home.html', context)
+
+
+@ensure_csrf_cookie
+@transaction.atomic
+def manage_group(request, group_id):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    group = get_object_or_404(cm.UserGroup, id=group_id, owner=profile)
+
+    edu_apps = []
+    for app in cm.get_registered_participation_apps():
+        if not profile.role in app.creator_user_roles_allowed:
+            continue
+        perm = cm.get_provider_permission(app)
+        if app.label+"."+perm.codename in permissions:
+            edu_app = dict()
+            edu_app["label"] = app.label.replace("_", " ").title()
+            edu_app["existing_projects"] = []
+            edu_app["label"] = edu_app["label"]
+            edu_app["new_project_link"] = "/apps/{}/new_project/{}".format(app.label, group_id)
+            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, group=group, is_active=True)
+            for ep in existing_projects:
+                proj = dict()
+                proj["name"] = ep.name
+                proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)
+                edu_app["existing_projects"].append(proj)
+                
+            edu_apps.append(edu_app)
+
+    context = dict()
+    context["group"] = group
+    context["action_path"] = request.path
+    context['edu_apps'] = edu_apps
+    context["content_class_word"] = "content" if not group.group_type == cm.UserGroup.COURSE else "assignments"
+    context["member_word"] = "member" if not group.group_type == cm.UserGroup.COURSE else "student"
+
+    if request.method == 'POST':
+        form = ManageGroupForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data["new_invitation_name"]
+            email = form.cleaned_data["new_invitation_email"]
+            num_invitations = cm.GroupMembership.objects.filter(group=group).count()
+            if num_invitations >= group.max_invitations:
+                return HttpResponse("You have reached the maximum number of invitations for this {}. Contact admin to increase this".format(group.group_type))
+            try:
+                existing_invitation = cm.GroupMembership.objects.get(member_name=name, group = group)
+                return HttpResponse("You already have an invitation for {} in the {}: {}.".format(name, group.group_type, group.name))
+            except cm.GroupMembership.DoesNotExist:
+                inv = cm.GroupMembership()
+                inv.member_name = name
+                inv.group = group
+                inv.invitation_email = email
+                inv.invitation_code = uuid.uuid1()
+                inv.save()
+                return HttpResponseRedirect("/manage_group/{}".format(group_id))
+        else:
+            sys.stderr.write("Form errors: {}\n".format(form.errors))
+            sys.stderr.flush()
+            return render(request, 'core/manage_group.html', context)
+
+    return render(request, 'core/manage_group.html', context)
+
+
+@ensure_csrf_cookie
+@transaction.atomic
+def student_home(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if not is_default_user:
+        profile.role = cm.UserProfile.STUDENT
+        profile.save()
+    else:
+        return render(request, "core/please_login.html")
+
+    context = get_default_og_metadata(request)
+    context['site'] = os.environ["SITE"]
+    context["overviews"] = cm.get_overviews()
+    memberships = cm.GroupMembership.objects.filter(member=profile)
+    context["courses"] = set([m.group for m in memberships if m.group.group_type==cm.UserGroup.COURSE])    
+
+    if request.method == 'POST':
+        form = RegisterGroupForm(request.POST)
+        if form.is_valid():
+            registration_code = form.cleaned_data["course_registration_code"]
+            corresponding_membership = cm.GroupMembership.objects.filter(invitation_code = registration_code).update(invitation_code=None, member=profile)
+            return HttpResponseRedirect("/student_home/")
+        else:
+            sys.stderr.write("Form errors: {}\n".format(form.errors))
+            sys.stderr.flush()
+            return render(request, 'core/student_home.html', context)
+
+    return render(request, 'core/student_home.html', context)
+
 def get_item_details(item, get_activity=False):
     """
     Return a dict describing the properties of some ParticipationItem,
@@ -289,7 +428,7 @@ def get_item_details(item, get_activity=False):
     app = cm.get_app_for_model(item.get_inherited_instance().__class__)
     project_id = item.participation_project.pk
     project = item.participation_project.get_inherited_instance()
-    ans = {"label": item.name, "app": app.name, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
+    ans = {"label": item.name, "app": app.name, "custom_feed_item_template": app.custom_feed_item_template, "display": item.get_inherited_instance().get_inline_display(), "link": "/apps/"+app.label+"/participate/"+str(item.pk), "tags": [t.name for t in item.tags.all()[:5]], "id":item.pk, "itemobj":item.get_inherited_instance(), "projectobj":project}
     if not item.display_image_file == "":
         ans["display_image_file"] = item.display_image_file
     if get_activity:
@@ -476,9 +615,9 @@ def feed_recommendations(request):
                 if order_field is None:
                     order_field = "creation_time"
                 if len(subjects_of_interest) == 0:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(tags__in=[t], is_active=True, participation_project__group__isnull=True).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
                 else:
-                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
+                    recommendations.update([(x.participationitem_ptr.pk, app.name, app.custom_feed_item_template) for x in item_model.objects.filter(tags__in=[t], is_active=True, participation_project__group__isnull=True).filter(**{"{}__isnull".format(order_field): False}).filter(tags__in=subjects_of_interest).order_by('-{}'.format(order_field))[:3*len(subjects_of_interest)]])
 
     # TODO: make use of subjects of interest
     recommendations = [r for r in recommendations if not r[0] in current_feed_contents]
@@ -502,35 +641,26 @@ def recommend_related(request, item_id):
                 order_field = getattr(item_model._meta, 'get_latest_by')
                 if order_field is None:
                     order_field = "creation_time"
-                candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(is_active=True, tags__in=[t]).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
+                candidates.update([x.participationitem_ptr.pk for x in item_model.objects.filter(tags__in=[t], is_active=True, participation_project__group__isnull=True).filter(**{"{}__isnull".format(order_field): False}).order_by('-{}'.format(order_field))[:3]])
 
     if len(candidates) < 3:
         t = cm.get_usa()
-        recent_items = t.participationitem_set.filter(is_active=True).order_by('-creation_time')[:100]
+        recent_items = t.participationitem_set.filter(is_active=True, participation_project__group__isnull=True).order_by('-creation_time')[:100]
         candidates.update([i.id for i in recent_items if not i.id == item.id])
 
     recommendations = random.sample(candidates, min(10, len(candidates)))
     content = {"recommendations": recommendations}
     return JsonResponse(content)
 
-def js_templates(request, app_name, template_name):
-    assert not "/" in template_name
-    if not app_name in ([app.label for app in cm.get_registered_participation_apps()] + ["core"]):
-        raise Exception("no such app")
-    else:
-        app = cm.get_core_app()
-        try:
-            app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
-        except IndexError:
-            pass
+def add_bookmark(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return JsonResponse({"error":"you need to sign in before you can add bookmarks"})
+    if request.method == "POST" and request.is_ajax():
+        content = request.body.strip()
+        content = json.loads(content)
+        item = cm.ParticipationItem.objects.get(id=content["item_id"])
+        profile.bookmarks.add(item)
+        return JsonResponse({"success":"bookmark added"})
+    return JsonResponse({"error":"only accept ajax posts"})
 
-        if app == cm.get_core_app() or app.custom_feed_item_template is None:
-            if template_name == "feed_item.html":
-                return FileResponse(open("core/templates/core/feed_item.html"))
-            else:
-                sys.stderr.write("Unknown template requested: {}\n".format(template_name))
-                sys.stderr.flush()
-                return HttpResponse("")
-        else:
-            return FileResponse(open(app_name+"/templates/"+app.custom_feed_item_template))
-        

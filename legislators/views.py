@@ -11,7 +11,7 @@ import core.forms as cf
 import core.tasks as ct
 import json
 
-def new_project(request):
+def new_project(request, group=None):
     raise Exception("Legislator projects are created automatically, not through the web interface")
 
 def administer_project(request, project_id):

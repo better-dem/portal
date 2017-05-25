@@ -11,6 +11,7 @@ class LegislatorsConfig(AppConfig):
     custom_feed_item_template = None
     external_link=False
     overviews = [[-1, "State Legislators Database"],[-2, "State Bills Database"]]
+    creator_user_roles_allowed = ["Journalist"]
 
     def ready(self):
         if module_has_submodule(self.module, "views"):
