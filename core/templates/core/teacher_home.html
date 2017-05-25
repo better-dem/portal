@@ -4,16 +4,28 @@
 
 <h2>Teacher Portal</h2>
 
-<h3>Manage Your Courses</h3>
-{% for course in courses %}
-<p><a href="/manage_group/{{ course.id }}" class="btn btn-primary">Manage {{ course.name }}</a></p>{% endfor %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="panel-title">Manage Your Courses</h4>
+  </div>
+  <div class="panel-body">
 
+    {% for course in courses %}
+    <p><a href="/manage_group/{{ course.id }}" class="btn btn-primary">Manage {{ course.name }}</a></p>{% endfor %}
 
-<h3>Browse Our Data</h3>
-<div>
-    {% for o in overviews %}<a href="{{ o.0 }}">{{ o.1 }}</a><br>
-{% endfor %}
+  </div>
+  <div class="panel-footer"></div>
 </div>
 
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="panel-title">Browse Our Data</h4>
+  </div>
+  <div class="panel-body">
+    {% for o in overviews %}<a href="{{ o.0 }}">{{ o.1 }}</a><br>
+    {% endfor %}
+  </div>
+  <div class="panel-footer"></div>
+</div>
 
 {% endblock %}

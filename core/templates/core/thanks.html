@@ -19,8 +19,17 @@ You can administer this project <a href={{ item_link }}>here</a>.
 </p>
 {% endif %}
 
-<p>
-<a href="/feed">Go back to the feed</a>.
-</p>
+
+<p>{% if user.userprofile.role == "Student" %}
+<a href="/student_home" data-toggle="tooltip" title="Visit the student portal">Return to home</a>
+{% elif user.userprofile.role == "Teacher" %}
+<a href="/teacher_home" data-toggle="tooltip" title="Visit the teacher portal">Return to home</a>
+{% elif user.userprofile.role == "Journalist" %}
+<a href="/feed" data-toggle="tooltip" title="Visit your participation feed">Return to home</a>
+{% elif user.userprofile.role == "Ordinary Citizen" %}
+<a href="/feed" data-toggle="tooltip" title="Visit your participation feed">Return to home</a>
+{% else %}
+<a href="/feed" data-toggle="tooltip" title="Visit your participation feed">Return to home</a>
+{% endif %}</p>
 
 {% endblock %}

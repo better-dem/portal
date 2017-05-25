@@ -11,7 +11,7 @@
 {% if assignment.submitted %}
 Completed assignment: {{ assignment.name }}
 {% else %}
-<a href="{{ assignment.participate_link }}" class="btn btn-default" role="button">Do assignment: {{ assignment.name }}</a>
+<p><a href="{{ assignment.participate_link }}" class="btn btn-default" role="button">Do assignment: {{ assignment.name }}</a></p>
 {% endif %}
 
 {% endfor %}
