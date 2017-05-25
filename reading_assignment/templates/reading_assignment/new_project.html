@@ -24,8 +24,8 @@
     {% for form in items_formset %}
     <div class="items-formset">
       <div>
-	<button type="button" class="btn" onclick="flip_to_sibling(this, '.text_question')">New Question</button><br>
-	<button type="button" class="btn" onclick="flip_to_sibling(this, '.participation_item')">New Study Item</button><br>
+	<button type="button" class="btn btn-default" onclick="flip_to_sibling(this, '.text_question')">New Question</button><br>
+	<button type="button" class="btn btn-default" onclick="flip_to_sibling(this, '.participation_item')">New Study Item</button><br>
 	<div class="participation_item" style="display:none;">
           {% if form.participation_item.errors %}
           <div class="alert alert-warning">{{ form.participation_item.errors }}</div>

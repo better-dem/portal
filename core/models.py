@@ -186,6 +186,7 @@ class UserProfile(models.Model):
     JOURNALIST = "Journalist"
     OC = "Ordinary Citizen"
     role = models.CharField(max_length=50, choices= ((i,i) for i in [TEACHER, STUDENT, JOURNALIST, OC]), default=OC) 
+    bookmarks = models.ManyToManyField(ParticipationItem)
 
 class UserGroup(models.Model):
     name = models.CharField(max_length=200)

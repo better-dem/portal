@@ -30,6 +30,9 @@ class ManageGroupForm(forms.Form):
 class RegisterGroupForm(forms.Form):
     course_registration_code = forms.CharField(required=True)
 
+class AddBookmarkForm(forms.Form):
+    item_id = forms.IntegerField(required=True)
+
 # create aac in advance
 # form is imported by urls, 
 def pre_process_query(q):

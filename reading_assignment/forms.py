@@ -7,15 +7,15 @@ class CreateProjectForm(forms.Form):
     assignment_name = forms.CharField()
 
 class AssignmentItemForm(forms.Form):
-    participation_item = forms.IntegerField(min_value = 0, required=False)
-    text_question = forms.CharField(widget=Textarea, required=False)
+    def __init__(self, *args, **kwargs):
+        profile = kwargs.pop('userprofile')
+        super(AssignmentItemForm, self).__init__(*args, **kwargs)
+        self.fields["participation_item"] = forms.ChoiceField(choices=((i.id, i.name[:30] + "..." if len(i.name) > 30 else i.name) for i in profile.bookmarks.all()), required=False)
+        self.fields["text_question"] = forms.CharField(widget=Textarea, required=False)
 
-AssignmentItemsFormset = forms.formset_factory(AssignmentItemForm, can_delete=True)
-    
 class SubmitAssignmentForm(forms.Form):
     def __init__(self, project, *args, **kwargs):
         super(SubmitAssignmentForm, self).__init__(*args, **kwargs)
-
         assignment_items = project.orderedassignmentitem_set.all()
         sorted_assignment_items = sorted(assignment_items, key=lambda x: x.number)
         for assignment_item in sorted_assignment_items:

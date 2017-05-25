@@ -12,7 +12,7 @@ from django.utils import timezone
 
 import core.models as cm
 import core.tasks as tasks
-from core.forms import RegisterGroupForm, CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm
+from core.forms import RegisterGroupForm, CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm, AddBookmarkForm
 
 import sys
 import os
@@ -652,24 +652,15 @@ def recommend_related(request, item_id):
     content = {"recommendations": recommendations}
     return JsonResponse(content)
 
-def js_templates(request, app_name, template_name):
-    assert not "/" in template_name
-    if not app_name in ([app.label for app in cm.get_registered_participation_apps()] + ["core"]):
-        raise Exception("no such app")
-    else:
-        app = cm.get_core_app()
-        try:
-            app = [a for a in cm.get_registered_participation_apps() if a.name == app_name][0]
-        except IndexError:
-            pass
+def add_bookmark(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return JsonResponse({"error":"you need to sign in before you can add bookmarks"})
+    if request.method == "POST" and request.is_ajax():
+        content = request.body.strip()
+        content = json.loads(content)
+        item = cm.ParticipationItem.objects.get(id=content["item_id"])
+        profile.bookmarks.add(item)
+        return JsonResponse({"success":"bookmark added"})
+    return JsonResponse({"error":"only accept ajax posts"})
 
-        if app == cm.get_core_app() or app.custom_feed_item_template is None:
-            if template_name == "feed_item.html":
-                return FileResponse(open("core/templates/core/feed_item.html"))
-            else:
-                sys.stderr.write("Unknown template requested: {}\n".format(template_name))
-                sys.stderr.flush()
-                return HttpResponse("")
-        else:
-            return FileResponse(open(app_name+"/templates/"+app.custom_feed_item_template))
-        

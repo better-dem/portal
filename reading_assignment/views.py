@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from reading_assignment.models import ReadingAssignmentProject, OrderedAssignmentItem, ReadingAssignmentItem, TextQuestion, TextQuestionResponse, Submission
-from .forms import AssignmentItemsFormset, SubmitAssignmentForm, CreateProjectForm
+from .forms import SubmitAssignmentForm, CreateProjectForm, AssignmentItemForm
+from django import forms
 from django.db.models import Count
 import os
 import sys
@@ -14,8 +15,9 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
+    AssignmentItemsFormset = forms.formset_factory(AssignmentItemForm, can_delete=True)
     if request.method == 'POST':
-        formset = AssignmentItemsFormset(request.POST)
+        formset = AssignmentItemsFormset(request.POST, form_kwargs={'userprofile':profile})
         project_form = CreateProjectForm(request.POST)
         if formset.is_valid() and project_form.is_valid():
             sys.stderr.write("formset data:\n{}\n".format(formset.cleaned_data))
@@ -58,7 +60,7 @@ def new_project(request, group=None):
             raise Exception()
     else:
         project_form = CreateProjectForm()
-        formset = AssignmentItemsFormset()
+        formset = AssignmentItemsFormset(form_kwargs={'userprofile':profile})
         return render(request, 'reading_assignment/new_project.html', {'project_form': project_form, 'items_formset': formset})
 
 def administer_project(request, project_id):

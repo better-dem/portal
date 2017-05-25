@@ -38,6 +38,8 @@
 	    <li><a href="/teacher_home"><span class="glyphicon glyphicon-apple"></span> Teacher Portal</a></li>
 	    <li><a href="/feed"><span class="glyphicon glyphicon-globe"></span> Ordinary Citizens Feed</a></li>
 	    <li><a href="/report_issues" data-toggle="tooltip" title="Report bugs, biased or inaccurate content, and more"><span class="glyphicon glyphicon-ban-circle"></span> Report An Issue</a></li>
+	    {% if item %}
+	    <li><a onclick="submit_ajax_form('/add_bookmark/', JSON.stringify({'item_id':{{ item.id }}}));"><span class="glyphicon glyphicon-bookmark"></span> Bookmark This Item</a></li>{% endif %}
 	  </ul>
 	</li>
 
