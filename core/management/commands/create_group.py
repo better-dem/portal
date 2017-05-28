@@ -19,7 +19,7 @@ class Command(BaseCommand):
 
         owner_username = options["owner"]
         groupname = options["groupname"]
-        size = options["size"]
+        size = options["max_group_size"]
         typ = options["type"]
 
         group = cm.UserGroup(name=groupname, owner=User.objects.get(username=owner_username).userprofile, group_type=typ, max_invitations=size)
@@ -28,5 +28,5 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-o', '--owner', required=True, type=str, help="group owner username", action='store')
         parser.add_argument('-n', '--groupname', required=True, type=str, help="group name", action='store')
-        parser.add_argument('-s', '--size', required=True, type=int, help="max group size", action='store')
+        parser.add_argument('-s', '--max_group_size', required=True, type=int, help="max group size", action='store')
         parser.add_argument('-t', '--type', required=True, type=str, help="group type", action='store')
