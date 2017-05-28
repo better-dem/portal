@@ -1,0 +1,29 @@
+{% extends "core/base.html" %}
+{% block content %}
+{% load staticfiles %}
+
+<h2>Journalist Portal</h2>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="panel-title">Manage Your Content</h4>
+  </div>
+  <div class="panel-body">
+
+    {% for app in journalist_apps %}
+    <p>
+      <a href="{{ app.new_project_link }}" class="btn btn-primary" role="button">New {{ app.label|capfirst }}</a>
+    </p>
+    {% for project in app.existing_projects %}
+    <p>
+      <a href="{{ project.administer_project_link }}" class="btn btn-default" role="button">Administer: {{ project.name }}</a>
+    </p>
+    {% endfor %}
+    {% endfor %}
+
+  </div>
+  <div class="panel-footer"></div>
+</div>
+
+
+{% endblock %}

@@ -139,7 +139,6 @@ def show_profile(request):
             profile_app = dict()
             profile_app["label"] = app.label.replace("_", " ").title()
             profile_app["existing_projects"] = []
-            profile_app["label"] = profile_app["label"]
             profile_app["new_project_link"] = "/apps/"+app.label+"/new_project/-1"
             existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
             for ep in existing_projects:
@@ -346,7 +345,6 @@ def manage_group(request, group_id):
             edu_app = dict()
             edu_app["label"] = app.label.replace("_", " ").title()
             edu_app["existing_projects"] = []
-            edu_app["label"] = edu_app["label"]
             edu_app["new_project_link"] = "/apps/{}/new_project/{}".format(app.label, group_id)
             existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, group=group, is_active=True)
             for ep in existing_projects:
@@ -389,6 +387,39 @@ def manage_group(request, group_id):
             return render(request, 'core/manage_group.html', context)
 
     return render(request, 'core/manage_group.html', context)
+
+
+@ensure_csrf_cookie
+@transaction.atomic
+def journalist_home(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    profile.role = cm.UserProfile.JOURNALIST
+    profile.save()
+
+    journalist_apps = []
+    for app in cm.get_registered_participation_apps():
+        if not profile.role in app.creator_user_roles_allowed:
+            continue
+        perm = cm.get_provider_permission(app)
+        if app.label+"."+perm.codename in permissions:
+            journalist_app = dict()
+            journalist_app["label"] = app.label.replace("_", " ").title()
+            journalist_app["existing_projects"] = []
+            journalist_app["new_project_link"] = "/apps/{}/new_project/-1".format(app.label)
+            existing_projects = cm.get_app_project_models(app)[0].objects.filter(owner_profile=profile, is_active=True)
+            for ep in existing_projects:
+                proj = dict()
+                proj["name"] = ep.name
+                proj["administer_project_link"] = "/apps/"+app.label+"/administer_project/"+str(ep.id)
+                journalist_app["existing_projects"].append(proj)
+                
+            journalist_apps.append(journalist_app)
+
+    context = dict()
+    context['journalist_apps'] = journalist_apps
+    return render(request, 'core/journalist_home.html', context)
 
 
 @ensure_csrf_cookie

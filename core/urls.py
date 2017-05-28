@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^nonpartisanship/$', views.nonpartisanship, name="nonpartisanship"),
     url(r'^teacher_home/$', views.teacher_home, name="teacher_home"),
     url(r'^student_home/$', views.student_home, name="student_home"),
+    url(r'^journalist_home/$', views.journalist_home, name="journalist_home"),
     url(r'^manage_group/(?P<group_id>.+)$', views.manage_group, name="manage_group"),
     url(r'^group_member_home/(?P<group_id>.+)$', views.group_member_home, name="group_member_home"),
     url(r'^add_bookmark/$', views.add_bookmark, name="add_bookmark"),

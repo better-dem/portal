@@ -16,9 +16,9 @@
     </div>
     <div class="panel-footer">
       {% for tag in item.tags %}<span class="label label-default">{{ tag }}</span> {% endfor %}
-      <a style="float: right; padding-left: 10px;" data-toggle="tooltip" title="Bookmark this item" onclick="submit_ajax_form('/add_bookmark/', JSON.stringify({'item_id':{{ item.id }}}));"><span class="glyphicon glyphicon-bookmark"></span></a>
+      <a style="float: right; padding-left: 10px; cursor:pointer;" data-toggle="tooltip" title="Bookmark this item" onclick="submit_ajax_form('/add_bookmark/', JSON.stringify({'item_id':{{ item.id }}}));"><span class="glyphicon glyphicon-bookmark"></span></a>
       <a style="float: right; padding-left: 10px;" href="/report_issues{{ item.link }}" data-toggle="tooltip" title="Report a problem with this item"><span class="glyphicon glyphicon-ban-circle"></span></a>
-      <a style="float: right; padding-left: 10px;" data-toggle="tooltip" title="Share this item on Facebook" onclick="share_og('{{ site|escapejs }}{{ item.link|escapejs }}', '{{ item.label|escapejs }}');"> <span class="glyphicon glyphicon-share" ></span>
+      <a style="float: right; padding-left: 10px; cursor:pointer;" data-toggle="tooltip" title="Share this item on Facebook" onclick="share_og('{{ site|escapejs }}{{ item.link|escapejs }}', '{{ item.label|escapejs }}');"> <span class="glyphicon glyphicon-share" ></span>
       </a>
       <div class="clearfix"></div>
     </div>
