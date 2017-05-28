@@ -197,7 +197,7 @@ def app_view_relay(request, app_name, action_name, object_id):
         if action_name == "new_project":
             if has_app_perm:
                 group=None
-                if object_id != -1:
+                if object_id != "-1":
                     group = get_object_or_404(cm.UserGroup, pk=object_id, owner=profile)
                 return app.views_module.new_project(request, group)
             else:
