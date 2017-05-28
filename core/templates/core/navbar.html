@@ -12,7 +12,7 @@
       {% elif user.userprofile.role == "Teacher" %}
       <a class="navbar-brand" href="/teacher_home" data-toggle="tooltip" title="Visit the teacher portal">Better Democracy Portal</a>
       {% elif user.userprofile.role == "Journalist" %}
-      <a class="navbar-brand" href="/feed" data-toggle="tooltip" title="Visit your participation feed">Better Democracy Portal</a>
+      <a class="navbar-brand" href="/journalist_home" data-toggle="tooltip" title="Visit the journalist portal">Better Democracy Portal</a>
       {% elif user.userprofile.role == "Ordinary Citizen" %}
       <a class="navbar-brand" href="/feed" data-toggle="tooltip" title="Visit your participation feed">Better Democracy Portal</a>
       {% else %}
@@ -34,12 +34,13 @@
   	<li class="dropdown">
 	  <a class="dropdown-toggle" data-toggle="dropdown" href="#">More<span class="caret"></span></a>
 	  <ul class="dropdown-menu">
+	    {% if item %}
+	    <li><a style="cursor:pointer;" onclick="submit_ajax_form('/add_bookmark/', JSON.stringify({'item_id':{{ item.id }}}));"><span class="glyphicon glyphicon-bookmark"></span> Bookmark This Item</a></li>{% endif %}
+	    <li><a href="/feed"><span class="glyphicon glyphicon-globe"></span> Ordinary Citizens Feed</a></li>
 	    <li><a href="/student_home"><span class="glyphicon glyphicon-education"></span> Student Portal</a></li>
 	    <li><a href="/teacher_home"><span class="glyphicon glyphicon-apple"></span> Teacher Portal</a></li>
-	    <li><a href="/feed"><span class="glyphicon glyphicon-globe"></span> Ordinary Citizens Feed</a></li>
+	    <li><a href="/journalist_home"><span class="glyphicon glyphicon-pencil"></span> Journalist Portal</a></li>
 	    <li><a href="/report_issues" data-toggle="tooltip" title="Report bugs, biased or inaccurate content, and more"><span class="glyphicon glyphicon-ban-circle"></span> Report An Issue</a></li>
-	    {% if item %}
-	    <li><a onclick="submit_ajax_form('/add_bookmark/', JSON.stringify({'item_id':{{ item.id }}}));"><span class="glyphicon glyphicon-bookmark"></span> Bookmark This Item</a></li>{% endif %}
 	  </ul>
 	</li>
 
