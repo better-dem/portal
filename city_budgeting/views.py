@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
+from django.templatetags.static import static
+from django.core.files.storage import default_storage
 from city_budgeting.models import CityBudgetingProject, CityBudgetingItem
-from city_budgeting.forms import CreateProjectForm
+from city_budgeting.forms import CreateProjectForm, EditProjectForm
 import os
 import sys
 import core.views as cv
@@ -39,15 +41,16 @@ def new_project(request, group=None):
         else:
             return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
     else:
-        form = CreateProjectForm()
+        initial = {"download_link_1": default_storage.url("city_budgeting/misc/example.xlsx")}
+        form = CreateProjectForm(initial=initial)
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
 
 def edit_project(request, project_id):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
     project = get_object_or_404(CityBudgetingProject, pk=project_id) 
-    simple_fields = ["fiscal_period_start", "fiscal_period_end", "budget_url", "name"]
+    simple_fields = ["fiscal_period_start", "fiscal_period_end", "budget_url", "name", "budget_description", "revenues_description", "funds_description", "expenses_description"]
     if request.method == 'POST':
-        form = CreateProjectForm(request.POST)
+        form = EditProjectForm(request.POST)
         changes = set()
         if form.is_valid():
             for k in simple_fields:
@@ -59,9 +62,18 @@ def edit_project(request, project_id):
             if not project.city == form_city:
                 project.city = form_city
                 changes.add("city")
+
+
+            if "budget_excel_file" in form.cleaned_data and not form.cleaned_data["budget_excel_file"] is None and not form.cleaned_data["budget_excel_file"] == "":
+                changes.add("data")
+                excel_file_url = form.cleaned_data["budget_excel_file"]
+                path_with_bucket_and_leading_slash = urlsplit(excel_file_url)[2]
+                path_without_bucket = "/".join(path_with_bucket_and_leading_slash.split("/")[2:])
+                project.budget_excel_file = path_without_bucket
+
             project.save()
 
-            if "name" in changes or "city" in changes:
+            if "name" in changes or "data" in changes:
                 ct.finalize_project(project)
             return render(request, 'core/thanks.html', {"action_description": "editing your budget transparency project", "link": "/apps/city_budgeting/administer_project/"+str(project.id)})
         else:
@@ -70,7 +82,8 @@ def edit_project(request, project_id):
     else:
         data = {k: project.__dict__[k] for k in simple_fields}
         data["city"] = project.city.get_name()
-        form = CreateProjectForm(data)
+        initial = {"download_link_1": default_storage.url("city_budgeting/misc/example.xlsx"), "download_link_2":default_storage.url(project.budget_excel_file)}
+        form = EditProjectForm(data, initial=initial)
         return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
 
 
