@@ -13,3 +13,4 @@ stripe==1.48.1
 django_compressor==2.1.1
 pyopenstates==1.0.5
 pillow==4.1.0
+openpyxl==2.4.7
