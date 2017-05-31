@@ -11,7 +11,7 @@
     <div class="alert alert-warning">{{ form.non_field_errors }}</div>
     {% endif %}
     {% for field in form %}
-    <p>
+    <div>
         {% if field.errors %}
         <div class="alert alert-warning">{{ field.errors }}</div>
         {% endif %}
@@ -20,7 +20,8 @@
         <h5>{{ field.help_text|safe }}</h5>
         {% endif %}
 	{{ field }}
-    </p>
+	<div class="clearfix"></div>
+    </div>
     {% endfor %}
     <input type="submit" value="Submit" />
 </form>

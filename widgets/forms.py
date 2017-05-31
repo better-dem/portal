@@ -301,10 +301,6 @@ class EditablePolygonField(forms.Field):
         attrs = super(EditablePolygonField, self).widget_attrs(widget)
         return attrs
 
-
-
-
-
 class InlineLinkWidget(forms.Widget):
     """
     Widget to display a participation item inline inside a form
@@ -355,10 +351,6 @@ class InlineLinkField(forms.Field):
     def widget_attrs(self, widget):
         attrs = super(InlineLinkField, self).widget_attrs(widget)
         return attrs
-
-
-
-
 
 #### Ajax string lookup utitlities
 

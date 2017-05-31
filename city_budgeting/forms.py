@@ -12,10 +12,10 @@ class CreateProjectForm(forms.Form):
     fiscal_period_start = forms.DateField(widget = wf.DatePickerJQueryWidget)
     fiscal_period_end = forms.DateField(widget = wf.DatePickerJQueryWidget)
     
-    budget_description = forms.CharField()
-    revenues_description = forms.CharField()
-    funds_description = forms.CharField()
-    expenses_description = forms.CharField()
+    budget_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
+    revenues_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
+    funds_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
+    expenses_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
 
     download_link_1 = wf.InlineLinkField(required=False, label="Example Budget Excel File")
     budget_excel_file = forms.URLField(widget=S3DirectWidget(dest="file_upload"))
@@ -29,10 +29,10 @@ class EditProjectForm(forms.Form):
     fiscal_period_start = forms.DateField(widget = wf.DatePickerJQueryWidget)
     fiscal_period_end = forms.DateField(widget = wf.DatePickerJQueryWidget)
     
-    budget_description = forms.CharField()
-    revenues_description = forms.CharField()
-    funds_description = forms.CharField()
-    expenses_description = forms.CharField()
+    budget_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
+    revenues_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
+    funds_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
+    expenses_description = forms.CharField(widget = Textarea(attrs={'style':"width:100%;", 'rows': 4, 'cols':2}))
 
     download_link_1 = wf.InlineLinkField(required=False, label="Example Budget Excel File")
     download_link_2 = wf.InlineLinkField(required=False, label="Current Budget Excel File")
