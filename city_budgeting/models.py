@@ -5,9 +5,20 @@ import sys
 import random
 import json
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.utils.translation import ugettext_lazy as _
 import traceback
 from collections import Counter
+from openpyxl import load_workbook
+
+def validate_revenues(t):
+    pass
+
+def validate_expenses(t):
+    pass
+
+def validate_funds(t):
+    pass
 
 def validate_budget_json(json_string):
     def assert_schema(d, schema):
@@ -68,12 +79,50 @@ class CityBudgetingProject(cm.ParticipationProject):
     city = models.ForeignKey(cm.GeoTag, on_delete = models.CASCADE)
     fiscal_period_start = models.DateField()
     fiscal_period_end = models.DateField()
+
+    budget_description = models.TextField(default="")
+    revenues_description = models.TextField(default="")
+    funds_description = models.TextField(default="")
+    expenses_description = models.TextField(default="")
+
+    budget_excel_file = models.FilePathField(max_length=500, blank=True)
+
     # contains a string in budget_json format
     budget_json = models.TextField(validators=[validate_budget_json]) 
     budget_json_version = models.IntegerField(default=1)
     budget_url = models.URLField(blank=False)
     
     def update_items(self):
+        # read excel file and update budget_json
+        def read_ws(ws, add_ids=False):
+            ans = []
+            cols = None
+            i = 0
+            for row in ws.rows:
+                if i == 0:
+                    cols = [cell.value for cell in row]
+                else:
+                    this_row = {cols[k].lower().replace(" ", "_"):row[k].value for k in range(len(cols)) if not cols[k] is None}
+                    if all([v is None for v in this_row.values()]):
+                        continue
+                    if add_ids:
+                        this_row["id"]=i
+                    elif "id" in this_row:
+                        this_row["id"] = int(this_row["id"])
+                    ans.append(this_row)
+                i += 1
+            return ans
+
+        with default_storage.open(self.budget_excel_file, 'r') as f:
+            wb = load_workbook(f)
+            budget_dict = dict()
+            budget_dict["funds"] = read_ws(wb["Funds"])
+            budget_dict["revenues"] = read_ws(wb["Revenues"], True)
+            budget_dict["expenses"] = read_ws(wb["Expenses"], True)
+            self.budget_json = json.dumps(budget_dict)
+            sys.stderr.write("{}\n{}\n".format("Budget JSON:", budget_dict))
+            self.save()
+
         existing_query_set = CityBudgetingItem.objects.filter(participation_project=self, is_active=True)
         num_existing_items = existing_query_set.update(name=self.name)
         if num_existing_items == 0:
@@ -85,8 +134,9 @@ class CityBudgetingProject(cm.ParticipationProject):
             for item in existing_query_set:
                 item.set_relevant_tags()
 
-    def set_name(self):
-        self.name = "City Budget Outreach Project for "+self.city.get_name()
+    def clean(self):
+        # validate_budget(self.revenues_table, self.funds_table, self.expenses_table)
+        pass
 
 class CityBudgetingItem(cm.ParticipationItem):
     """

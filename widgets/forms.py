@@ -301,6 +301,56 @@ class EditablePolygonField(forms.Field):
         attrs = super(EditablePolygonField, self).widget_attrs(widget)
         return attrs
 
+class InlineLinkWidget(forms.Widget):
+    """
+    Widget to display a participation item inline inside a form
+    """
+    def render(self, name, value, *args, **kwargs):
+        """
+        value is a link
+        """
+        input_name = name
+        input_id = kwargs['attrs']['id']
+
+        render_html = """
+        <input type='hidden' name='{}' id='{}' value='' />
+        <a href="{}">View here</a>
+        """
+        render_html_with_id = render_html.format(input_name, input_id, value)
+        return render_html_with_id
+
+    def __init__(self, *args, **kwargs):
+        super(InlineLinkWidget, self).__init__(*args, **kwargs)
+
+class InlineLinkField(forms.Field):
+    def __init__(self,
+        required= False,
+        widget=InlineLinkWidget,          
+        label=None,
+        initial=None,
+        help_text="",
+        validators=[],
+        *args,
+        **kwargs):
+        super(InlineLinkField, self).__init__(required=required,
+            widget=widget,
+            label=label,
+            initial=initial,
+            help_text=help_text,
+            validators=validators,
+            *args,
+            **kwargs)
+        self.disabled = True
+
+    def to_python(self, value):
+        return None
+
+    def validate(self, value):
+        super(InlineLinkField, self).validate(value)
+
+    def widget_attrs(self, widget):
+        attrs = super(InlineLinkField, self).widget_attrs(widget)
+        return attrs
 
 #### Ajax string lookup utitlities
 

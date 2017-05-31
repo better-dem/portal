@@ -14,7 +14,7 @@
 		</div>
 	    </div>
 
-	    <p>{{ data.description }}</p>
+	    <p>{{ project.budget_description }}</p>
 	    <p>
 		This budget is for the fiscal period from {{ project.fiscal_period_start }} to {{ project.fiscal_period_end }}.
 	    </p>
@@ -62,13 +62,13 @@
 		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
 		</div>
 	    </div>
-	    <p>{{ data.revenues.description }}</p>
+	    <p>{{ project.revenues_description }}</p>
 
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-lg-8">
 		    <div id="revenues_pie_div"></div>
 		    <pre id="revenues_data" style="display: none;">id,name,category,amount
-{% for rs in data.revenues.items %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% for rs in data.revenues %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
 {% endfor %}</pre>
 		    <div class="clearfix"></div>
 		</div>
@@ -97,13 +97,13 @@
 		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
 		</div>
 	    </div>
-	    <p>{{ data.expenses.description }}</p>
+	    <p>{{ project.expenses_description }}</p>
 
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-lg-8">
 		    <div id="expenses_pie_div"></div>
 		    <pre id="expenses_data" style="display: none;">id,name,category,amount
-{% for exp in data.expenses.items %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+{% for exp in data.expenses %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
 {% endfor %}</pre>
 		</div>
 		<div class="clearfix"></div>
@@ -133,13 +133,13 @@
 		  <button type="button" onclick="show_top()" class="btn btn-primary"><span class="glyphicon glyphicon-menu-left"></span> Back</button>
 		</div>
 	    </div>
-	    <p>{{ data.funds.description }}</p>
+	    <p>{{ project.funds_description }}</p>
 
 	    <div class="row" style="margin-top:10px; margin-bottom:10px;">
 		<div class="col-lg-8">
 		    <div id="funds_pie_div"></div>
 		    <pre id="funds_data" style="display: none;">id,name,amount
-{% for r in data.revenues.items %}{{ r.target_fund }},{% for k, v in fund_map.items %}{% if k == r.target_fund %}{{ v.name }}{% endif %}{% endfor %},{{ r.amount }}
+{% for r in data.revenues %}{{ r.target_fund }},{% for k, v in fund_map.items %}{% if k == r.target_fund %}{{ v.name }}{% endif %}{% endfor %},{{ r.amount }}
 {% endfor %}</pre>
 		    <div class="clearfix"></div>
 		</div>
@@ -174,7 +174,7 @@
 		<div class="col-lg-8">
 		  <div id="revenues_category_pie_div_{{ c_id }}"></div>
 		  <pre id="revenues_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
-{% for rs in data.revenues.items %}{% if rs.category == c_name %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% for rs in data.revenues %}{% if rs.category == c_name %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
 {% endif %}{% endfor %}</pre>
 		  <div class="clearfix"></div>
 		</div>
@@ -209,8 +209,8 @@
 	    <div class="row">
 		<div class="col-lg-8">
 		  <div id="expenses_category_pie_div_{{ c_id }}"></div>
-		    <pre id="expenses_data_cat_{{ c_id }}" style="display: none;">id,name,category,amount
-{% for exp in data.expenses.items %}{% if exp.category == c_name %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+		    <pre id="expenses_data_cat_{{ c_id }}" style="display: none;">id,description,category,amount
+{% for exp in data.expenses %}{% if exp.category == c_name %}{{ exp.id }},{{ exp.description }},{{ exp.category }},{{ exp.amount }}
 {% endif %}{% endfor %}</pre>
 		    <div class="clearfix"></div>
 		</div>
@@ -226,7 +226,7 @@
 {% endfor %}
 
 
-{% for rs in data.revenues.items %}
+{% for rs in data.revenues %}
 <div id="revenue_div_{{ rs.id }}" class="vis-page">
     <div class="panel panel-default">
 	<div class="panel-body" style="min-height: 500px;">
@@ -251,7 +251,7 @@
 </div>
 {% endfor %}
 
-{% for exp in data.expenses.items %}
+{% for exp in data.expenses %}
 <div id="expense_div_{{ exp.id }}" class="vis-page">
     <div class="panel panel-default">
 	<div class="panel-body" style="min-height: 500px;">
@@ -276,7 +276,7 @@
 </div>
 {% endfor %}
 
-{% for fund in data.funds.items %}
+{% for fund in data.funds %}
 <div id="fund_div_{{ fund.id }}" class="vis-page">
     <div class="panel panel-default" style="min-height: 500px;">
 	<div class="panel-body">
@@ -297,15 +297,15 @@
 		    <h4>Fund Revenues by Category</h4>
 		    <div id="fund_revenues_pie_div_{{ fund.id }}"></div>
 		    <pre id="fund_revenues_data_{{ fund.id }}" style="display: none;">id,name,category,amount
-{% for rs in data.revenues.items %}{% if rs.target_fund == fund.id %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
+{% for rs in data.revenues %}{% if rs.target_fund == fund.id %}{{ rs.id }},{{ rs.name }},{{ rs.category }},{{ rs.amount }}
 {% endif %}{% endfor %}</pre>
 		</div>
 
 		<div class="col-xs-12 col-md-4">
 		    <h4>Fund Expenses by Category</h4>
 		    <div id="fund_expenses_pie_div_{{ fund.id }}"></div>
-		    <pre id="fund_expenses_data_{{ fund.id }}" style="display: none;">id,name,category,amount
-{% for exp in data.expenses.items %}{% if exp.origin_fund == fund.id %}{{ exp.id }},{{ exp.name }},{{ exp.category }},{{ exp.amount }}
+		    <pre id="fund_expenses_data_{{ fund.id }}" style="display: none;">id,description,category,amount
+{% for exp in data.expenses %}{% if exp.origin_fund == fund.id %}{{ exp.id }},{{ exp.description }},{{ exp.category }},{{ exp.amount }}
 {% endif %}{% endfor %}</pre>
 		</div>
 
@@ -431,26 +431,26 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      
      // create linked pie chart for funds summary pane
      var funds_link_map = {};
-     {% for f in data.funds.items %}funds_link_map["{{ f.name|escapejs }}"] = function(){show_detail('fund', {{ f.id }});};{% endfor %}
+     {% for f in data.funds %}funds_link_map["{{ f.name|escapejs }}"] = function(){show_detail('fund', {{ f.id }});};{% endfor %}
      create_pie("name", "funds_pie_div", "funds_data", funds_link_map);
 
 
      // create pies for revenue categories
      {% for i, rc in revenue_categories.items %}
      var revenues_link_map_{{ i }} = {};
-     {% for r in data.revenues.items %}{% if r.category == rc %}revenues_link_map_{{ i }}["{{ r.name|escapejs }}"] = function(){show_detail('revenue', {{ r.id }});};{% endif %}{% endfor %}
+     {% for r in data.revenues %}{% if r.category == rc %}revenues_link_map_{{ i }}["{{ r.name|escapejs }}"] = function(){show_detail('revenue', {{ r.id }});};{% endif %}{% endfor %}
      create_pie("name", "revenues_category_pie_div_{{ i }}", "revenues_data_cat_{{ i}}", revenues_link_map_{{ i }});
      {% endfor %}
 
      // create pies for expense categories
      {% for i, ex in expense_categories.items %}
      var expenses_link_map_{{ i }} = {};
-     {% for exp in data.expenses.items %}{% if exp.category == ex %}expenses_link_map_{{ i }}["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endif %}{% endfor %}
-     create_pie("name", "expenses_category_pie_div_{{ i }}", "expenses_data_cat_{{ i}}", expenses_link_map_{{ i }});
+     {% for exp in data.expenses %}{% if exp.category == ex %}expenses_link_map_{{ i }}["{{ exp.name|escapejs }}"] = function(){show_detail('expense', {{ exp.id }});};{% endif %}{% endfor %}
+     create_pie("description", "expenses_category_pie_div_{{ i }}", "expenses_data_cat_{{ i}}", expenses_link_map_{{ i }});
      {% endfor %}
 
      // create pies for each funds' revenues and expenses
-     {% for f in data.funds.items %}
+     {% for f in data.funds %}
      create_pie("category", "fund_revenues_pie_div_{{ f.id }}", "fund_revenues_data_{{ f.id }}", revenues_link_map);
      create_pie("category", "fund_expenses_pie_div_{{ f.id }}", "fund_expenses_data_{{ f.id }}", expenses_link_map);
      {% endfor %}
@@ -463,13 +463,13 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      });
 
      var total_revenue = 0;
-     {% for rs in data.revenues.items %}
+     {% for rs in data.revenues %}
      total_revenue += {{ rs.amount }};
      $("#revenue_item_amount_{{ rs.id }}").text(dollar_formatter.format({{ rs.amount }}));{% endfor %}     
      $(".total_revenue").text(dollar_formatter.format(total_revenue));
 
      var total_expense = 0;
-     {% for exp in data.expenses.items %}
+     {% for exp in data.expenses %}
      total_expense += {{ exp.amount }};
      $("#expense_item_amount_{{ exp.id }}").text(dollar_formatter.format({{ exp.amount }}));{% endfor %}     
      $(".total_expense").text(dollar_formatter.format(total_expense));
@@ -487,7 +487,7 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      var expense_totals_by_category={}
      {% for id in expense_categories.keys %}
      expense_totals_by_category[{{ id }}] = 0;{% endfor %}
-     {% for exp in data.expenses.items %}
+     {% for exp in data.expenses %}
      expense_totals_by_category[{% for id, c_name in expense_categories.items %}{% if c_name == exp.category %}{{ id }}{% endif %}{% endfor %}] += {{ exp.amount }};{% endfor %}
      for (var cid in expense_totals_by_category){
           $(".expense_category_total_"+cid).text(dollar_formatter.format(expense_totals_by_category[cid]));
@@ -496,7 +496,7 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
      var revenue_totals_by_category={}
      {% for id in revenue_categories.keys %}
      revenue_totals_by_category[{{ id }}] = 0;{% endfor %}
-     {% for rs in data.revenues.items %}
+     {% for rs in data.revenues %}
      revenue_totals_by_category[{% for id, c_name in revenue_categories.items %}{% if c_name == rs.category %}{{ id }}{% endif %}{% endfor %}] += {{ rs.amount }};{% endfor %}
      for (var cid in revenue_totals_by_category){
           $(".revenue_category_total_"+cid).text(dollar_formatter.format(revenue_totals_by_category[cid]));
@@ -504,12 +504,12 @@ var create_pie = function(dimension_var, chart_div_id, data_pre_id, link_map){
 
      var totals_by_fund={}
      var total_expenses_by_fund={}
-     {% for fund in data.funds.items %}
+     {% for fund in data.funds %}
      total_expenses_by_fund[{{ fund.id }}] = 0;
      totals_by_fund[{{ fund.id }}] = 0;{% endfor %}
-     {% for item in data.revenues.items %}
+     {% for item in data.revenues %}
      totals_by_fund[{{ item.target_fund }}] += {{ item.amount }};{% endfor %}
-     {% for item in data.expenses.items %}
+     {% for item in data.expenses %}
      total_expenses_by_fund[{{ item.origin_fund }}] += {{ item.amount }};{% endfor %}
      for (var fid in totals_by_fund){
           $(".total_fund_"+fid).text(dollar_formatter.format(totals_by_fund[fid]));

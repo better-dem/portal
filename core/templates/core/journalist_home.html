@@ -6,19 +6,32 @@
 
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h4 class="panel-title">Manage Your Content</h4>
+    <h3 class="panel-title">Manage Your Content</h3>
   </div>
   <div class="panel-body">
 
     {% for app in journalist_apps %}
-    <p>
-      <a href="{{ app.new_project_link }}" class="btn btn-primary" role="button">New {{ app.label|capfirst }}</a>
-    </p>
-    {% for project in app.existing_projects %}
-    <p>
-      <a href="{{ project.administer_project_link }}" class="btn btn-default" role="button">Administer: {{ project.name }}</a>
-    </p>
-    {% endfor %}
+    <div class="panel-group">
+      <div class="panel panel-default">
+	<div class="panel-heading">
+	  <h4 class="panel-title"><a data-toggle="collapse" href="#collapse_{{ forloop.counter0 }}">{{ app.label|title }}</h4>
+	</div>
+	<div class="panel-collapse collapse" id="collapse_{{ forloop.counter0 }}">
+	  <div class="panel-body">
+	    <p>
+	      <a href="{{ app.new_project_link }}" class="btn btn-primary" role="button">New {{ app.label|capfirst }}</a>
+	    </p>
+	    {% for project in app.existing_projects %}
+	    <p>
+	      <a href="{{ project.administer_project_link }}" class="btn btn-default" role="button">Administer: {{ project.name }}</a>
+	    </p>
+	    {% endfor %}
+	    
+	  </div>
+	  <div class="panel-footer"></div>
+	</div>
+      </div>
+    </div>
     {% endfor %}
 
   </div>
