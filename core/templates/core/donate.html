@@ -5,23 +5,31 @@
 
 <script src="https://checkout.stripe.com/checkout.js"></script>
 
+
+<div class="panel panel-default">
+  <div class="panel-heading"><h4>How To Donate</h4></div>
+  <div class="panel-body">
+    <p>
+      There are several ways to donate to Better Dem.
+      <ul>
+	<li><b>On this website: </b> Use your credit card below to donate. A small fee is taken per transaction by Stripe.</li>
+	<li><b>Through your employer's philanthropy system: </b> Many employers match employee donations. This is a great way to make your donations go further.</li>
+	<li><b>Via snail mail: </b> Make your checks out to <q>Better Democracy Network</q> and mail them to 450 Central Way #4409, Kirkland, WA 98033.</li>
+	<li><b>Something different: </b> If none of these options are appropriate for you, but you'd still like to make a donation, please <a href="mailto:info@betterdem.org">email us</a></li>
+      </ul>
+    </p>
+  </div>
+</div>
+
+
 <div class="panel panel-default">
     <div class="panel-heading"><h4>What your donation does</h4></div>
     <div class="panel-body">
 
       <p>
-	Your support allows us to develop and run this site, to create new tools and educational material, and to push the envelope changing the way we interact with our government.
+	Your support allows us to create new tools and educational materials, and to push the envelope changing the way we interact with our government.
       </p>
       
-      <p>
-	Some of the things your contribution goes toward are:
-	<ul>
-	  <li>Development and maintenance costs for this website</li>
-	  <li>Licensing fees for data sets and research materials</li>
-	  <li>Operational expenses</li>
-	</ul>
-      </p>
-
       <p>
 	Currently, we are an all-volunteer organization.
 	In the future, we plan to hire staff at reasonable salaries.
@@ -34,39 +42,41 @@
 	Find out more <a target="_blank" href="https://www.sos.wa.gov/charities/search-app.aspx#/detail-charity/40128">here</a>.
       </p>
 
-
-      <div class="panel panel-default">
-	  <div class="panel-heading"><h4>Donate</h4></div>
-	  <div class="panel-body">
-	      <p>
-		  <h4>Donation Amount</h4>
-		  <select id="amt">
-		      {% with "50000 20000 10000 5000 2000 1000 500" as list %}
-		      {% for amt in list.split %}
-		      <option value="{{ amt }}">${% widthratio amt 100 1 %}</option>
-		      {% endfor %}
-		      {% endwith %}
-		  </select>
-	      </p>
-
-	      <div style="height: 5px;"></div>
-	      <p>
-		  <h4>Frequency</h4>
-		  <div class="checkbox">
-		      <label><input type="checkbox" id ="cb">Make this a monthly recurring donation</label>
-		  </div>
-	      </p>
-
-	      <div style="height: 10px;"></div>
-	      <p>
-		  <button type="button" class="btn btn-primary" id="customButton">Donate</button>
-	      </p>
-
-	  </div>
-      </div>
-
     </div>
 </div>
+
+
+<div class="panel panel-default">
+  <div class="panel-heading"><h4>Donate Now Online</h4></div>
+  <div class="panel-body">
+    <p>
+      <h4>Donation Amount</h4>
+      <select id="amt">
+	{% with "50000 20000 10000 5000 2000 1000 500" as list %}
+	{% for amt in list.split %}
+	<option value="{{ amt }}">${% widthratio amt 100 1 %}</option>
+	{% endfor %}
+	{% endwith %}
+      </select>
+    </p>
+
+    <div style="height: 5px;"></div>
+    <p>
+      <h4>Frequency</h4>
+      <div class="checkbox">
+	<label><input type="checkbox" id ="cb">Make this a monthly recurring donation</label>
+      </div>
+    </p>
+
+    <div style="height: 10px;"></div>
+    <p>
+      <button type="button" class="btn btn-primary" id="customButton">Donate</button>
+    </p>
+
+  </div>
+</div>
+
+
 
 
 <script>
