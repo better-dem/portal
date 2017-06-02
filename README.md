@@ -1,6 +1,6 @@
 # Better Dem Portal
 
-Created using the [Heroku django starter template](https://github.com/heroku/heroku-django-template/)
+Documentation available at [readthedocs](http://better-democracy-portal.readthedocs.io/en/latest/).
 
 ## Project Structure
 
