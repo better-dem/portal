@@ -22,13 +22,14 @@ Download the heroku command line tool.
 Install Python Pre-requisites
 +++++++++++++++++++++++++++++
 
-Using python 2.7,
+Using python 2.7, 
 
 > sudo pip install -r requirements.txt
 
 Environment Variables
 +++++++++++++++++++++
-
+`DJANGO_SECRET_KEY`
+`DJANGO_DEBUG_STATE`
 `GOOGLE_MAPS_API_KEY=`
 `EMAIL_HOST=`
 `EMAIL_PORT=`
