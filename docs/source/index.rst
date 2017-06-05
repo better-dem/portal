@@ -12,6 +12,7 @@ Welcome to Better Democracy Portal's documentation!
 
    linux_installation.rst
    developing_from_vm.rst
+   how_portal_works.rst
 
 
 Indices and tables

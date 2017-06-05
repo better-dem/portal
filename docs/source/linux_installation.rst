@@ -6,10 +6,7 @@ Linux Installation
 This document contains instructions to setup the Portal on Linux.
 Most developers will find this unreasonably complicated and will prefer :doc:`developing_from_vm`.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
+.. contents::
 
 Prerequisites
 -------------

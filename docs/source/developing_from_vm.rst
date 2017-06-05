@@ -3,12 +3,12 @@
 Developing from Virtual Machine
 ===============================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. contents::
 
 For most developers, configuring the environment to run this app will be too burdensome.
 This is why we provide a virtual machine for developers with much simpler setup requirements.
+Once the VM is running, developers should check out :doc:`how_portal_works` .
+
 
 Setup
 -----
@@ -28,13 +28,13 @@ However, some variables related to AWS simple storage need to be filled with you
 
 - Go to AWS's S3 dashboard
 - Create a bucket
-- add aws environment variables for a user that has full access to that bucket
-- edit CORS configuration in bucket preferences to allow cross-site sharing with the app's url
+- Add AWS environment variables to .env for a user that has full access to that bucket (see list of variable names below)
+- Edit CORS configuration in bucket preferences to allow cross-site sharing with any URL
 
 The environment variables you are setting should be:
-`AWS_ACCESS_KEY_ID=`
-`AWS_SECRET_ACCESS_KEY=`
-`AWS_STORAGE_BUCKET_NAME=`
+  | AWS_ACCESS_KEY_ID=
+  | AWS_SECRET_ACCESS_KEY=
+  | AWS_STORAGE_BUCKET_NAME=
 
 Configuring Other Features
 ++++++++++++++++++++++++++
@@ -68,7 +68,15 @@ A superuser for the site already exists, username betterdem, password betterdem.
 Contributing to the Project
 ---------------------------
 
-This project is hosted on github, so you will need a github account.
+General Comments on Contributing
+++++++++++++++++++++++++++++++++
+
+This project is hosted on github ( https://github.com/better-dem/portal ), so you will need a github account.
 - You will want to be logged in locally so that your commits are credited to you, not annonymous.
 - To develop new features, work from a branch which branches from dev. we use an approach like the one here: http://nvie.com/posts/a-successful-git-branching-model/ .
 - Create a pull request from your branch into dev when you think your features are ready
+- If you're looking to make a bite-sized contribution, check out our issue tracker: ( https://github.com/better-dem/portal/issues )
+
+
+
+
