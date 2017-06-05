@@ -108,7 +108,7 @@ def upload_dataset(request):
         form = UploadDataset(request.POST, request.FILES)
         if form.is_valid():
             if form.cleaned_data["format_id"] == "uscitieslist_csv_v0":
-                tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"])
+                tasks.insert_uscitieslist_v0.delay(form.cleaned_data["small_test"]) 
                 return render(request, "core/thanks.html", {"action_description": "uploading this data file"})
             elif form.cleaned_data["format_id"] == "states_v1":
                 tasks.insert_states.delay(form.cleaned_data["small_test"])
