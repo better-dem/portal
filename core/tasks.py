@@ -65,7 +65,7 @@ def run_long_job(job_state_id):
         traceback.print_exc()
         
 ### Begin: Tasks for loading data files & updating the database
-@shared_task
+@shared_task(soft_time_limit=60*60*2)
 def insert_uscitieslist_v0(small_test):
     filename = "/uploads/misc/tmp"
     sys.stdout.write("Processing csv for file: "+str(filename)+"\n")
