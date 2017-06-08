@@ -35,6 +35,7 @@ The environment variables you are setting should be:
   | AWS_ACCESS_KEY_ID=
   | AWS_SECRET_ACCESS_KEY=
   | AWS_STORAGE_BUCKET_NAME=
+  | AWS_S3_REGION=
 
 Configuring Other Features
 ++++++++++++++++++++++++++

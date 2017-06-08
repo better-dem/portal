@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import celery.schedules
 import os
+import sys
 import dj_database_url
 from django.utils import timezone
 
@@ -148,7 +149,7 @@ def upload_filename(original_filename):
     ans += ''.join([ch for ch in original_filename if ch.isalnum() or ch in ["-", "_", "."]])
     return ans
 
-S3DIRECT_REGION = 'us-west-1'
+S3DIRECT_REGION = os.environ["AWS_S3_REGION"]
 S3DIRECT_DESTINATIONS = {
     # destination specifically for uploading large administrative files
     'data_upload': {
@@ -170,8 +171,8 @@ AWS_ACCESS_KEY_ID = os.environ["AWS_ACCESS_KEY_ID"]
 AWS_SECRET_ACCESS_KEY = os.environ["AWS_SECRET_ACCESS_KEY"]
 AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
 STATICFILES_STORAGE = 'core.cached_s3_storage.CachedS3BotoStorage'
-AWS_S3_HOST="s3-us-west-1.amazonaws.com"
-STATIC_URL = "https://"+AWS_STORAGE_BUCKET_NAME+"."+AWS_S3_HOST+"/"
+AWS_S3_HOST="s3-{}.amazonaws.com".format(os.environ["AWS_S3_REGION"])
+STATIC_URL = "https://{}.{}/".format(AWS_STORAGE_BUCKET_NAME, AWS_S3_HOST)
 AWS_QUERYSTRING_AUTH = False    # there are to be no private files served from the bucket. 
 
 ### storages option which should be able to allow indefinite caching of never-stale static files

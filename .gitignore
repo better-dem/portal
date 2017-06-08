@@ -95,6 +95,9 @@ ENV/
 *~
 \#*
 
+# IntelliJ Project Files
+\.idea
+
 # Django static folders
 portal/staticfiles
 
