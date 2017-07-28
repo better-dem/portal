@@ -607,13 +607,13 @@ var colno = null;
 var output = "";
 try {
 var frame = frame.push(true);
-output += "\n        \n<div id=\"single_quiz_result_";
+output += "\n\n<div id=\"single_quiz_result_";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
 output += "\">\n  <div class=\"single_quiz_ajax_form\">\n    <div>";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"name"), env.opts.autoescape);
 output += "</div>\n    <select id=\"single_quiz_";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
-output += "\">\n      ";
+output += "\">\n      <!--TODO: Store options in a list and iterate over list instead of hardcoding-->\n      ";
 if(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"option1")) {
 output += "  <option value=\"1\">";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"option1"), env.opts.autoescape);
@@ -650,17 +650,9 @@ output += "</option>";
 }
 output += "\n    </select>\n    <div>\n      <input type=\"submit\" class=\"portal_ajax_submit\" id=\"single_quiz_submit_";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
-output += "\" data-target-element=\"single_quiz_";
+output += "\" value=\"Submit\" onclick=\"submit_and_render_results('";
 output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
-output += "\" data-result-element=\"single_quiz_result_";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
-output += "\" data-target-url=\"";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"link"), env.opts.autoescape);
-output += "\" value=\"Submit\" />\n    </div>\n  </div>\n  <span class=\"correct\" style=\"display: none;\">\n    <h1 style=\"display: inline;\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\" style=\"color:green\"></span> </h1>\n  </span>\n  <span class=\"incorrect\" style=\"display: none;\">\n    <h1 style=\"display: inline;\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\" style=\"color:red\"></span> </h1>\n  </span>\n  <span>\n    <h4 class=\"response\" style=\"display: none;\" data-display-style=\"inline\"></h4>\n  </span>\n  <p>\n    <div class=\"explanation\"></div>\n  </p>\n  <p class=\"sources\" style=\"display: none;\">\n    Follow our sources <a href=\"";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"citation_url"), env.opts.autoescape);
-output += "\">here</a>!\n  </p>\n</div>\n\n<script>\n  register_event_trigger(document.getElementById(\"single_quiz_submit_";
-output += runtime.suppressValue(runtime.memberLookup((runtime.contextOrFrameLookup(context, frame, "item")),"id"), env.opts.autoescape);
-output += "\"));\n</script>\n";
+output += "', 'single_quiz', 'jumbotron_feedback.html');\" />\n    </div>\n  </div>\n</div>\n\n";
 cb(null, output);
 ;
 } catch (e) {
@@ -736,6 +728,47 @@ output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "ta
 output += " <span style=\"cursor:pointer;\" class=\"glyphicon glyphicon-remove\" onclick=\"remove_filter(";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "tag_id"), env.opts.autoescape);
 output += ")\"></span></span> \n";
+if(parentTemplate) {
+parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
+} else {
+cb(null, output);
+}
+;
+} catch (e) {
+  cb(runtime.handleError(e, lineno, colno));
+}
+}
+return {
+root: root
+};
+
+})();
+})();
+
+(function() {(window.nunjucksPrecompiled = window.nunjucksPrecompiled || {})["core/portal_ux/jumbotron_feedback.html"] = (function() {
+function root(env, context, frame, runtime, cb) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var parentTemplate = null;
+output += "<span class=\"correct\">\n    ";
+if(runtime.contextOrFrameLookup(context, frame, "correct")) {
+output += "\n    <h1 style=\"display: inline;\"><span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\" style=\"color:green\"></span> </h1>\n    ";
+;
+}
+output += "\n    ";
+if(!runtime.contextOrFrameLookup(context, frame, "correct")) {
+output += "\n    <h1 style=\"display: inline;\"><span class=\"glyphicon glyphicon-remove\" aria-hidden=\"true\" style=\"color:red\"></span> </h1>\n    ";
+;
+}
+output += "\n</span>\n<span>\n    <h4 class=\"response\" data-display-style=\"inline\">";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "response"), env.opts.autoescape);
+output += "</h4>\n</span>\n<p>\n    <div class=\"explanation\">";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "explanation"), env.opts.autoescape);
+output += "</div>\n</p>\n<p class=\"sources\">\n    Follow our sources <a href=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "citation_url"), env.opts.autoescape);
+output += "\">here</a>!\n</p>";
 if(parentTemplate) {
 parentTemplate.rootRenderFunc(env, context, frame, runtime, cb);
 } else {

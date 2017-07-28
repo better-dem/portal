@@ -1,10 +1,11 @@
 {% extends "core/feed_item.html" %}
 {% block custom_item_content %}
-        
+
 <div id="single_quiz_result_{{ item.id }}">
   <div class="single_quiz_ajax_form">
     <div>{{ item.name }}</div>
     <select id="single_quiz_{{ item.id }}">
+      <!--TODO: Store options in a list and iterate over list instead of hardcoding-->
       {% if item.option1 %}  <option value="1">{{ item.option1 }}</option>{% endif %}
       {% if item.option2 %}  <option value="2">{{ item.option2 }}</option>{% endif %}
       {% if item.option3 %}  <option value="3">{{ item.option3 }}</option>{% endif %}
@@ -12,27 +13,9 @@
       {% if item.option5 %}  <option value="5">{{ item.option5 }}</option>{% endif %}
     </select>
     <div>
-      <input type="submit" class="portal_ajax_submit" id="single_quiz_submit_{{ item.id }}" data-target-element="single_quiz_{{ item.id }}" data-result-element="single_quiz_result_{{ item.id }}" data-target-url="{{ item.link }}" value="Submit" />
+      <input type="submit" class="portal_ajax_submit" id="single_quiz_submit_{{ item.id }}" value="Submit" onclick="submit_and_render_results('{{ item.id }}', 'single_quiz', 'jumbotron_feedback.html');" />
     </div>
   </div>
-  <span class="correct" style="display: none;">
-    <h1 style="display: inline;"><span class="glyphicon glyphicon-ok" aria-hidden="true" style="color:green"></span> </h1>
-  </span>
-  <span class="incorrect" style="display: none;">
-    <h1 style="display: inline;"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:red"></span> </h1>
-  </span>
-  <span>
-    <h4 class="response" style="display: none;" data-display-style="inline"></h4>
-  </span>
-  <p>
-    <div class="explanation"></div>
-  </p>
-  <p class="sources" style="display: none;">
-    Follow our sources <a href="{{ item.citation_url }}">here</a>!
-  </p>
 </div>
 
-<script>
-  register_event_trigger(document.getElementById("single_quiz_submit_{{ item.id }}"));
-</script>
 {% endblock %}

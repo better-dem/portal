@@ -23,6 +23,7 @@ lib64/
 parts/
 sdist/
 var/
+node_modules/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -77,6 +78,7 @@ target/
 
 # celery beat schedule file
 celerybeat-schedule
+celerybeat.pid
 
 # dotenv
 .env

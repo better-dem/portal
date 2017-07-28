@@ -3,7 +3,6 @@ from django.http import HttpResponse, JsonResponse
 from single_quiz.models import SingleQuizProject, SingleQuizItem
 from .forms import CreateProjectForm, ParticipateForm
 import os
-import sys
 import core.models as cm
 import core.views as cv
 import core.forms as cf
@@ -13,7 +12,7 @@ import json
 def new_project(request, group=None):
     (profile, permissions, is_default) = cv.get_profile_and_permissions(request)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = CreateProjectForm(request.POST)
         if form.is_valid():
             project = SingleQuizProject()
@@ -47,17 +46,17 @@ def new_project(request, group=None):
                 project.tags.add(t3)
             
             ct.finalize_project(project)
-            return render(request, 'core/thanks.html', {"action_description": "creating a new single quiz", "link": "/apps/single_quiz/administer_project/"+str(project.id)})
+            return render(request, "core/thanks.html", {"action_description": "creating a new single quiz", "link": "/apps/single_quiz/administer_project/"+str(project.id)})
         else:
-            return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path})
+            return render(request, "core/generic_form.html", {"form": form, "action_path" : request.path})
     else:
         form = CreateProjectForm()
-        return render(request, 'core/generic_form.html', {'form': form, 'action_path' : request.path })
+        return render(request, "core/generic_form.html", {"form": form, "action_path" : request.path })
 
 def administer_project(request, project_id):
     project = get_object_or_404(SingleQuizProject, pk=project_id) 
     items = SingleQuizItem.objects.filter(participation_project=project)
-    return render(request, 'core/project_admin_base.html', {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project, 'site': os.environ["SITE"]})
+    return render(request, "core/project_admin_base.html", {"items": [cv.get_item_details(i, True) for i in items if i.is_active], "project": project, "site": os.environ["SITE"]})
 
 
 def item_info(request, item_id, ans):
@@ -78,7 +77,7 @@ def participate(request, item_id):
     context = cv.get_default_og_metadata(request, item)
     project = item.participation_project.singlequizproject
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = None
 
         # populate the form differently depending on whether data is from ajax
@@ -93,22 +92,19 @@ def participate(request, item_id):
 
         # respond differently
         if form.is_valid():
-            if form.cleaned_data["choice"] == str(project.correct_answer_index):
-                content = {"reveal": ["correct", "sources"], "hide": ["incorrect", "single_quiz_ajax_form"], "response": "Correct!", "explanation": project.explanation}
-                if request.is_ajax():
-                    return JsonResponse(content)
-                else:
-                    content.update({'action_description': "responding to this mini-quiz", "ans_correct": True, "source": project.citation_url, "item":item})
-                    return render(request, 'single_quiz/thanks.html', content)
+            correct = form.cleaned_data["choice"] == str(project.correct_answer_index)
+
+            response = "Correct!" if correct else "Sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)]
+
+            content = {"correct": correct, "response": response, "explanation": project.explanation, "citation_url": project.citation_url}
+
+            if request.is_ajax():
+                return JsonResponse(content)
             else:
-                content = {"reveal": ["incorrect", "sources"], "hide": ["correct", "single_quiz_ajax_form"], "response": "Sorry, the correct answer was: "+project.__dict__["option"+str(project.correct_answer_index)], "explanation": project.explanation}
-                if request.is_ajax():
-                    return JsonResponse(content)
-                else:
-                    content.update({'action_description': "responding to this mini-quiz", "ans_correct": False, "source": project.citation_url, "item":item})
-                    return render(request, 'single_quiz/thanks.html', content)
+                content.update({"action_description": "responding to this mini-quiz", "ans_correct": correct, "source": project.citation_url, "item":item})
+                return render(request, "single_quiz/thanks.html", content)
         else:
-            return render(request, 'core/generic_form_participate.html', {'form': form, 'action_path': request.path, "form_title": project.question_text, 'item':item})
+            return render(request, "core/generic_form_participate.html", {"form": form, "action_path": request.path, "form_title": project.question_text, "item":item})
     else:
         form = ParticipateForm(item)
-        return render(request, 'core/generic_form_participate.html', {'form': form, 'action_path': request.path, "form_title": project.question_text, "item":item})
+        return render(request, "core/generic_form_participate.html", {"form": form, "action_path": request.path, "form_title": project.question_text, "item":item})

@@ -110,14 +110,27 @@ var get_form_data_object = function(b){
     return JSON.stringify(message)
 }
 
-// register event triggers for a button based on its attributes
-var register_event_trigger = function(b){
-    b.addEventListener("click", function(e) {
-	submit_ajax_form(b.getAttribute("data-target-url"),
-			 get_form_data_object(b),
-			 get_form_response_cb(b.getAttribute("data-result-element")))
-    }, false);
-}
+//// Submit single quiz answer and render results
+var submit_and_render_results = function(item_id, app_name, template_name) {
+    var answer_index = $("#single_quiz_"+item_id).val();
+
+    var cb = function(response_content, status){
+        console.log("ajax form response. status:"+status);
+        console.log("ajax form response. response_content:"+JSON.stringify(response_content));
+
+        var res = env.render("core/portal_ux/"+template_name, response_content);
+
+        // Render results
+        $("#single_quiz_result_"+item_id).append(res);
+    };
+
+    // Hide selector
+    $("#single_quiz_"+item_id).hide();
+    // Hide submit button
+    $("#single_quiz_submit_"+item_id).hide();
+
+    submit_ajax_form("/apps/"+app_name+"/participate/"+item_id, JSON.stringify({"answer_index": answer_index}), cb);
+};
 
 //// feed updating methods
 var env = nunjucks.configure()

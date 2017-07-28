@@ -1,0 +1,17 @@
+<span class="correct">
+    {% if correct %}
+    <h1 style="display: inline;"><span class="glyphicon glyphicon-ok" aria-hidden="true" style="color:green"></span> </h1>
+    {% endif %}
+    {% if not correct %}
+    <h1 style="display: inline;"><span class="glyphicon glyphicon-remove" aria-hidden="true" style="color:red"></span> </h1>
+    {% endif %}
+</span>
+<span>
+    <h4 class="response" data-display-style="inline">{{ response }}</h4>
+</span>
+<p>
+    <div class="explanation">{{ explanation }}</div>
+</p>
+<p class="sources">
+    Follow our sources <a href="{{ citation_url }}">here</a>!
+</p>
