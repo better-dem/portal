@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^student_home/$', views.student_home, name="student_home"),
     url(r'^journalist_home/$', views.journalist_home, name="journalist_home"),
     url(r'^manage_group/(?P<group_id>.+)$', views.manage_group, name="manage_group"),
+    url(r'^create_group/$', views.create_group, name="create_group"),
     url(r'^group_member_home/(?P<group_id>.+)$', views.group_member_home, name="group_member_home"),
     url(r'^add_bookmark/$', views.add_bookmark, name="add_bookmark"),
     url(r'^report_issues/$', views.report_issues, name="report_issues"),

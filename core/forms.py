@@ -23,6 +23,12 @@ class CreateShortcutForm(forms.Form):
             raise forms.ValidationError("There is no active participation item with that ID")
         return data
 
+class CreateGroupForm(forms.Form):
+    owner_username = forms.CharField(required=True)
+    groupname = forms.CharField(required=True)
+    size = forms.IntegerField(required=True)
+
+
 class ManageGroupForm(forms.Form):
     new_invitation_name = forms.CharField(required=True)
     new_invitation_email = forms.EmailField(required=False)

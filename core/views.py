@@ -12,7 +12,7 @@ from django.utils import timezone
 
 import core.models as cm
 import core.tasks as tasks
-from core.forms import RegisterGroupForm, CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm, AddBookmarkForm
+from core.forms import RegisterGroupForm, CreateShortcutForm, ManageGroupForm, DeleteProjectConfirmationForm, UploadDataset, AddTagForm, IssueReportForm, get_matching_tags, get_best_final_matching_tag, StripePaymentForm, AddBookmarkForm, CreateGroupForm
 
 import sys
 import os
@@ -387,6 +387,36 @@ def manage_group(request, group_id):
             return render(request, 'core/manage_group.html', context)
 
     return render(request, 'core/manage_group.html', context)
+
+
+@ensure_csrf_cookie
+@transaction.atomic
+def create_group(request):
+    (profile, permissions, is_default_user) = get_profile_and_permissions(request)
+    if is_default_user:
+        return render(request, "core/please_login.html")
+    # require core permissions
+    app = cm.get_core_app()
+    perm = cm.get_provider_permission(app)
+    if not app.label+"."+perm.codename in permissions:
+        return HttpResponseForbidden()
+
+    if request.method == 'POST':
+        form = CreateGroupForm(request.POST)
+        if form.is_valid():
+            group = cm.UserGroup()
+            group.owner = cm.User.objects.get(username=form.cleaned_data["owner_username"]).userprofile
+            group.size = form.cleaned_data["size"]
+            group.name = form.cleaned_data["groupname"]
+            group.save()
+            return HttpResponseRedirect("/manage_group/{}".format(group.id))
+        else:
+            sys.stderr.write("Form errors: {}\n".format(form.errors))
+            sys.stderr.flush()
+            return render(request, 'core/generic_form.html', {"form":form})
+    else:
+        form = CreateGroupForm()
+        return render(request, 'core/generic_form.html', {"form":form})
 
 
 @ensure_csrf_cookie
